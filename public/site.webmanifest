@@ -1,6 +1,6 @@
 {
-  "name": "BUS-VOYAGE",
-  "short_name": "BUS-VOYAGE",
+  "name": "Ayò Voyage",
+  "short_name": "Ayò Voyage",
   "description": "Réservez votre voyage en bus",
   "lang": "fr",
   "start_url": "/",

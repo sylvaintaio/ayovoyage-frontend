@@ -17,7 +17,7 @@ export const BRAND = {
   /** Domaine des adresses de contact (contact@…). */
   domain: 'ayovoyage.bj',
   /** Adresse publique du site (aperçus de liens WhatsApp / Facebook, manifeste). */
-  siteUrl: 'https://www.ayovoyage.bj',
+  siteUrl: 'https://ayovoyage.vercel.app',
   /** Accroche affichée dans l'onglet de la page d'accueil. */
   tagline: 'Réservez votre voyage en bus',
 } as const;
