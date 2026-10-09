@@ -1,0 +1,23 @@
+.eyebrow {
+  margin: 0;
+  color: var(--bv-primary);
+  font-size: var(--bv-text-sm);
+  font-weight: 700;
+}
+
+h1 {
+  margin: var(--bv-space-1) 0 0;
+}
+
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+
+.desc {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.card p {
+  margin: 0;
+}

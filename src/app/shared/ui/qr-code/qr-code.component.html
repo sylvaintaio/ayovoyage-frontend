@@ -1,0 +1,5 @@
+@if (src(); as url) {
+  <img [src]="url" [width]="size()" [height]="size()" [alt]="label()" />
+} @else {
+  <div class="placeholder" [style.width.px]="size()" [style.height.px]="size()"></div>
+}

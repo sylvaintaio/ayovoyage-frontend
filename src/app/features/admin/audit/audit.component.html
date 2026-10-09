@@ -1,0 +1,44 @@
+<div class="spread head">
+  <h1>Journal d'audit</h1>
+  <select class="select filter" aria-label="Type d'élément" [ngModel]="entityType()" (ngModelChange)="entityType.set($event); load(true)">
+    @for (t of types; track t[0]) { <option [value]="t[0]">{{ t[1] }}</option> }
+  </select>
+</div>
+<p class="muted small">Ce journal ne peut être ni modifié ni effacé, y compris par l'application.</p>
+
+<bv-state [loading]="loading()" [error]="error()" [empty]="entries().length === 0" emptyText="Aucune action enregistrée." (retry)="load(true)">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th scope="col">Date</th><th scope="col">Action</th><th scope="col">Élément</th><th scope="col">Auteur</th><th scope="col">IP</th><th scope="col"><span class="sr-only">Détail</span></th></tr>
+      </thead>
+      <tbody>
+        @for (e of entries(); track e.id) {
+          <tr>
+            <td class="nowrap small">{{ e.created_at | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+            <td><code>{{ e.action }}</code></td>
+            <td class="small">{{ e.entity_type }}<br /><span class="muted">{{ e.entity_id }}</span></td>
+            <td class="small">{{ e.actor_type }}</td>
+            <td class="small muted">{{ e.ip }}</td>
+            <td class="text-right">
+              <button type="button" class="btn btn--sm btn--ghost" [attr.aria-expanded]="open() === e.id" (click)="open.set(open() === e.id ? null : e.id)">Détail</button>
+            </td>
+          </tr>
+          @if (open() === e.id) {
+            <tr class="detail">
+              <td colspan="6">
+                <div class="grid grid-2">
+                  <div><p class="small strong">Avant</p><pre>{{ e.before | json }}</pre></div>
+                  <div><p class="small strong">Après</p><pre>{{ e.after | json }}</pre></div>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (hasMore()) {
+    <button type="button" class="btn more" (click)="load()">Afficher plus</button>
+  }
+</bv-state>

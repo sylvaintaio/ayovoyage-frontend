@@ -1,0 +1,156 @@
+@use 'mixins' as *;
+
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.04em;
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-8) var(--bv-space-5);
+  color: var(--bv-ink-muted);
+  text-align: center;
+
+  h1,
+  p {
+    margin: 0;
+  }
+
+  h1 {
+    color: var(--bv-ink);
+  }
+}
+
+.head {
+  h1 {
+    margin: var(--bv-space-1) 0;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.eyebrow {
+  color: var(--bv-primary);
+  font-size: var(--bv-text-sm);
+  font-weight: 700;
+}
+
+.progress {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--bv-space-2);
+    color: var(--bv-ink-soft);
+    font-size: var(--bv-text-sm);
+    text-align: center;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 9px;
+      right: 50%;
+      left: -50%;
+      height: 3px;
+      background: var(--bv-line);
+    }
+
+    &:first-child::before {
+      display: none;
+    }
+
+    &.done,
+    &.current {
+      color: var(--bv-ink);
+
+      &::before {
+        background: var(--bv-primary);
+      }
+    }
+
+    &.current {
+      font-weight: 700;
+    }
+  }
+}
+
+.progress__dot {
+  position: relative;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--bv-line);
+  border-radius: 50%;
+  background: var(--bv-surface);
+
+  .done & {
+    border-color: var(--bv-primary);
+    background: var(--bv-primary);
+  }
+
+  .current & {
+    border-color: var(--bv-primary);
+    box-shadow: 0 0 0 5px var(--bv-primary-soft);
+  }
+}
+
+.callout {
+  padding: var(--bv-space-5);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-night);
+  color: #fff;
+
+  h2 {
+    margin: 0 0 var(--bv-space-2);
+    color: #fff;
+  }
+
+  p {
+    margin: 0 0 var(--bv-space-2);
+    color: rgb(255 255 255 / 85%);
+  }
+
+  strong {
+    color: #fff;
+  }
+
+  &--done {
+    background: var(--bv-success-soft);
+    color: var(--bv-ink);
+
+    h2,
+    p,
+    strong {
+      color: var(--bv-ink);
+    }
+  }
+}
+
+.grid-2 {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: start;
+  }
+}
+
+.places p {
+  margin: 0;
+}
+
+.label {
+  font-size: var(--bv-text-sm);
+  font-weight: 600;
+}

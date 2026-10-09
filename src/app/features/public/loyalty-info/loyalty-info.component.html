@@ -1,0 +1,61 @@
+<bv-page-banner
+  title="Voyagez plus, gagnez plus"
+  lead="Chaque voyage vous rapporte des points et vous rapproche d’un niveau supérieur, avec des réductions et des avantages exclusifs."
+>
+  <div class="cluster actions">
+    @if (auth.isCustomer()) {
+      <a class="btn btn--accent" routerLink="/compte/fidelite">Voir mes points</a>
+    } @else {
+      <a class="btn btn--accent" routerLink="/connexion" [queryParams]="{ retour: '/compte/fidelite' }">Rejoindre le programme</a>
+    }
+  </div>
+</bv-page-banner>
+
+@if (store.loyalty(); as l) {
+  <section class="section section--white" aria-labelledby="t-rules">
+    <div class="container">
+      <h2 id="t-rules" class="section-title">Comment ça marche</h2>
+      <div class="rules">
+        <div class="rule">
+          <strong>{{ l.points_per_100 }} point{{ l.points_per_100 > 1 ? 's' : '' }}</strong>
+          <span>par tranche de 100 F CFA payés, crédités après votre embarquement</span>
+        </div>
+        <div class="rule">
+          <strong>1 point = {{ l.point_value | money }}</strong>
+          <span>de réduction sur vos prochains billets réservés en ligne</span>
+        </div>
+        @if (l.signup_bonus_points) {
+          <div class="rule">
+            <strong>{{ l.signup_bonus_points }} points offerts</strong>
+            <span>à votre premier voyage</span>
+          </div>
+        }
+        <div class="rule">
+          <strong>Billets en agence inclus</strong>
+          <span>donnez simplement votre numéro au guichet</span>
+        </div>
+      </div>
+    </div>
+  </section>
+}
+
+@if (store.tiers().length) {
+  <section class="section" aria-labelledby="t-tiers">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="t-tiers" class="section-title">Votre niveau évolue avec vos voyages</h2>
+        <p class="lead">Calculé sur vos voyages des 12 derniers mois. La réduction de votre niveau s’applique automatiquement.</p>
+      </div>
+      <bv-loyalty-tiers />
+    </div>
+  </section>
+}
+
+<section class="section section--white" aria-labelledby="t-faq">
+  <div class="container narrow">
+    <h2 id="t-faq" class="section-title">Questions sur la fidélité</h2>
+    <bv-faq-list [categories]="['Fidélité']" />
+  </div>
+</section>
+
+<bv-cta-band title="Votre prochain voyage vous rapporte des points" />

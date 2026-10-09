@@ -1,0 +1,33 @@
+// Bandeau d'appel à l'action : aplat jaune signal, texte encre, bouton vert.
+.cta {
+  padding-block: var(--bv-space-6);
+  background: var(--bv-accent);
+  color: var(--bv-on-accent);
+
+  &__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bv-space-4);
+  }
+
+  h2 {
+    margin-bottom: var(--bv-space-1);
+    font-size: var(--bv-text-2xl);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  &__secondary {
+    color: var(--bv-on-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    &:hover {
+      background: rgb(0 0 0 / 8%);
+    }
+  }
+}

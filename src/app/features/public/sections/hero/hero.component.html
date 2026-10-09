@@ -1,0 +1,40 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <span class="eyebrow">Billets de bus en ligne</span>
+      <h1 id="hero-title">{{ company.tagline }}</h1>
+      <p class="hero__lead">{{ company.shortDescription }}</p>
+    </div>
+
+    <aside class="board" aria-labelledby="board-title">
+      <header class="board__head">
+        <h2 id="board-title">Prochains départs</h2>
+        <span class="board__clock figures" aria-hidden="true">{{ now() | date: 'HH:mm' }}</span>
+      </header>
+      @if (departures().length) {
+        <ul class="board__rows list-plain">
+          @for (d of departures(); track d.id) {
+            <li>
+              <a class="board__row" [routerLink]="['/departs', d.id]">
+                <span class="board__time figures">{{ d.departure_at | date: 'HH:mm' }}</span>
+                <span class="board__route">
+                  <span class="board__city">{{ d.destination_city }}</span>
+                  <span class="board__from">depuis {{ d.origin_city }}{{ isToday(d.departure_at) ? '' : ' · ' + (d.departure_at | date: 'EEE d') }}</span>
+                </span>
+                <span class="board__status figures" [class.board__status--boarding]="d.boarding" [class.board__status--few]="d.available_seats <= 5">
+                  {{ d.boarding ? 'Embarquement' : d.available_seats <= 5 ? d.available_seats + ' places' : (d.price | money) }}
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="board__empty">Consultez les horaires ci-dessous pour réserver votre prochain voyage.</p>
+      }
+    </aside>
+
+    <div id="reserver" class="hero__search">
+      <bv-search-form />
+    </div>
+  </div>
+</section>

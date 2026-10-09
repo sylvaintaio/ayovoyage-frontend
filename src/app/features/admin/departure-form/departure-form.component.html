@@ -1,0 +1,128 @@
+<form class="bv-dialog stack" [formGroup]="form" (ngSubmit)="save()" aria-labelledby="df-title">
+  <h2 id="df-title">{{ editing ? 'Modifier le départ' : 'Programmer un départ' }}</h2>
+  @if (!editing) {
+    <div class="segmented" role="radiogroup" aria-label="Fréquence">
+      <button type="button" role="radio" [attr.aria-checked]="!repeat()" [class.on]="!repeat()" (click)="setRepeat(false)">Une seule fois</button>
+      <button type="button" role="radio" [attr.aria-checked]="repeat()" [class.on]="repeat()" (click)="setRepeat(true)">Départs réguliers</button>
+    </div>
+  }
+  @if (error()) {
+    <p class="alert alert--danger" role="alert">{{ error() }}</p>
+  }
+  <div class="field">
+    <label for="df-route">Ligne</label>
+    <select id="df-route" class="select" formControlName="route_id">
+      <option value="" disabled>Choisir une ligne</option>
+      @for (r of routes(); track r.id) {
+        <option [value]="r.id">{{ r.name }} — {{ r.base_price | money }}</option>
+      }
+    </select>
+  </div>
+  <div class="field">
+    <label for="df-bus">Bus</label>
+    <select id="df-bus" class="select" formControlName="bus_id">
+      <option value="" disabled>Choisir un bus</option>
+      @for (b of buses(); track b.id) {
+        <option [value]="b.id">{{ b.plate_number }} — {{ b.model }} ({{ b.seat_count }} places)</option>
+      }
+    </select>
+    @if (editing) {
+      <span class="field__hint">Le bus et la ligne ne sont pas modifiables après création.</span>
+    }
+  </div>
+  <div class="grid grid-2">
+    @if (!repeat()) {
+      <div class="field">
+        <label for="df-at">Date et heure de départ</label>
+        <input id="df-at" class="input" type="datetime-local" formControlName="departure_at" />
+      </div>
+    } @else {
+      <div class="field" [formGroup]="recurring">
+        <label for="df-time">Heure de départ</label>
+        <input id="df-time" class="input" type="time" formControlName="time" (input)="preview.set(null)" />
+      </div>
+    }
+    <div class="field">
+      <label for="df-price">Tarif de base (F CFA)</label>
+      <input id="df-price" class="input" type="number" min="0" step="100" formControlName="base_price" />
+      @if (!editing) {
+        <span class="field__hint">0 = tarif de la ligne.</span>
+      }
+    </div>
+    <div class="field">
+      <label for="df-driver">Chauffeur</label>
+      <select id="df-driver" class="select" formControlName="driver_id">
+        <option value="">—</option>
+        @for (s of drivers(); track s.id) {
+          <option [value]="s.id">{{ s.full_name }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="df-agent">Convoyeur / agent</label>
+      <select id="df-agent" class="select" formControlName="agent_id">
+        <option value="">—</option>
+        @for (s of agents(); track s.id) {
+          <option [value]="s.id">{{ s.full_name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+  @if (repeat()) {
+    <fieldset class="repeat" [formGroup]="recurring">
+      <legend>Répétition</legend>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="df-from">Du</label>
+          <input id="df-from" class="input" type="date" formControlName="from_date" (input)="preview.set(null)" />
+        </div>
+        <div class="field">
+          <label for="df-to">Au (92 jours au plus)</label>
+          <input id="df-to" class="input" type="date" formControlName="to_date" (input)="preview.set(null)" />
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="df-days">Jours</span>
+        <div class="days" role="group" aria-labelledby="df-days">
+          @for (d of weekdays; track d.n) {
+            <button type="button" class="day" [class.on]="days().includes(d.n)" [attr.aria-pressed]="days().includes(d.n)" [attr.aria-label]="d.label" (click)="toggleDay(d.n)">{{ d.short }}</button>
+          }
+        </div>
+        <span class="field__hint">{{ allDays() ? 'Tous les jours' : days().length + ' jour(s) par semaine' }}</span>
+      </div>
+    </fieldset>
+    @if (preview(); as p) {
+      <div class="preview" aria-live="polite">
+        <p class="strong">{{ p.created.length }} départ{{ p.created.length > 1 ? 's' : '' }} à créer</p>
+        @if (p.created.length) {
+          <p class="small muted">Du {{ p.created[0].departure_at | date: 'EEE d MMM' }} au {{ p.created[p.created.length - 1].departure_at | date: 'EEE d MMM' }}, à {{ p.created[0].departure_at | date: 'HH:mm' }}.</p>
+        }
+        @if (p.skipped.length) {
+          <p class="small">{{ p.skipped.length }} date{{ p.skipped.length > 1 ? 's' : '' }} ignorée{{ p.skipped.length > 1 ? 's' : '' }} :</p>
+          <ul class="small skipped">
+            @for (k of p.skipped.slice(0, 6); track k.departure_at) {
+              <li>{{ k.departure_at | date: 'EEE d MMM HH:mm' }} — {{ k.reason }}</li>
+            }
+            @if (p.skipped.length > 6) {
+              <li>… et {{ p.skipped.length - 6 }} autre(s)</li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  }
+  <div class="field">
+    <label for="df-notes">Notes internes</label>
+    <textarea id="df-notes" class="textarea" formControlName="notes"></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="button" class="btn" (click)="ref.close()">Annuler</button>
+    @if (repeat()) {
+      <button type="submit" class="btn btn--primary" [disabled]="saving() || (preview() && preview()!.created.length === 0)">
+        {{ saving() ? 'Calcul…' : preview() ? 'Créer ' + preview()!.created.length + ' départ(s)' : 'Voir l’aperçu' }}
+      </button>
+    } @else {
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+    }
+  </div>
+</form>

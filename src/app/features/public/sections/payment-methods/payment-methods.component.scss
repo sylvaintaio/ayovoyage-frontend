@@ -1,0 +1,18 @@
+.pay {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bv-space-3);
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bv-space-2);
+    font-weight: 700;
+    color: var(--bv-primary);
+  }
+
+  ul {
+    gap: var(--bv-space-2);
+  }
+}

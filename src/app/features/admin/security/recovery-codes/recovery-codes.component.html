@@ -1,0 +1,21 @@
+<div class="box">
+  <p class="lead">
+    Conservez ces <strong>{{ codes().length }} codes de secours</strong> en lieu sûr. Si vous perdez votre téléphone, chacun vous permet de vous connecter
+    <strong>une seule fois</strong>. Ils ne seront plus jamais affichés.
+  </p>
+  <ul class="codes" aria-label="Codes de secours">
+    @for (c of codes(); track c) {
+      <li>{{ c }}</li>
+    }
+  </ul>
+  <div class="actions">
+    <button type="button" class="btn btn--sm" (click)="copy()">Copier</button>
+    <button type="button" class="btn btn--sm" (click)="download()">Télécharger (.txt)</button>
+    <button type="button" class="btn btn--sm" (click)="print()">Imprimer</button>
+  </div>
+  <label class="checkbox">
+    <input type="checkbox" [checked]="saved()" (change)="saved.set(!saved())" />
+    <span>J’ai mis mes codes de secours en lieu sûr</span>
+  </label>
+  <button type="button" class="btn btn--dark btn--block" [disabled]="!saved()" (click)="done.emit()">{{ doneLabel() }}</button>
+</div>

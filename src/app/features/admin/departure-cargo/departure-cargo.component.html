@@ -1,0 +1,57 @@
+<section class="card stack-sm" aria-labelledby="t-cargo">
+  <div class="spread">
+    <h2 id="t-cargo" class="card__title">Soute</h2>
+    <span class="small muted">{{ parcelsLoaded() }}/{{ parcels().length }} colis · {{ bagsLoaded() }}/{{ baggage().length }} bagages · {{ bagsWeight() }} kg</span>
+  </div>
+
+  <div class="modes" role="radiogroup" aria-label="Action du scan">
+    <button type="button" role="radio" [attr.aria-checked]="mode() === 'load'" [class.on]="mode() === 'load'" (click)="mode.set('load')">Chargement</button>
+    <button type="button" role="radio" [attr.aria-checked]="mode() === 'unload'" [class.on]="mode() === 'unload'" (click)="mode.set('unload')">Déchargement</button>
+    <button type="button" role="radio" [attr.aria-checked]="mode() === 'deliver'" [class.on]="mode() === 'deliver'" (click)="mode.set('deliver')">Remise bagages</button>
+  </div>
+
+  <form class="scan" (ngSubmit)="scan()">
+    <bv-icon name="scan" [size]="20" />
+    <label for="cg-code" class="sr-only">Scanner une étiquette de colis ou de bagage</label>
+    <input id="cg-code" class="input" name="code" autocomplete="off" placeholder="Scanner une étiquette (CL… ou BG-…)" [ngModel]="code()" (ngModelChange)="code.set($event)" />
+    <button type="submit" class="btn btn--primary btn--sm" [disabled]="busy()">OK</button>
+  </form>
+  @if (feedback(); as f) {
+    <p class="feedback" [class.feedback--ko]="!f.ok" role="status">{{ f.text }}</p>
+  }
+
+  @if (parcels().length) {
+    <h3 class="sub">Colis</h3>
+    <ul class="list-plain items">
+      @for (p of parcels(); track p.id) {
+        <li [class.done]="p.status !== 'assigned'">
+          <a class="mono" [routerLink]="['/admin/colis', p.id]">{{ p.tracking_number }}</a>
+          <span class="grow small">{{ p.recipient_name }} · {{ p.pieces }} pc · {{ p.weight_kg }} kg
+            @if (!p.is_final_leg) { <span class="badge">Correspondance → {{ p.destination_agency_name }}</span> }
+          </span>
+          <bv-status-badge [status]="p.status" domain="parcel" />
+        </li>
+      }
+    </ul>
+  }
+
+  @if (baggage().length) {
+    <h3 class="sub">Bagages</h3>
+    <ul class="list-plain items">
+      @for (b of baggage(); track b.id) {
+        <li [class.done]="b.status !== 'checked'" [class.ko]="b.status === 'missing'">
+          <span class="mono">{{ b.tag_number }}</span>
+          <span class="grow small">{{ b.seat_label }} · {{ b.passenger_name }} · {{ b.weight_kg }} kg @if (b.description) { · {{ b.description }} }</span>
+          <bv-status-badge [status]="b.status" domain="baggage" />
+          @if (b.status !== 'missing' && b.status !== 'delivered') {
+            <button type="button" class="btn btn--sm btn--ghost" (click)="markMissing(b)">Manquant</button>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  @if (!parcels().length && !baggage().length) {
+    <p class="small muted">Aucun colis ni bagage enregistré sur ce départ.</p>
+  }
+</section>

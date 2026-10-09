@@ -1,0 +1,127 @@
+<form class="bv-dialog stack" role="dialog" aria-labelledby="pd-title" [formGroup]="form" (ngSubmit)="save()">
+  <h2 id="pd-title">
+    @switch (data.mode) {
+      @case ('batch') { Générer une série de codes }
+      @case ('edit') { Code {{ data.promo?.code }} }
+      @default { Nouveau code promo }
+    }
+  </h2>
+
+  @if (data.mode === 'create') {
+    <div class="field">
+      <label for="pd-code">Code</label>
+      <input id="pd-code" class="input mono upper" formControlName="code" maxlength="30" placeholder="TABASKI26" />
+      <span class="field__hint">Lettres, chiffres et tirets. Le client le saisit au moment de réserver.</span>
+    </div>
+  }
+  @if (data.mode === 'batch') {
+    <div class="grid grid-2">
+      <div class="field">
+        <label for="pd-prefix">Préfixe</label>
+        <input id="pd-prefix" class="input mono upper" formControlName="prefix" maxlength="12" placeholder="PARTENAIRE" />
+        <span class="field__hint">Codes générés : PRÉFIXE-XXXXXX, chacun utilisable une seule fois.</span>
+      </div>
+      <div class="field">
+        <label for="pd-count">Nombre de codes</label>
+        <input id="pd-count" class="input" type="number" formControlName="count" />
+      </div>
+    </div>
+  }
+
+  <div class="field">
+    <label for="pd-label">Libellé interne</label>
+    <input id="pd-label" class="input" formControlName="label" maxlength="120" placeholder="Campagne Tabaski 2026" />
+  </div>
+
+  <div class="grid grid-2">
+    <div class="field">
+      <label for="pd-kind">Type de remise</label>
+      <select id="pd-kind" class="select" formControlName="kind">
+        <option value="percent">Pourcentage</option>
+        <option value="fixed">Montant fixe</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="pd-value">{{ form.controls.kind.value === 'percent' ? 'Remise (%)' : 'Remise (F CFA)' }}</label>
+      <input id="pd-value" class="input" type="number" formControlName="value" />
+    </div>
+    @if (form.controls.kind.value === 'percent') {
+      <div class="field">
+        <label for="pd-max">Plafond de la remise (F CFA)</label>
+        <input id="pd-max" class="input" type="number" step="100" formControlName="max_discount" placeholder="Aucun" />
+      </div>
+    }
+    <div class="field">
+      <label for="pd-min">Achat minimum (F CFA)</label>
+      <input id="pd-min" class="input" type="number" step="500" formControlName="min_amount" />
+    </div>
+    <div class="field">
+      <label for="pd-from">Valable à partir du</label>
+      <input id="pd-from" class="input" type="datetime-local" formControlName="valid_from" />
+    </div>
+    <div class="field">
+      <label for="pd-to">Jusqu'au</label>
+      <input id="pd-to" class="input" type="datetime-local" formControlName="valid_to" />
+    </div>
+    @if (data.mode !== 'batch') {
+      <div class="field">
+        <label for="pd-limit">Utilisations au total</label>
+        <input id="pd-limit" class="input" type="number" formControlName="usage_limit" placeholder="Illimitées" />
+      </div>
+      <div class="field">
+        <label for="pd-percust">Utilisations par client</label>
+        <input id="pd-percust" class="input" type="number" formControlName="per_customer_limit" />
+      </div>
+    }
+  </div>
+
+  <label class="checkbox"><input type="checkbox" formControlName="first_trip_only" /> Réservé au premier voyage du client</label>
+
+  <fieldset class="choices">
+    <legend>Canaux</legend>
+    @for (c of channelOptions; track c[0]) {
+      <label class="checkbox">
+        <input type="checkbox" [checked]="channels().has(c[0])" (change)="toggle('channels', c[0], $any($event.target).checked)" />
+        {{ c[1] }}
+      </label>
+    }
+  </fieldset>
+
+  @if (data.routes.length) {
+    <fieldset class="choices">
+      <legend>Lignes <span class="muted">(aucune cochée : toutes)</span></legend>
+      @for (r of data.routes; track r.id) {
+        <label class="checkbox">
+          <input type="checkbox" [checked]="routeIds().has(r.id)" (change)="toggle('routeIds', r.id, $any($event.target).checked)" />
+          {{ r.name }}
+        </label>
+      }
+    </fieldset>
+  }
+
+  @if (data.categories.length) {
+    <fieldset class="choices">
+      <legend>Catégories de sièges <span class="muted">(aucune cochée : toutes)</span></legend>
+      @for (c of data.categories; track c.id) {
+        <label class="checkbox">
+          <input type="checkbox" [checked]="categoryCodes().has(c.code)" (change)="toggle('categoryCodes', c.code, $any($event.target).checked)" />
+          {{ c.name }}
+        </label>
+      }
+    </fieldset>
+  }
+
+  @if (data.mode === 'edit') {
+    <label class="checkbox"><input type="checkbox" formControlName="is_active" /> Code actif</label>
+  }
+
+  @if (error(); as e) {
+    <p class="alert alert--danger" role="alert">{{ e }}</p>
+  }
+  <div class="form-actions">
+    <button type="button" class="btn" (click)="ref.close()">Annuler</button>
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">
+      {{ saving() ? 'Enregistrement…' : data.mode === 'batch' ? 'Générer' : 'Enregistrer' }}
+    </button>
+  </div>
+</form>

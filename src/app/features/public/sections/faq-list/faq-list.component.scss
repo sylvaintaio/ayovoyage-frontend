@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+.group {
+  margin: var(--bv-space-5) 0 var(--bv-space-3);
+}
+
+.faq {
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-surface);
+  overflow: hidden;
+}
+
+details {
+  border-bottom: 1px solid var(--bv-line);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &[open] summary bv-icon {
+    transform: rotate(180deg);
+  }
+}
+
+summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-4) var(--bv-space-5);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  bv-icon {
+    color: var(--bv-primary);
+    transition: transform 0.2s;
+  }
+}
+
+p {
+  margin: 0;
+  padding: 0 var(--bv-space-5) var(--bv-space-4);
+  color: var(--bv-ink-muted);
+}

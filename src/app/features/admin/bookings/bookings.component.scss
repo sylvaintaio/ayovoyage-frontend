@@ -1,0 +1,16 @@
+@use 'mixins' as *;
+
+.filters {
+  display: grid;
+  gap: var(--bv-space-3);
+  margin-bottom: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: 2fr 1fr auto;
+    align-items: end;
+  }
+}
+
+.more {
+  margin-top: var(--bv-space-4);
+}

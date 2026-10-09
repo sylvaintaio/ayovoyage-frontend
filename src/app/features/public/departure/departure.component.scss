@@ -1,0 +1,120 @@
+@use 'mixins' as *;
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--bv-space-4);
+  margin-bottom: var(--bv-space-4);
+
+  h1 {
+    margin-bottom: var(--bv-space-1);
+  }
+
+  &__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bv-space-1);
+
+    @include from($bp-md) {
+      text-align: right;
+    }
+  }
+}
+
+.trip::first-letter {
+  text-transform: uppercase;
+}
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-lg) {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: start;
+  }
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-3);
+
+  @include from($bp-lg) {
+    position: sticky;
+    top: calc(var(--bv-header-h) + var(--bv-space-4));
+  }
+
+  h2 {
+    margin: var(--bv-space-2) 0 0;
+  }
+}
+
+.mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-2);
+}
+
+.auto {
+  margin-top: var(--bv-space-4);
+}
+
+.together {
+  align-self: end;
+  min-height: 44px;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: var(--bv-space-3);
+  border-top: 1px solid var(--bv-line);
+
+  strong {
+    font-size: var(--bv-text-xl);
+    color: var(--bv-primary);
+  }
+}
+
+.promo {
+  &__row {
+    display: flex;
+    gap: var(--bv-space-2);
+
+    .input {
+      flex: 1;
+      text-transform: uppercase;
+    }
+  }
+
+  &__ok {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bv-space-2);
+    margin: 0;
+    padding: var(--bv-space-2) var(--bv-space-3);
+    border-left: 4px solid var(--bv-success);
+    background: var(--bv-success-soft);
+    color: var(--bv-success);
+    font-size: var(--bv-text-sm);
+  }
+}
+
+.discount-line {
+  display: flex;
+  justify-content: space-between;
+  color: var(--bv-success);
+  font-size: var(--bv-text-sm);
+  font-weight: 600;
+}
+
+.early-bird {
+  margin: 0 0 var(--bv-space-4);
+  padding: var(--bv-space-3) var(--bv-space-4);
+  border-left: 6px solid var(--bv-accent);
+  background: var(--bv-accent-soft);
+}

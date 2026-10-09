@@ -1,0 +1,52 @@
+@use 'mixins' as *;
+
+// Chiffres clés : grands chiffres condensés, séparés par des filets verticaux.
+.stats {
+  padding-block: var(--bv-space-5);
+  background: var(--bv-surface);
+  border-bottom: 1px solid var(--bv-line);
+
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    @include from($bp-md) {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    li {
+      padding: var(--bv-space-2) var(--bv-space-4);
+      border-left: 1px solid var(--bv-line);
+
+      // Début de chaque rangée : pas de filet (2 colonnes sur téléphone).
+      @include until($bp-md) {
+        &:nth-child(odd) {
+          border-left: 0;
+          padding-left: 0;
+        }
+      }
+
+      @include from($bp-md) {
+        &:first-child {
+          border-left: 0;
+          padding-left: 0;
+        }
+      }
+    }
+  }
+
+  strong {
+    display: block;
+    font-size: var(--bv-text-4xl);
+    font-weight: 750;
+    font-stretch: var(--bv-stretch-board);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--bv-primary);
+  }
+
+  span {
+    font-size: var(--bv-text-sm);
+    color: var(--bv-ink-muted);
+  }
+}

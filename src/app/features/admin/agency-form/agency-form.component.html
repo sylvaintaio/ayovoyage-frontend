@@ -1,0 +1,92 @@
+<a routerLink="/admin/agences" class="small">← Agences</a>
+<h1>{{ id() ? "Modifier l'agence" : 'Nouvelle agence' }}</h1>
+
+<form class="stack" [formGroup]="form" (ngSubmit)="save()">
+  <section class="card stack-sm" aria-labelledby="t-id">
+    <h2 id="t-id" class="card__title">Identification</h2>
+    <div class="grid grid-2">
+      <div class="field">
+        <label for="af-name">Nom de l'agence</label>
+        <input id="af-name" class="input" formControlName="name" placeholder="Cotonou — Jonquet" />
+      </div>
+      <div class="field">
+        <label for="af-city">Ville</label>
+        <select id="af-city" class="select" formControlName="city_id">
+          <option value="" disabled>Choisir</option>
+          @for (c of cities(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+        @if (auth.hasRole('company_admin')) {
+          <div class="cluster add-city">
+            <input class="input" aria-label="Nouvelle ville" placeholder="Ville absente ?" [value]="newCity()" (input)="newCity.set($any($event.target).value)" />
+            <button type="button" class="btn btn--sm" (click)="addCity()">Ajouter</button>
+          </div>
+        }
+      </div>
+      <div class="field">
+        <label for="af-address">Adresse</label>
+        <input id="af-address" class="input" formControlName="address" />
+      </div>
+      <div class="field">
+        <label for="af-landmark">Point de repère</label>
+        <input id="af-landmark" class="input" formControlName="landmark" placeholder="Face à la pharmacie…" />
+      </div>
+      <div class="field">
+        <label for="af-lat">Latitude</label>
+        <input id="af-lat" class="input" type="number" step="0.000001" formControlName="latitude" />
+      </div>
+      <div class="field">
+        <label for="af-lng">Longitude</label>
+        <input id="af-lng" class="input" type="number" step="0.000001" formControlName="longitude" />
+        <span class="field__hint">Permet le bouton « Itinéraire » de la page publique.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card stack-sm" aria-labelledby="t-contact">
+    <h2 id="t-contact" class="card__title">Contact et services</h2>
+    <div class="grid grid-3">
+      <div class="field"><label for="af-phone">Téléphone</label><input id="af-phone" class="input" type="tel" formControlName="phone" /></div>
+      <div class="field"><label for="af-wa">WhatsApp</label><input id="af-wa" class="input" type="tel" formControlName="whatsapp" /></div>
+      <div class="field"><label for="af-email">E-mail</label><input id="af-email" class="input" type="email" formControlName="email" /></div>
+    </div>
+    <fieldset class="cluster services" formGroupName="services">
+      <legend class="field__label">Services proposés</legend>
+      @for (s of serviceList; track s[0]) {
+        <label class="checkbox"><input type="checkbox" [formControlName]="s[0]" /> {{ s[1] }}</label>
+      }
+    </fieldset>
+  </section>
+
+  <section class="card" aria-labelledby="t-hours">
+    <h2 id="t-hours" class="card__title">Horaires d'ouverture</h2>
+    <div class="hours" formArrayName="hours">
+      @for (h of hours.controls; track $index; let i = $index) {
+        <div class="hours__row" [formGroupName]="i">
+          <label class="checkbox"><input type="checkbox" formControlName="open_flag" /> {{ dayLabels[h.value.day] }}</label>
+          <input class="input" type="time" formControlName="open" [attr.aria-label]="'Ouverture ' + dayLabels[h.value.day]" />
+          <input class="input" type="time" formControlName="close" [attr.aria-label]="'Fermeture ' + dayLabels[h.value.day]" />
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="card stack-sm" aria-labelledby="t-more">
+    <h2 id="t-more" class="card__title">Informations aux voyageurs</h2>
+    <div class="field">
+      <label for="af-instr">Consignes</label>
+      <textarea id="af-instr" class="textarea" formControlName="instructions"></textarea>
+    </div>
+    <div class="field">
+      <label for="af-photos">Photos (une adresse par ligne)</label>
+      <textarea id="af-photos" class="textarea" formControlName="photos"></textarea>
+    </div>
+    <label class="checkbox"><input type="checkbox" formControlName="is_active" /> Agence ouverte et visible sur le site</label>
+  </section>
+
+  <div class="form-actions">
+    <a class="btn" routerLink="/admin/agences">Annuler</a>
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+  </div>
+</form>

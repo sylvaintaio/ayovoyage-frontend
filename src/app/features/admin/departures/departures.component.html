@@ -1,0 +1,71 @@
+<div class="spread head">
+  <h1>Départs</h1>
+  @if (canPlan) {
+    <button type="button" class="btn btn--primary" (click)="create()">Programmer un départ</button>
+  }
+</div>
+
+<form class="card filters" (ngSubmit)="load()" aria-label="Filtres">
+  <div class="field">
+    <label for="dp-from">Du</label>
+    <input id="dp-from" class="input" type="date" name="from" [ngModel]="from()" (ngModelChange)="from.set($event)" />
+  </div>
+  <div class="field">
+    <label for="dp-to">Au</label>
+    <input id="dp-to" class="input" type="date" name="to" [ngModel]="to()" (ngModelChange)="to.set($event)" />
+  </div>
+  @if (routes().length) {
+    <div class="field">
+      <label for="dp-route">Ligne</label>
+      <select id="dp-route" class="select" name="route" [ngModel]="routeId()" (ngModelChange)="routeId.set($event)">
+        <option value="">Toutes</option>
+        @for (r of routes(); track r.id) {
+          <option [value]="r.id">{{ r.name }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div class="field">
+    <label for="dp-status">Statut</label>
+    <select id="dp-status" class="select" name="status" [ngModel]="status()" (ngModelChange)="status.set($event)">
+      <option value="">Tous</option>
+      <option value="scheduled">Programmé</option>
+      <option value="boarding">Embarquement</option>
+      <option value="departed">Parti</option>
+      <option value="arrived">Arrivé</option>
+      <option value="cancelled">Annulé</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn--primary">Filtrer</button>
+</form>
+
+<bv-state [loading]="loading()" [error]="error()" [empty]="departures().length === 0" emptyText="Aucun départ sur cette période." (retry)="load()">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Départ</th>
+          <th scope="col">Ligne</th>
+          <th scope="col">Bus</th>
+          <th scope="col">Tarif</th>
+          <th scope="col">Vendus</th>
+          <th scope="col">Embarqués</th>
+          <th scope="col">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (d of departures(); track d.id) {
+          <tr>
+            <td class="nowrap"><a [routerLink]="['/admin/departs', d.id]">{{ d.departure_at | date: 'EEE dd/MM HH:mm' }}</a></td>
+            <td>{{ d.route_name }}</td>
+            <td class="nowrap">{{ d.plate_number }}</td>
+            <td class="nowrap">{{ d.base_price | money }}</td>
+            <td>{{ d.sold_seats }} / {{ d.seat_count }}</td>
+            <td>{{ d.boarded_seats }}</td>
+            <td><bv-status-badge [status]="d.status" domain="departure" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</bv-state>

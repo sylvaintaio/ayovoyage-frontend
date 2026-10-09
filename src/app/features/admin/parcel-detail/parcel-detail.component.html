@@ -1,0 +1,339 @@
+<bv-state [loading]="loading()" [error]="error()" (retry)="load(id())">
+  @if (parcel(); as p) {
+    <div class="page">
+      <a routerLink="/admin/colis" class="small">← Colis</a>
+      <header class="head">
+        <div>
+          <h1 class="mono">{{ p.tracking_number }}</h1>
+          <p class="muted">
+            {{ p.origin_city }} → {{ p.destination_city }} · déposé le
+            {{ p.created_at | date: 'd MMMM à HH:mm' }}
+          </p>
+        </div>
+        <div class="cluster">
+          <bv-status-badge [status]="p.status" domain="parcel" />
+          <a class="btn btn--sm" [href]="label()" target="_blank" rel="noopener"
+            ><bv-icon name="printer" [size]="16" /> Étiquette{{ p.pieces > 1 ? 's' : '' }}</a
+          >
+          <a
+            class="btn btn--sm btn--ghost"
+            routerLink="/admin/reclamations/nouvelle"
+            [queryParams]="{ colis: p.tracking_number }"
+            ><bv-icon name="alert" [size]="16" /> Signaler</a
+          >
+        </div>
+      </header>
+
+      @if (nouveau()) {
+        <div class="alert alert--success spread">
+          <span
+            >Envoi enregistré. Imprimez
+            {{ p.pieces > 1 ? 'les ' + p.pieces + ' étiquettes' : 'l’étiquette' }} et collez-la sur
+            le colis.</span
+          >
+          <a class="btn btn--sm btn--primary" [href]="label()" target="_blank" rel="noopener"
+            >Imprimer</a
+          >
+        </div>
+      }
+
+      <!-- Action selon l'étape -->
+      @switch (p.status) {
+        @case ('accepted') {
+          <ng-container *ngTemplateOutlet="assignTpl" />
+        }
+        @case ('arrived') {
+          <p class="alert alert--warning">
+            En correspondance à {{ p.current_agency_name }} : à réaffecter vers
+            {{ p.destination_agency_name }}.
+          </p>
+          <ng-container *ngTemplateOutlet="assignTpl" />
+        }
+        @case ('assigned') {
+          <section class="card action">
+            <div>
+              <p class="strong">Prévu sur le départ {{ p.departure_route }}</p>
+              <p class="small muted">
+                {{ p.departure_at | date: 'EEEE d MMMM à HH:mm' }} — à charger au moment de
+                l’embarquement.
+              </p>
+            </div>
+            <div class="cluster">
+              <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="load_()">
+                Marquer chargé
+              </button>
+              <button type="button" class="btn btn--ghost" [disabled]="busy()" (click)="unassign()">
+                Retirer du départ
+              </button>
+            </div>
+          </section>
+        }
+        @case ('loaded') {
+          <section class="card action">
+            <div>
+              <p class="strong">Chargé dans le bus — {{ p.departure_route }}</p>
+              <p class="small muted">Passera « en route » au départ du bus.</p>
+            </div>
+            <button type="button" class="btn btn--ghost" [disabled]="busy()" (click)="unassign()">
+              Décharger et retirer du départ
+            </button>
+          </section>
+        }
+        @case ('in_transit') {
+          <section class="card action">
+            <div>
+              <p class="strong">En route — {{ p.departure_route }}</p>
+              <p class="small muted">
+                Réceptionnez-le à l’arrivée si le départ n’a pas encore été déclaré arrivé.
+              </p>
+            </div>
+            <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="receive()">
+              Réceptionner dans mon agence
+            </button>
+          </section>
+        }
+        @case ('ready') {
+          <section class="card stack-sm deliver" aria-labelledby="t-deliver">
+            <div class="spread">
+              <h2 id="t-deliver" class="card__title">Remettre le colis</h2>
+              <button
+                type="button"
+                class="btn btn--sm btn--ghost"
+                [disabled]="busy()"
+                (click)="resend()"
+              >
+                Renvoyer le code
+              </button>
+            </div>
+            <p class="small muted">
+              À {{ p.current_agency_name }}. Code envoyé à {{ p.recipient_phone }}
+              @if (p.pickup_code_sent_at) {
+                le {{ p.pickup_code_sent_at | date: 'd MMM à HH:mm' }}
+              }
+              .
+            </p>
+            @if (!withoutCode()) {
+              <div class="field">
+                <label for="pd-code">Code de retrait (6 chiffres)</label>
+                <input
+                  id="pd-code"
+                  class="input code"
+                  inputmode="numeric"
+                  maxlength="6"
+                  autocomplete="off"
+                  [ngModel]="code()"
+                  (ngModelChange)="code.set($event)"
+                />
+                <button type="button" class="link" (click)="withoutCode.set(true)">
+                  Le destinataire n’a pas le code
+                </button>
+              </div>
+            } @else {
+              <div class="field">
+                <label for="pd-id">Pièce d’identité contrôlée</label>
+                <input
+                  id="pd-id"
+                  class="input"
+                  placeholder="Ex. CNI n° 1234567890"
+                  [ngModel]="identity()"
+                  (ngModelChange)="identity.set($event)"
+                />
+                <span class="field__hint"
+                  >Vérifiez que le nom correspond au destinataire. Cette remise sans code est
+                  journalisée.</span
+                >
+                <button type="button" class="link" (click)="withoutCode.set(false)">
+                  Saisir le code
+                </button>
+              </div>
+            }
+            <div class="field">
+              <label for="pd-by">Remis à</label>
+              <input
+                id="pd-by"
+                class="input"
+                [ngModel]="receivedBy()"
+                (ngModelChange)="receivedBy.set($event)"
+              />
+            </div>
+            <div class="field">
+              <span class="label">Signature du destinataire</span>
+              <bv-signature-pad [(value)]="signature" />
+            </div>
+            @if (amountDue()) {
+              <label class="checkbox due">
+                <input
+                  type="checkbox"
+                  [ngModel]="cashCollected()"
+                  (ngModelChange)="cashCollected.set($event)"
+                />
+                <span
+                  >Port dû : j’ai encaissé <strong>{{ amountDue() | money }}</strong> en
+                  espèces</span
+                >
+              </label>
+            }
+            <button
+              type="button"
+              class="btn btn--primary btn--lg"
+              [disabled]="busy() || !deliverReady()"
+              (click)="deliver()"
+            >
+              Remettre le colis
+            </button>
+          </section>
+        }
+        @case ('delivered') {
+          <section class="card action delivered">
+            <div>
+              <p class="strong">
+                Remis à {{ p.delivered_to_name }} le {{ p.delivered_at | date: 'd MMMM à HH:mm' }}
+              </p>
+              <p class="small muted">
+                {{
+                  p.delivery_proof === 'otp'
+                    ? 'Avec le code de retrait'
+                    : 'Sans code, pièce d’identité contrôlée'
+                }}
+              </p>
+            </div>
+            @if (p.signature) {
+              <img class="sig" [src]="p.signature" alt="Signature du destinataire" />
+            }
+          </section>
+        }
+      }
+
+      <ng-template #assignTpl>
+        <section class="card stack-sm" aria-labelledby="t-assign">
+          <h2 id="t-assign" class="card__title">Affecter à un départ</h2>
+          @if (options().length) {
+            <ul class="list-plain options">
+              @for (o of visibleOptions(); track o.id) {
+                <li>
+                  <label class="option" [class.option--on]="departureId() === o.id">
+                    <input
+                      type="radio"
+                      name="dep"
+                      [value]="o.id"
+                      [checked]="departureId() === o.id"
+                      (change)="departureId.set(o.id)"
+                    />
+                    <span class="option__time">{{ o.departure_at | date: 'EEE d, HH:mm' }}</span>
+                    <span class="option__route">{{ o.route_name }}</span>
+                    @if (o.is_direct) {
+                      <span class="badge badge--success">Direct</span>
+                    } @else {
+                      <span class="badge">Correspondance via {{ o.to_agency_name }}</span>
+                    }
+                    <span class="small muted">{{ o.parcels_count }} colis</span>
+                  </label>
+                </li>
+              }
+            </ul>
+            @if (hiddenCount() > 0) {
+              <button type="button" class="link" (click)="showAll.set(true)">
+                Afficher {{ hiddenCount() }} autre{{ hiddenCount() > 1 ? 's' : '' }} départ{{
+                  hiddenCount() > 1 ? 's' : ''
+                }}
+              </button>
+            }
+            @if (!hasDirect()) {
+              <p class="small muted">
+                Aucun départ direct vers {{ p.destination_agency_name }} : le colis passera par une
+                agence de correspondance.
+              </p>
+            }
+            <div class="cluster">
+              <button
+                type="button"
+                class="btn btn--primary"
+                [disabled]="busy() || !departureId()"
+                (click)="assign()"
+              >
+                Affecter
+              </button>
+              @if (p.status === 'accepted' && canManage) {
+                <button type="button" class="btn btn--ghost" [disabled]="busy()" (click)="cancel()">
+                  Annuler l’envoi
+                </button>
+              }
+              <button
+                type="button"
+                class="btn btn--ghost"
+                [disabled]="busy()"
+                (click)="returnToSender()"
+              >
+                Rendre à l’expéditeur
+              </button>
+            </div>
+          } @else {
+            <p class="small muted">
+              Aucun départ dans les 7 prochains jours depuis {{ p.current_agency_name }}. Programmez
+              un départ ou vérifiez les lignes.
+            </p>
+          }
+        </section>
+      </ng-template>
+
+      <div class="grid-info">
+        <section class="card stack-sm">
+          <h2 class="card__title">Expéditeur</h2>
+          <p class="strong">{{ p.sender_name }}</p>
+          <p class="small">
+            <a [href]="'tel:' + p.sender_phone">{{ p.sender_phone }}</a>
+            @if (p.sender_email) {
+              · {{ p.sender_email }}
+            }
+          </p>
+          <p class="small muted">Dépôt : {{ p.origin_agency_name }}</p>
+        </section>
+        <section class="card stack-sm">
+          <h2 class="card__title">Destinataire</h2>
+          <p class="strong">{{ p.recipient_name }}</p>
+          <p class="small">
+            <a [href]="'tel:' + p.recipient_phone">{{ p.recipient_phone }}</a>
+            @if (p.recipient_email) {
+              · {{ p.recipient_email }}
+            }
+          </p>
+          <p class="small muted">Retrait : {{ p.destination_agency_name }}</p>
+        </section>
+        <section class="card stack-sm">
+          <h2 class="card__title">Contenu</h2>
+          <p class="strong">{{ categories[p.category] }} — {{ p.description }}</p>
+          <p class="small">
+            {{ p.pieces }} pièce{{ p.pieces > 1 ? 's' : '' }} · {{ p.weight_kg }} kg
+            @if (p.declared_value) {
+              · valeur {{ p.declared_value | money }}
+            }
+          </p>
+          @if (p.photo) {
+            <img class="photo" [src]="p.photo" alt="Photo du colis au dépôt" />
+          }
+        </section>
+        <section class="card stack-sm">
+          <h2 class="card__title">Paiement</h2>
+          <p class="strong">{{ p.price | money }}</p>
+          <p class="small">
+            {{
+              p.paid
+                ? p.payer === 'sender'
+                  ? 'Payé au dépôt'
+                  : 'Payé au retrait'
+                : 'Port dû : à encaisser au retrait'
+            }}
+          </p>
+          @if (invoices().length > 0) {
+            <bv-invoice-list [invoices]="invoices()" scope="admin" />
+          }
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="t-history">
+        <h2 id="t-history" class="card__title">Historique</h2>
+        <bv-timeline [items]="timeline()" />
+      </section>
+    </div>
+  }
+</bv-state>

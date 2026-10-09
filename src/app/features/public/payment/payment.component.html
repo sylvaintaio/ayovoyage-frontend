@@ -1,0 +1,129 @@
+<bv-booking-steps [current]="2" />
+<div class="container page narrow">
+  <bv-state [loading]="loading()" [error]="error()" (retry)="load(id())">
+    @if (booking(); as b) {
+      <h1>Paiement</h1>
+
+      @if (expired()) {
+        <div class="alert alert--warning stack-sm">
+          <strong>Le délai de paiement est dépassé.</strong>
+          <span>Vos sièges ont été libérés. Vous pouvez refaire une réservation.</span>
+          <a class="btn btn--sm" [routerLink]="['/departs', b.departure.id]">Revenir au départ</a>
+        </div>
+      } @else if (b.payment_mode === 'agency') {
+        <p class="alert alert--info">
+          Réservation à payer en agence avant le <strong>{{ b.pay_by | date: 'EEEE d MMMM à HH:mm' }}</strong>.
+          Vous pouvez aussi la régler en ligne maintenant.
+        </p>
+      } @else {
+        <p class="alert alert--info">
+          Sièges réservés pour vous pendant encore
+          <bv-countdown [until]="b.expires_at" (expired)="expired.set(true)" />.
+        </p>
+      }
+
+      <section class="card stack-sm" aria-labelledby="recap">
+        <h2 id="recap" class="card__title">Récapitulatif — {{ b.reference }}</h2>
+        <p class="strong">{{ b.departure.origin_city }} → {{ b.departure.destination_city }}</p>
+        <p class="muted small cap">{{ b.departure.departure_at | date: 'EEEE d MMMM, HH:mm' }} · {{ b.departure.origin_agency_name }}</p>
+        <table class="table">
+          <tbody>
+            @for (s of b.seats; track s.seat_id) {
+              <tr>
+                <td>Siège {{ s.seat_label }} <span class="badge">{{ s.category_name }}</span></td>
+                <td>{{ s.passenger_name }}</td>
+                <td class="text-right">{{ s.total_price | money }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <dl class="dl totals">
+          @if (b.early_bird_amount > 0) {
+            <dt>Tarif réservez tôt</dt>
+            <dd>− {{ b.early_bird_amount | money }}</dd>
+          }
+          @if (b.discount_amount - b.early_bird_amount > 0) {
+            <dt>Réduction fidélité</dt>
+            <dd>− {{ b.discount_amount - b.early_bird_amount | money }}</dd>
+          }
+          @if (b.promo_amount > 0) {
+            <dt>Code promo {{ b.promo_code }}</dt>
+            <dd>− {{ b.promo_amount | money }}</dd>
+          }
+          @if (b.referral_amount > 0) {
+            <dt>Offre de bienvenue (parrainage)</dt>
+            <dd>− {{ b.referral_amount | money }}</dd>
+          }
+          @if (b.loyalty_points_used > 0) {
+            <dt>{{ b.loyalty_points_used }} points utilisés</dt>
+            <dd>− {{ b.loyalty_points_amount | money }}</dd>
+          }
+          <dt>Total à payer</dt>
+          <dd class="grand">{{ b.total_amount | money }}</dd>
+        </dl>
+      </section>
+
+      @if (!expired()) {
+        <form class="card stack" (ngSubmit)="pay()" aria-labelledby="moyen">
+          <h2 id="moyen" class="card__title">Moyen de paiement</h2>
+          <fieldset class="options">
+            <legend class="sr-only">Fournisseur</legend>
+            @for (p of providers(); track p.code) {
+              <label class="option" [class.option--active]="provider() === p.code">
+                <input type="radio" name="provider" [value]="p.code" [ngModel]="provider()" (ngModelChange)="provider.set($event)" />
+                {{ p.label }}
+              </label>
+            }
+          </fieldset>
+          <div class="grid grid-2">
+            <div class="field">
+              <label for="pay-method">Méthode</label>
+              <select id="pay-method" class="select" name="method" [ngModel]="method()" (ngModelChange)="method.set($event)">
+                @for (m of methods(); track m) {
+                  <option [value]="m">{{ m === 'card' ? 'Carte bancaire' : 'Mobile Money' }}</option>
+                }
+              </select>
+            </div>
+            @if (method() === 'mobile_money') {
+              <div class="field">
+                <label for="pay-phone">Numéro Mobile Money</label>
+                <input id="pay-phone" class="input" type="tel" name="phone" [ngModel]="payerPhone()" (ngModelChange)="payerPhone.set($event)" />
+              </div>
+            }
+          </div>
+          <button type="submit" class="btn btn--primary btn--block" [disabled]="paying() || !provider()">
+            {{ paying() ? 'Redirection…' : 'Payer ' }}{{ paying() ? '' : (b.total_amount | money) }}
+          </button>
+          <p class="field__hint">Vous serez redirigé vers la page sécurisée du prestataire de paiement.</p>
+        </form>
+
+        @if (offer(); as o) {
+          <section class="card stack-sm later" aria-labelledby="later">
+            <h2 id="later" class="card__title">Ou payez plus tard en agence</h2>
+            @if (o.available) {
+              <p>
+                Vos places restent bloquées jusqu'au <strong>{{ o.pay_by | date: 'EEEE d MMMM à HH:mm' }}</strong>.
+                Réglez {{ o.amount | money }} en espèces ou Mobile Money au guichet, en donnant la référence <strong>{{ b.reference }}</strong>.
+              </p>
+              @if (o.agencies.length) {
+                <ul class="agencies">
+                  @for (a of o.agencies; track a.id) {
+                    <li>
+                      <strong>{{ agencyLabel(a) }}</strong>@if (a.address) {<span class="muted">, {{ a.address }}</span>}
+                    </li>
+                  }
+                </ul>
+              }
+              <p class="field__hint">Sans paiement à temps, les places sont libérées automatiquement. Vous recevrez un rappel avant l'échéance.</p>
+              <button type="button" class="btn btn--brand btn--block" [disabled]="choosing()" (click)="payLater()">
+                {{ choosing() ? 'Enregistrement…' : 'Je paierai en agence' }}
+              </button>
+            } @else {
+              <p class="muted small">{{ o.reason }}</p>
+            }
+          </section>
+        }
+      }
+    }
+  </bv-state>
+</div>

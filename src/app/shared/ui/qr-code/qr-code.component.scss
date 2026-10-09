@@ -1,0 +1,14 @@
+:host {
+  display: inline-block;
+}
+
+img,
+.placeholder {
+  display: block;
+  border-radius: var(--bv-radius-sm);
+  background: #fff;
+}
+
+.placeholder {
+  background: var(--bv-surface-alt);
+}

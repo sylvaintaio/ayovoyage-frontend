@@ -1,0 +1,38 @@
+<bv-state [loading]="loading()" [error]="error()">
+  @if (booking(); as b) {
+    <a [routerLink]="['/compte/reservations', b.id]" class="small">← Réservation {{ b.reference }}</a>
+    <h2>Signaler un problème</h2>
+    <p class="muted">{{ b.departure.origin_city }} → {{ b.departure.destination_city }} · {{ b.departure.company_name }}</p>
+
+    <form class="card stack-sm box" (ngSubmit)="send()" novalidate>
+      <div class="field">
+        <label for="in-about">Concerne</label>
+        <select id="in-about" class="select" name="about" [ngModel]="tag()" (ngModelChange)="setTag($event)">
+          <option value="">Le voyage</option>
+          @for (bg of bags(); track bg.id) {
+            <option [value]="bg.tag_number">Bagage {{ bg.tag_number }} — {{ bg.passenger_name }}{{ bg.description ? ', ' + bg.description : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="in-cat">Problème</label>
+        <select id="in-cat" class="select" name="cat" [ngModel]="category()" (ngModelChange)="category.set($event)">
+          @for (o of options(); track o[0]) {
+            <option [value]="o[0]">{{ o[1] }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="in-desc">Décrivez la situation</label>
+        <textarea id="in-desc" class="textarea" rows="4" name="desc" [ngModel]="description()" (ngModelChange)="description.set($event)"></textarea>
+      </div>
+      <div class="field">
+        <span class="strong small">Photos (facultatif)</span>
+        <bv-photo-picker [(photos)]="photos" />
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="sending() || description().trim().length < 10">Envoyer</button>
+      </div>
+    </form>
+  }
+</bv-state>

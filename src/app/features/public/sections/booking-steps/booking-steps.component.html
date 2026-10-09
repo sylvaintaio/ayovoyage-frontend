@@ -1,0 +1,14 @@
+<div class="band">
+  <ol class="container steps" aria-label="Étapes de la réservation">
+    @for (label of steps; track label; let i = $index) {
+      <li
+        [class.done]="i + 1 < current()"
+        [class.current]="i + 1 === current()"
+        [attr.aria-current]="i + 1 === current() ? 'step' : null"
+      >
+        <span class="dot">{{ i + 1 < current() ? '✓' : i + 1 }}</span>
+        <span class="label">{{ label }}</span>
+      </li>
+    }
+  </ol>
+</div>

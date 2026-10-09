@@ -1,0 +1,144 @@
+<div class="spread head">
+  <h1>Caisse</h1>
+  <div class="filters">
+    @if (chooseAgency) {
+      <div class="field">
+        <label for="ca-agency">Agence</label>
+        <select id="ca-agency" class="select" [ngModel]="agencyId()" (ngModelChange)="agencyId.set($event); load()">
+          @for (a of agencies(); track a.id) {
+            <option [value]="a.id">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field">
+      <label for="ca-date">Journée</label>
+      <input id="ca-date" class="input" type="date" [max]="today" [ngModel]="date()" (ngModelChange)="date.set($event); load()" />
+    </div>
+  </div>
+</div>
+
+<bv-state [loading]="loading()" [error]="error()" (retry)="load()">
+  @if (summary(); as s) {
+    <div class="kpis">
+      <div class="card kpi">
+        <span class="kpi__label">Encaissé en espèces</span>
+        <strong class="kpi__value">{{ s.cash_in | money }}</strong>
+        <span class="kpi__sub">{{ s.sales_count }} encaissement{{ s.sales_count > 1 ? 's' : '' }}</span>
+      </div>
+      <div class="card kpi">
+        <span class="kpi__label">Remboursé en espèces</span>
+        <strong class="kpi__value">{{ s.cash_out ? '−' : '' }}{{ s.cash_out | money }}</strong>
+        <span class="kpi__sub">{{ s.refunds_count }} remboursement{{ s.refunds_count > 1 ? 's' : '' }}</span>
+      </div>
+      <div class="card kpi kpi--main">
+        <span class="kpi__label">Attendu en caisse</span>
+        <strong class="kpi__value">{{ s.expected_cash | money }}</strong>
+        <span class="kpi__sub">hors fonds de caisse</span>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="card stack-sm" aria-labelledby="t-cashiers">
+        <h2 id="t-cashiers" class="card__title">Par caissier</h2>
+        @if (s.by_cashier.length) {
+          <table class="table">
+            <thead>
+              <tr><th scope="col">Caissier</th><th scope="col" class="text-right">Encaissements</th><th scope="col" class="text-right">Montant</th></tr>
+            </thead>
+            <tbody>
+              @for (c of s.by_cashier; track c.staff_id) {
+                <tr><td>{{ c.full_name }}</td><td class="text-right">{{ c.sales_count }}</td><td class="text-right strong">{{ c.amount | money }}</td></tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="muted small">Aucun encaissement en espèces ce jour-là.</p>
+        }
+      </section>
+
+      @if (s.closure; as c) {
+        <section class="card stack-sm closed" aria-labelledby="t-closure">
+          <div class="spread">
+            <h2 id="t-closure" class="card__title">Caisse clôturée</h2>
+            <span class="badge" [class.badge--success]="c.difference === 0" [class.badge--warning]="c.difference !== 0">
+              {{ c.difference === 0 ? 'Sans écart' : 'Écart' }}
+            </span>
+          </div>
+          <dl class="dl">
+            <dt>Compté</dt>
+            <dd>{{ c.counted_cash | money }}</dd>
+            <dt>Attendu</dt>
+            <dd>{{ c.expected_cash | money }}</dd>
+            <dt>Écart</dt>
+            <dd [class.neg]="c.difference < 0" [class.pos]="c.difference > 0">{{ c.difference > 0 ? '+' : c.difference < 0 ? '−' : '' }}{{ (c.difference < 0 ? -c.difference : c.difference) | money }}</dd>
+            @if (c.note) {
+              <dt>Commentaire</dt>
+              <dd>{{ c.note }}</dd>
+            }
+            <dt>Par</dt>
+            <dd>{{ c.closed_by }}, le {{ c.closed_at | date: 'd MMM à HH:mm' }}</dd>
+          </dl>
+        </section>
+      } @else if (canClose) {
+        <form class="card stack-sm" (ngSubmit)="close()" aria-labelledby="t-close" novalidate>
+          <h2 id="t-close" class="card__title">Clôturer la journée</h2>
+          <p class="small muted">Comptez les espèces de la caisse (sans le fonds de caisse) et saisissez le total.</p>
+          <div class="field">
+            <label for="ca-counted">Espèces comptées (F CFA)</label>
+            <input id="ca-counted" class="input input--lg" type="number" min="0" step="25" inputmode="numeric" [ngModel]="counted()" (ngModelChange)="counted.set($event === '' || $event === null ? null : +$event)" name="counted" />
+          </div>
+          @if (difference(); as d) {
+            <p class="diff" [class.neg]="d < 0" [class.pos]="d > 0">
+              {{ d < 0 ? 'Manquant' : 'Excédent' }} : {{ (d < 0 ? -d : d) | money }}
+            </p>
+          } @else if (counted() !== null) {
+            <p class="diff ok">Aucun écart</p>
+          }
+          <div class="field">
+            <label for="ca-note">Commentaire {{ difference() ? '(obligatoire en cas d’écart)' : '(facultatif)' }}</label>
+            <textarea id="ca-note" class="textarea" rows="2" [ngModel]="note()" (ngModelChange)="note.set($event)" name="note"></textarea>
+          </div>
+          <button type="submit" class="btn btn--primary" [disabled]="saving() || counted() === null">Clôturer la caisse</button>
+          <p class="small muted">Une seule clôture par jour et par agence ; elle ne peut plus être modifiée.</p>
+        </form>
+      }
+    </div>
+
+    <section class="card stack-sm" aria-labelledby="t-history">
+      <h2 id="t-history" class="card__title">Dernières clôtures</h2>
+      @if (history().length) {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Journée</th>
+                @if (chooseAgency) { <th scope="col">Agence</th> }
+                <th scope="col" class="text-right">Attendu</th>
+                <th scope="col" class="text-right">Compté</th>
+                <th scope="col" class="text-right">Écart</th>
+                <th scope="col">Par</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of history(); track h.id) {
+                <tr>
+                  <td class="nowrap">{{ h.business_date | date: 'EEE d MMM y' }}</td>
+                  @if (chooseAgency) { <td>{{ h.agency_name }}</td> }
+                  <td class="text-right">{{ h.expected_cash | money }}</td>
+                  <td class="text-right">{{ h.counted_cash | money }}</td>
+                  <td class="text-right strong" [class.neg]="h.difference < 0" [class.pos]="h.difference > 0" [attr.title]="h.note || null">
+                    {{ h.difference > 0 ? '+' : h.difference < 0 ? '−' : '' }}{{ (h.difference < 0 ? -h.difference : h.difference) | money }}
+                  </td>
+                  <td class="small">{{ h.closed_by }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="muted small">Aucune clôture enregistrée.</p>
+      }
+    </section>
+  }
+</bv-state>

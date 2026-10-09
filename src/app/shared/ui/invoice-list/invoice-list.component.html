@@ -1,0 +1,33 @@
+<ul class="invoices">
+  @for (inv of items(); track inv.id) {
+    <li class="invoice">
+      <div class="info">
+        <span class="strong">{{ inv.kind === 'credit_note' ? 'Avoir' : 'Facture' }} {{ inv.number }}</span>
+        <span class="muted small">
+          {{ inv.issued_at | date: 'dd/MM/yyyy HH:mm' }} · {{ inv.payment_method }}
+          @if (inv.emecef_status === 'certified') { · <span class="certified">normalisée DGI</span> }
+        </span>
+        @if (emailLabel(inv); as label) {
+          <span class="small email" [class.email--failed]="inv.email_status === 'failed'">
+            {{ label }}@if (inv.emailed_at) {<span>, le {{ inv.emailed_at | date: 'dd/MM à HH:mm' }}</span>}
+          </span>
+        }
+      </div>
+      <span class="amount" [class.negative]="inv.kind === 'credit_note'">
+        {{ inv.kind === 'credit_note' ? '−' : '' }}{{ inv.total_amount | money: inv.currency }}
+      </span>
+      <div class="actions">
+        @if (scope() === 'admin') {
+          <a class="btn btn--sm" [href]="pdf(inv)" target="_blank" rel="noopener">A4</a>
+          <a class="btn btn--sm btn--ghost" [href]="pdf(inv, 'ticket')" target="_blank" rel="noopener">Ticket</a>
+          <button type="button" class="btn btn--sm btn--ghost" (click)="email(inv)">E-mail</button>
+        } @else {
+          <a class="btn btn--sm" [href]="pdf(inv)" download>PDF</a>
+          <button type="button" class="btn btn--sm btn--ghost" [disabled]="sending() === inv.id" (click)="email(inv)">
+            {{ sending() === inv.id ? 'Envoi…' : 'Par e-mail' }}
+          </button>
+        }
+      </div>
+    </li>
+  }
+</ul>

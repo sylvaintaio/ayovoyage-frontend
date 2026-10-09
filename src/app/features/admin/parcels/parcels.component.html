@@ -1,0 +1,70 @@
+<div class="spread head">
+  <h1>Colis</h1>
+  <a class="btn btn--primary" routerLink="/admin/colis/nouveau">Nouvel envoi</a>
+</div>
+
+<form class="card scan" (ngSubmit)="open()" role="search">
+  <bv-icon name="scan" [size]="22" />
+  <label for="pc-scan" class="sr-only">Scanner ou saisir un numéro de colis</label>
+  <input id="pc-scan" class="input" name="scan" autocomplete="off" placeholder="Scanner l’étiquette ou saisir le numéro (CL…)" [ngModel]="scan()" (ngModelChange)="scan.set($event)" />
+  <button type="submit" class="btn">Ouvrir</button>
+</form>
+
+<form class="card filters" (ngSubmit)="load(true)" role="search">
+  <div class="field">
+    <label for="pc-q">Recherche</label>
+    <input id="pc-q" class="input" name="q" placeholder="Numéro, nom ou téléphone" [ngModel]="q()" (ngModelChange)="q.set($event)" />
+  </div>
+  <div class="field">
+    <label for="pc-status">Statut</label>
+    <select id="pc-status" class="select" name="status" [ngModel]="status()" (ngModelChange)="status.set($event); load(true)">
+      <option value="">Tous</option>
+      <option value="accepted">Déposés (à affecter)</option>
+      <option value="assigned">Affectés</option>
+      <option value="loaded">Chargés</option>
+      <option value="in_transit">En route</option>
+      <option value="arrived">En correspondance</option>
+      <option value="ready">À retirer</option>
+      <option value="delivered">Remis</option>
+      <option value="returned">Rendus</option>
+      <option value="cancelled">Annulés</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn--primary">Rechercher</button>
+</form>
+
+<bv-state [loading]="loading()" [error]="error()" [empty]="parcels().length === 0" emptyIcon="parcel" emptyTitle="Aucun colis" emptyText="Aucun colis ne correspond à la recherche." (retry)="load(true)">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Numéro</th><th scope="col">Expéditeur → destinataire</th><th scope="col">Trajet</th>
+          <th scope="col">Colis</th><th scope="col">Paiement</th><th scope="col">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of parcels(); track p.id) {
+          <tr>
+            <td class="nowrap">
+              <a [routerLink]="['/admin/colis', p.id]" class="strong mono">{{ p.tracking_number }}</a><br />
+              <span class="muted small">{{ p.created_at | date: 'd MMM, HH:mm' }}</span>
+            </td>
+            <td>{{ p.sender_name }} → {{ p.recipient_name }}<br /><span class="muted small">{{ p.recipient_phone }}</span></td>
+            <td class="small">{{ p.origin_agency_name }} → {{ p.destination_agency_name }}
+              @if (p.current_agency_name) { <br /><span class="muted">Actuellement : {{ p.current_agency_name }}</span> }
+            </td>
+            <td class="small nowrap">{{ p.pieces }} pièce{{ p.pieces > 1 ? 's' : '' }} · {{ p.weight_kg }} kg</td>
+            <td class="nowrap small">
+              {{ p.price | money }}<br />
+              @if (p.paid) { <span class="muted">Payé</span> } @else { <span class="due">Port dû</span> }
+            </td>
+            <td><bv-status-badge [status]="p.status" domain="parcel" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (hasMore()) {
+    <button type="button" class="btn more" (click)="load()">Afficher plus</button>
+  }
+</bv-state>

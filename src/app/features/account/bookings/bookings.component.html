@@ -1,0 +1,31 @@
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="bookings().length === 0"
+  emptyIcon="ticket"
+  emptyTitle="Aucune réservation pour le moment"
+  emptyText="Choisissez un trajet et votre siège : votre réservation apparaîtra ici."
+  (retry)="load(true)"
+>
+  <a emptyAction class="btn btn--primary" routerLink="/">Réserver un voyage</a>
+  <ul class="list-plain stack">
+    @for (b of bookings(); track b.id) {
+      <li>
+        <a class="card row" [routerLink]="['/compte/reservations', b.id]">
+          <div>
+            <p class="strong">{{ b.route_name }}</p>
+            <p class="muted small cap">{{ b.departure_at | date: 'EEEE d MMMM yyyy, HH:mm' }} · {{ b.company_name }}</p>
+            <p class="muted small">Réf. {{ b.reference }}</p>
+          </div>
+          <div class="right">
+            <bv-status-badge [status]="b.status" domain="booking" />
+            <span class="strong">{{ b.total_amount | money }}</span>
+          </div>
+        </a>
+      </li>
+    }
+  </ul>
+  @if (hasMore()) {
+    <button type="button" class="btn more" (click)="load()">Afficher plus</button>
+  }
+</bv-state>

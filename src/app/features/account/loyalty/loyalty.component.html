@@ -1,0 +1,83 @@
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="accounts().length === 0"
+  emptyIcon="star"
+  emptyTitle="Votre premier voyage vous rapportera des points"
+  emptyText="Les points sont crédités après l’embarquement, y compris pour les billets achetés en agence."
+  (retry)="load()"
+>
+  <div class="grid grid-2">
+    @for (a of accounts(); track a.company_id) {
+      <article class="card account">
+        <div class="spread">
+          <h2 class="card__title">{{ a.company_name }}</h2>
+          <span class="badge badge--success tier">{{ a.tier_name || 'Membre' }}</span>
+        </div>
+        <p class="points"><strong>{{ a.points_balance }}</strong> points <span class="muted small">≈ {{ a.points_value | money }}</span></p>
+
+        @if (a.next_tier; as next) {
+          <div class="progress" role="progressbar" [attr.aria-valuenow]="a.trips_12m" aria-valuemin="0" [attr.aria-valuemax]="next.min_trips"
+            [attr.aria-label]="'Progression vers le niveau ' + next.name">
+            <span [style.width.%]="progress(a)"></span>
+          </div>
+          <p class="small muted">
+            {{ a.trips_12m }} {{ a.trips_12m > 1 ? 'voyages' : 'voyage' }} sur 12 mois · encore {{ a.trips_to_next_tier }} pour le niveau <strong>{{ next.name }}</strong>
+            @if (next.discount_percent) { (−{{ next.discount_percent }} % sur vos billets) }
+          </p>
+        } @else {
+          <p class="small muted">{{ a.trips_12m }} {{ a.trips_12m > 1 ? 'voyages' : 'voyage' }} sur 12 mois · niveau maximal atteint</p>
+        }
+
+        @if (a.perks.length) {
+          <ul class="perks small">
+            @for (p of a.perks; track p) {
+              <li>{{ p }}</li>
+            }
+          </ul>
+        }
+        <button type="button" class="btn btn--sm" (click)="showDetail(a.company_id)">Historique et niveaux</button>
+      </article>
+    }
+  </div>
+
+  @if (detail(); as d) {
+    <section class="card detail" aria-labelledby="titre-historique">
+      <h2 id="titre-historique" class="card__title">{{ d.company_name }} — niveaux et historique</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th scope="col">Niveau</th><th scope="col">Voyages / 12 mois</th><th scope="col">Réduction</th><th scope="col">Avantages</th></tr>
+          </thead>
+          <tbody>
+            @for (t of d.tiers; track t.code) {
+              <tr [class.current]="t.code === d.tier_code">
+                <td class="strong">{{ t.name }}</td>
+                <td>{{ t.min_trips }}+</td>
+                <td>{{ t.discount_percent ? '−' + t.discount_percent + ' %' : '—' }}</td>
+                <td>{{ t.perks.join(' · ') }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <h3>Derniers mouvements</h3>
+      <ul class="list-plain history">
+        @for (e of d.history; track $index) {
+          <li class="spread">
+            <span>
+              <span class="badge">{{ entryLabels[e.entry_type] ?? e.entry_type }}</span>
+              <span class="small">{{ e.description }}</span>
+            </span>
+            <span class="small">
+              <strong [class.plus]="e.points > 0" [class.minus]="e.points < 0">{{ e.points > 0 ? '+' : '' }}{{ e.points }}</strong>
+              <span class="muted"> · {{ e.created_at | date: 'dd/MM/yyyy' }}</span>
+            </span>
+          </li>
+        } @empty {
+          <li class="muted small">Aucun mouvement.</li>
+        }
+      </ul>
+    </section>
+  }
+</bv-state>

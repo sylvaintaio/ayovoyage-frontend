@@ -1,0 +1,40 @@
+.methods {
+  display: grid;
+  gap: var(--bv-space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: var(--bv-space-2);
+    font-size: var(--bv-text-sm);
+    font-weight: 600;
+  }
+}
+
+.method {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-3);
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+
+  input {
+    accent-color: var(--bv-primary);
+  }
+
+  span {
+    display: grid;
+  }
+
+  small {
+    color: var(--bv-ink-muted);
+  }
+
+  &.on {
+    border-color: var(--bv-primary);
+    background: var(--bv-primary-soft);
+  }
+}

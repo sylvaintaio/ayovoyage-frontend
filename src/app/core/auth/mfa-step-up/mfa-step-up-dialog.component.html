@@ -1,0 +1,36 @@
+<div class="bv-dialog" role="dialog" aria-labelledby="mfa-title" aria-describedby="mfa-text">
+  <span class="icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+  </span>
+  @if (enabled() === false) {
+    <h2 id="mfa-title">Activez la double authentification</h2>
+    <p id="mfa-text" class="muted">Cette action est protégée. Activez d’abord la double authentification sur votre compte : cela prend deux minutes.</p>
+    <div class="form-actions">
+      <button type="button" class="btn" (click)="ref.close(false)">Plus tard</button>
+      <button type="button" class="btn btn--primary" (click)="goToSecurity()">Activer maintenant</button>
+    </div>
+  } @else {
+    <h2 id="mfa-title">Confirmez votre identité</h2>
+    <p id="mfa-text" class="muted">Action sensible : saisissez le code affiché dans votre application d’authentification. Il ne vous sera pas redemandé pendant 15 minutes.</p>
+    <form class="form" (ngSubmit)="confirm()" novalidate>
+      @if (useRecovery()) {
+        <div class="field">
+          <label for="mfa-recovery">Code de secours</label>
+          <input id="mfa-recovery" class="input mono" autocomplete="off" placeholder="XXXX-XXXX" [value]="recovery()" (input)="recovery.set($any($event.target).value)" />
+        </div>
+      } @else {
+        <bv-otp-input [(value)]="code" [disabled]="busy()" [invalid]="!!error()" label="Code de l’application" (completed)="confirm($event)" />
+      }
+      @if (error()) {
+        <p class="alert alert--danger" role="alert">{{ error() }}</p>
+      }
+      <button type="button" class="link" (click)="useRecovery.set(!useRecovery()); error.set(null)">
+        {{ useRecovery() ? 'Utiliser le code de l’application' : 'Utiliser un code de secours' }}
+      </button>
+      <div class="form-actions">
+        <button type="button" class="btn" (click)="ref.close(false)">Annuler</button>
+        <button type="submit" class="btn btn--primary" [disabled]="busy()">Confirmer</button>
+      </div>
+    </form>
+  }
+</div>

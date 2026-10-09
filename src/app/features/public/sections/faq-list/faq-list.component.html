@@ -1,0 +1,16 @@
+@for (g of groups(); track g.category) {
+  @if (g.category) {
+    <h3 class="group">{{ g.category }}</h3>
+  }
+  <div class="faq">
+    @for (item of g.items; track item.q) {
+      <details>
+        <summary>
+          <span>{{ item.q }}</span>
+          <bv-icon name="chevron" [size]="20" />
+        </summary>
+        <p>{{ item.a }}</p>
+      </details>
+    }
+  </div>
+}

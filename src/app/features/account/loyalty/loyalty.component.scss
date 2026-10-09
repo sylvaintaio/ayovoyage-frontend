@@ -1,0 +1,53 @@
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-2);
+
+  p {
+    margin: 0;
+  }
+}
+
+.points strong {
+  font-size: var(--bv-text-2xl);
+  color: var(--bv-primary);
+}
+
+.progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bv-surface-alt);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--bv-accent);
+  }
+}
+
+.perks {
+  margin: 0;
+  padding-left: var(--bv-space-5);
+}
+
+.detail {
+  margin-top: var(--bv-space-5);
+}
+
+.current {
+  background: var(--bv-primary-soft);
+}
+
+.history li {
+  padding: var(--bv-space-2) 0;
+  border-bottom: 1px solid var(--bv-line);
+}
+
+.plus {
+  color: var(--bv-success);
+}
+
+.minus {
+  color: var(--bv-danger);
+}

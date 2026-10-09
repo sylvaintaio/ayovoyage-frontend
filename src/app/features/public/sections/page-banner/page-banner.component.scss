@@ -1,0 +1,37 @@
+@use 'mixins' as *;
+
+.banner {
+  padding: var(--bv-space-6) 0 var(--bv-space-7);
+  border-bottom: 6px solid var(--bv-accent);
+  background: var(--bv-night);
+  color: #fff;
+
+  h1 {
+    max-width: 820px;
+    font-size: var(--bv-text-3xl);
+
+    @include from($bp-md) {
+      font-size: var(--bv-text-4xl);
+    }
+  }
+
+  &__lead {
+    max-width: 720px;
+    font-size: var(--bv-text-lg);
+    color: var(--bv-night-ink);
+  }
+}
+
+.crumbs {
+  margin-bottom: var(--bv-space-4);
+  font-size: var(--bv-text-sm);
+  color: var(--bv-night-ink);
+
+  a {
+    color: #fff;
+  }
+}
+
+.sep {
+  margin-inline: var(--bv-space-2);
+}

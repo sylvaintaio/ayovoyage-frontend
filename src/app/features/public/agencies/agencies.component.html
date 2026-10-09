@@ -1,0 +1,59 @@
+<bv-page-banner
+  title="Nos agences"
+  lead="Billetterie, dépôt et retrait de colis, salons d'attente : trouvez l'agence la plus proche, ses horaires et ses prochains départs."
+/>
+<div class="container page stack">
+
+  <div class="card filters" role="search">
+    <div class="field">
+      <label for="ag-q">Rechercher</label>
+      <input id="ag-q" class="input" type="search" placeholder="Nom, quartier, adresse…" [ngModel]="query()" (ngModelChange)="query.set($event)" />
+    </div>
+    <div class="field">
+      <label for="ag-city">Ville</label>
+      <select id="ag-city" class="select" [ngModel]="city()" (ngModelChange)="city.set($event)">
+        <option value="">Toutes les villes</option>
+        @for (c of cities(); track c.id) {
+          <option [value]="c.slug">{{ c.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="ag-service">Service</label>
+      <select id="ag-service" class="select" [ngModel]="serviceFilter()" (ngModelChange)="serviceFilter.set($event)">
+        <option value="">Tous les services</option>
+        @for (s of services; track s[0]) {
+          <option [value]="s[0]">{{ s[1] }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <bv-state [loading]="loading()" [error]="error()" [empty]="filtered().length === 0" emptyText="Aucune agence ne correspond à votre recherche." (retry)="load()">
+    <p class="muted small" aria-live="polite">{{ filtered().length }} {{ filtered().length > 1 ? 'agences' : 'agence' }}</p>
+    <ul class="list-plain grid grid-2 grid-3">
+      @for (a of filtered(); track a.id) {
+        <li class="card agency">
+          <p class="muted small">{{ a.city_name }} · {{ a.company_name }}</p>
+          <h2 class="card__title"><a [routerLink]="['/agences', a.slug]">{{ a.name }}</a></h2>
+          <p class="small">{{ a.address }}@if (a.landmark) {<br /><span class="muted">{{ a.landmark }}</span>}</p>
+          <p class="small"><span class="muted">Aujourd'hui :</span> {{ todayHours(a.opening_hours) }}</p>
+          <div class="cluster services">
+            @for (s of a.services; track s) {
+              <span class="badge badge--success">{{ serviceLabels[s] ?? s }}</span>
+            }
+          </div>
+          <div class="cluster actions">
+            <a class="btn btn--sm btn--primary" [routerLink]="['/agences', a.slug]">Voir la fiche</a>
+            @if (a.phone) {
+              <a class="btn btn--sm" [href]="'tel:' + a.phone">Appeler</a>
+            }
+            @if (mapsUrl(a.latitude, a.longitude, a.name); as url) {
+              <a class="btn btn--sm btn--ghost" [href]="url" target="_blank" rel="noopener">Itinéraire</a>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  </bv-state>
+</div>

@@ -1,0 +1,14 @@
+@if (items().length) {
+  <section class="stats" aria-label="Chiffres clés">
+    <div class="container">
+      <ul class="list-plain stats__list">
+        @for (i of items(); track i.label) {
+          <li>
+            <strong>{{ i.value }}</strong>
+            <span>{{ i.label }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+}

@@ -1,0 +1,68 @@
+<bv-page-banner
+  title="Parlons de votre voyage"
+  lead="Une question, un voyage de groupe, un compte entreprise ou une réclamation : notre équipe vous répond."
+/>
+
+<section class="section">
+  <div class="container layout">
+    <div class="stack">
+      <a class="card channel" [href]="tel">
+        <span class="icon-tile"><bv-icon name="phone" /></span>
+        <span><strong>Téléphone</strong><br /><span class="muted">{{ company.phone }}</span></span>
+      </a>
+      @if (whatsapp) {
+        <a class="card channel" [href]="whatsapp" target="_blank" rel="noopener">
+          <span class="icon-tile"><bv-icon name="chat" /></span>
+          <span><strong>WhatsApp</strong><br /><span class="muted">Réponse rapide en journée</span></span>
+        </a>
+      }
+      <a class="card channel" [href]="'mailto:' + company.email">
+        <span class="icon-tile"><bv-icon name="mail" /></span>
+        <span><strong>E-mail</strong><br /><span class="muted">{{ company.email }}</span></span>
+      </a>
+      <div class="card channel">
+        <span class="icon-tile"><bv-icon name="clock" /></span>
+        <span><strong>Horaires</strong><br /><span class="muted">{{ company.hours }}</span><br /><span class="muted small">{{ company.address }}</span></span>
+      </div>
+      <a class="card channel channel--alert" routerLink="/compte/signaler">
+        <span class="icon-tile icon-tile--accent"><bv-icon name="alert" /></span>
+        <span><strong>Signaler un problème</strong><br /><span class="muted">Retard, bagage ou colis perdu, abîmé : ouvrez une réclamation suivie</span></span>
+      </a>
+      <a class="card channel" routerLink="/agences">
+        <span class="icon-tile icon-tile--accent"><bv-icon name="pin" /></span>
+        <span><strong>Nos agences</strong><br /><span class="muted">Adresses, horaires et téléphones de chaque agence</span></span>
+      </a>
+    </div>
+
+    <form class="card stack" [formGroup]="form" (ngSubmit)="send('whatsapp')" aria-labelledby="t-form">
+      <h2 id="t-form" class="card__title">Envoyer une demande</h2>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="ct-name">Nom</label>
+          <input id="ct-name" class="input" formControlName="name" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="ct-phone">Téléphone</label>
+          <input id="ct-phone" class="input" type="tel" formControlName="phone" autocomplete="tel" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="ct-subject">Objet</label>
+        <select id="ct-subject" class="select" formControlName="subject">
+          @for (s of subjects; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="ct-message">Votre message</label>
+        <textarea id="ct-message" class="textarea" formControlName="message" placeholder="Date, trajet, nombre de personnes…"></textarea>
+      </div>
+      <div class="cluster">
+        <button type="submit" class="btn btn--primary"><bv-icon name="chat" [size]="18" /> Envoyer sur WhatsApp</button>
+        <button type="button" class="btn" (click)="send('email')"><bv-icon name="mail" [size]="18" /> Envoyer par e-mail</button>
+      </div>
+      <p class="field__hint">Votre message s’ouvre dans WhatsApp ou votre messagerie, prêt à être envoyé.</p>
+    </form>
+  </div>
+</section>

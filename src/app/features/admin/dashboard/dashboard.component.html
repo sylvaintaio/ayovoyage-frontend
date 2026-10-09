@@ -1,0 +1,92 @@
+<div class="spread head">
+  <h1>Tableau de bord</h1>
+  <form class="cluster" (ngSubmit)="load()" aria-label="Période">
+    <button type="button" class="btn btn--sm" (click)="setPeriod(0)">Aujourd'hui</button>
+    <button type="button" class="btn btn--sm" (click)="setPeriod(7)">7 jours</button>
+    <button type="button" class="btn btn--sm" (click)="setPeriod(30)">30 jours</button>
+    <label class="sr-only" for="db-from">Du</label>
+    <input id="db-from" class="input date" type="date" name="from" [ngModel]="from()" (ngModelChange)="from.set($event)" />
+    <label class="sr-only" for="db-to">Au</label>
+    <input id="db-to" class="input date" type="date" name="to" [ngModel]="to()" (ngModelChange)="to.set($event)" />
+    <button type="submit" class="btn btn--sm btn--primary">Afficher</button>
+  </form>
+</div>
+
+<bv-state [loading]="loading()" [error]="error()" (retry)="load()">
+  @if (data(); as d) {
+    <div class="grid grid-2 grid-4">
+      <div class="card kpi">
+        <div class="kpi__label">Encaissements</div>
+        <div class="kpi__value">{{ d.revenue | money }}</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi__label">Billets vendus</div>
+        <div class="kpi__value">{{ d.tickets_sold }}</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi__label">Remplissage moyen</div>
+        <div class="kpi__value">{{ d.average_fill_rate | percent: '1.0-0' }}</div>
+      </div>
+      <a class="card kpi link" routerLink="/admin/remboursements">
+        <div class="kpi__label">Remboursements à traiter</div>
+        <div class="kpi__value" [class.alert-value]="d.pending_refunds > 0">{{ d.pending_refunds }}</div>
+        <div class="small muted">{{ d.cancellations }} annulation(s) · {{ d.refunds_amount | money }} remboursés</div>
+      </a>
+    </div>
+
+    <div class="grid grid-2 charts">
+      <section class="card" aria-labelledby="t-agences">
+        <h2 id="t-agences" class="card__title">Chiffre d'affaires par agence</h2>
+        <ul class="list-plain bars">
+          @for (a of d.by_agency; track a.agency_id) {
+            <li>
+              <div class="spread small"><span>{{ a.agency_name }}</span><strong>{{ a.revenue | money }}</strong></div>
+              <div class="bar"><span [style.width.%]="(a.revenue / maxAgencyRevenue()) * 100"></span></div>
+              <span class="muted small">{{ a.bookings }} réservation(s)</span>
+            </li>
+          } @empty {
+            <li class="muted small">Aucune vente sur la période.</li>
+          }
+        </ul>
+      </section>
+
+      <section class="card" aria-labelledby="t-cat">
+        <h2 id="t-cat" class="card__title">Sièges vendus par catégorie</h2>
+        <ul class="list-plain bars">
+          @for (c of d.by_category; track c.code) {
+            <li>
+              <div class="spread small"><span>{{ c.name }}</span><strong>{{ c.seats_sold }} · {{ c.revenue | money }}</strong></div>
+              <div class="bar bar--accent"><span [style.width.%]="(c.seats_sold / maxCategorySeats()) * 100"></span></div>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <section aria-labelledby="t-dep">
+      <h2 id="t-dep">Remplissage des départs</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th scope="col">Départ</th><th scope="col">Ligne</th><th scope="col">Vendus</th><th scope="col">Remplissage</th></tr>
+          </thead>
+          <tbody>
+            @for (f of d.departures; track f.departure_id) {
+              <tr>
+                <td class="nowrap"><a [routerLink]="['/admin/departs', f.departure_id]">{{ f.departure_at | date }}</a></td>
+                <td>{{ f.route_name }}</td>
+                <td>{{ f.sold_seats }} / {{ f.seat_count }}</td>
+                <td class="fill">
+                  <div class="bar"><span [style.width.%]="f.fill_rate * 100"></span></div>
+                  <span class="small">{{ f.fill_rate | percent: '1.0-0' }}</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="4" class="muted">Aucun départ sur la période.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</bv-state>

@@ -1,0 +1,50 @@
+<div class="bus" [style.--cols]="cols()">
+  <div class="bus__front" aria-hidden="true">Avant du bus</div>
+  <div class="grid" role="grid" aria-label="Plan des sièges">
+    @for (row of grid(); track $index) {
+      <div class="row" role="row">
+        @for (cell of row; track $index) {
+          @if (cell === null || cell.kind === 'empty' || cell.kind === 'aisle') {
+            <span class="cell cell--void" role="gridcell" aria-hidden="true"></span>
+          } @else if (cell.kind === 'seat') {
+            <span role="gridcell">
+              <button
+                type="button"
+                class="cell seat seat--{{ cell.state }}"
+                [class.seat--selected]="isSelected(cell)"
+                [style.--cat]="color(cell)"
+                [disabled]="!isClickable(cell)"
+                [attr.aria-pressed]="mode() === 'select' ? isSelected(cell) : null"
+                [attr.aria-label]="ariaLabel(cell)"
+                [title]="ariaLabel(cell)"
+                (click)="toggle(cell)"
+              >
+                {{ cell.seat_label }}
+              </button>
+            </span>
+          } @else {
+            <span class="cell cell--fixture" role="gridcell">
+              {{ cell.kind === 'driver' ? 'Chauffeur' : cell.kind === 'door' ? 'Porte' : 'WC' }}
+            </span>
+          }
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<ul class="legend list-plain" aria-label="Légende">
+  @for (c of categories(); track c.id) {
+    <li>
+      <span class="swatch" [style.--cat]="c.color"></span>
+      <strong>{{ c.name }}</strong>
+      <span class="muted">{{ c.price | money }}</span>
+      @if (mode() === 'select') {
+        <span class="muted small">· {{ c.available }} {{ c.available > 1 ? 'libres' : 'libre' }}</span>
+      }
+    </li>
+  }
+  <li><span class="swatch swatch--selected"></span>Sélectionné</li>
+  <li><span class="swatch swatch--taken"></span>Occupé</li>
+  <li><span class="swatch swatch--blocked"></span>Indisponible</li>
+</ul>

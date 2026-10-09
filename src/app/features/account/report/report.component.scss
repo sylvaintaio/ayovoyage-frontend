@@ -1,0 +1,110 @@
+@use 'mixins' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-4);
+  max-width: 760px;
+
+  header h2,
+  header p {
+    margin: 0 0 var(--bv-space-1);
+  }
+}
+
+.choices {
+  display: grid;
+  gap: var(--bv-space-3);
+
+  @include from($bp-md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-4);
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: var(--bv-primary);
+  }
+
+  &--on {
+    border-color: var(--bv-primary);
+    box-shadow: inset 0 0 0 1px var(--bv-primary);
+    background: var(--bv-primary-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bv-primary);
+    outline-offset: 2px;
+  }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+  width: 100%;
+  padding: var(--bv-space-3) var(--bv-space-4);
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius);
+  background: var(--bv-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--bv-primary);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-2);
+}
+
+.chip-btn {
+  padding: var(--bv-space-1) var(--bv-space-3);
+  border: 1px solid var(--bv-line);
+  border-radius: 999px;
+  background: var(--bv-surface);
+  color: var(--bv-ink-muted);
+  font: inherit;
+  font-size: var(--bv-text-xs);
+  cursor: pointer;
+
+  &.on {
+    border-color: var(--bv-primary);
+    background: var(--bv-primary-soft);
+    color: var(--bv-primary);
+    font-weight: 700;
+  }
+}
+
+.grid-2 {
+  display: grid;
+  gap: var(--bv-space-3);
+
+  @include from($bp-md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  text-transform: uppercase;
+}

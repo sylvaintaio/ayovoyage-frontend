@@ -1,0 +1,65 @@
+<h1>Sécurité du compte</h1>
+
+<bv-state [loading]="loading()" [error]="error()" (retry)="load()">
+  @if (status(); as s) {
+    <div class="layout">
+      <section class="card stack-sm" aria-labelledby="t-mfa">
+        <div class="head">
+          <h2 id="t-mfa" class="card__title">Double authentification</h2>
+          @if (s.enabled) {
+            <span class="badge badge--success">Activée</span>
+          } @else if (s.required) {
+            <span class="badge badge--warning">À activer</span>
+          }
+        </div>
+
+        @if (codes().length) {
+          <bv-recovery-codes [codes]="codes()" [account]="auth.me()?.staff?.email ?? ''" doneLabel="Terminé" (done)="codesSaved()" />
+        } @else if (s.enabled) {
+          <p class="muted">
+            Activée le {{ s.enabled_at | date: 'd MMMM y' }}. Un code de votre application vous est demandé à chaque connexion et avant les actions sensibles
+            (remboursements, paramètres, personnel, terminaux, fidélité).
+          </p>
+          <dl class="dl">
+            <dt>Codes de secours restants</dt>
+            <dd>
+              {{ s.recovery_codes_left }} sur 10
+              @if (s.recovery_codes_left <= 3) {
+                <span class="badge badge--warning">Pensez à en générer de nouveaux</span>
+              }
+            </dd>
+          </dl>
+          <div class="cluster">
+            <button type="button" class="btn" [disabled]="busy()" (click)="regenerate()">Générer de nouveaux codes de secours</button>
+          </div>
+          <p class="small muted">Nouveau téléphone ou téléphone perdu ? Demandez à un administrateur de réinitialiser votre double authentification.</p>
+        } @else if (!s.required) {
+          <p class="muted">Votre rôle utilise l’application Agent sur un terminal enregistré : la double authentification n’est pas demandée.</p>
+        } @else if (settingUp()) {
+          <bv-mfa-setup (activated)="activated($event)" />
+        } @else {
+          <p>
+            Protégez votre compte avec un code à 6 chiffres généré par votre téléphone, en plus du mot de passe. Même si votre mot de passe était volé,
+            personne ne pourrait se connecter sans votre téléphone.
+          </p>
+          @if (s.required_from) {
+            <p class="alert alert--warning">Obligatoire à partir du {{ s.required_from | date: 'd MMMM y à HH:mm' }}.</p>
+          }
+          <div class="cluster">
+            <button type="button" class="btn btn--primary" (click)="settingUp.set(true)">Activer maintenant</button>
+          </div>
+        }
+      </section>
+
+      <aside class="card stack-sm tips" aria-labelledby="t-tips">
+        <h2 id="t-tips" class="card__title">Bonnes pratiques</h2>
+        <ul>
+          <li>Ne communiquez jamais vos codes, même à un collègue ou au support.</li>
+          <li>Rangez vos codes de secours hors de votre téléphone (papier, coffre).</li>
+          <li>Déconnectez-vous des postes partagés, notamment au guichet.</li>
+          <li>Changement de téléphone : demandez la réinitialisation à un administrateur avant de vous séparer de l’ancien.</li>
+        </ul>
+      </aside>
+    </div>
+  }
+</bv-state>

@@ -1,0 +1,124 @@
+h1 {
+  margin-bottom: var(--bv-space-2);
+  font-size: var(--bv-text-3xl);
+}
+
+.intro {
+  margin-bottom: var(--bv-space-6);
+  color: var(--bv-ink-muted);
+}
+
+.steps {
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--bv-space-6);
+
+  span {
+    width: 28px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bv-line);
+    transition: background 0.3s;
+
+    &.on {
+      background: var(--bv-primary);
+    }
+  }
+}
+
+.form {
+  display: grid;
+  gap: var(--bv-space-5);
+}
+
+.input-group--error {
+  border-color: var(--bv-danger);
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bv-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.resend {
+  margin: 0;
+  text-align: center;
+  font-size: var(--bv-text-sm);
+  color: var(--bv-ink-muted);
+}
+
+.help a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgb(255 255 255 / 40%);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: var(--bv-space-5);
+  padding: 4px;
+  border-radius: var(--bv-radius);
+  background: var(--bv-surface-alt);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--bv-space-2);
+    height: var(--bv-control-sm);
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--bv-ink-muted);
+    font: inherit;
+    font-size: var(--bv-text-sm);
+    font-weight: 700;
+    cursor: pointer;
+
+    &.on {
+      background: var(--bv-surface);
+      color: var(--bv-ink);
+      box-shadow: var(--bv-shadow-sm);
+    }
+  }
+}
+
+.consent {
+  margin: 0;
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-xs);
+  line-height: 1.5;
+  text-align: center;
+}

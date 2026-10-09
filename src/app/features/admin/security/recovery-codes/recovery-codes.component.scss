@@ -1,0 +1,38 @@
+.box {
+  display: grid;
+  gap: var(--bv-space-4);
+}
+
+.lead {
+  margin: 0;
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-sm);
+  line-height: 1.55;
+
+  strong {
+    color: var(--bv-ink);
+  }
+}
+
+.codes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--bv-space-2) var(--bv-space-4);
+  margin: 0;
+  padding: var(--bv-space-4);
+  border: 1px dashed var(--bv-line);
+  border-radius: var(--bv-radius);
+  background: var(--bv-surface-alt);
+  list-style: none;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: var(--bv-text-md);
+  letter-spacing: 0.06em;
+  text-align: center;
+  user-select: all;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-2);
+}

@@ -1,0 +1,46 @@
+@use 'mixins' as *;
+
+.head {
+  align-items: center;
+  margin-bottom: var(--bv-space-4);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.scan {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-3);
+  margin-bottom: var(--bv-space-3);
+  color: var(--bv-primary);
+
+  .input {
+    flex: 1;
+  }
+}
+
+.filters {
+  display: grid;
+  gap: var(--bv-space-3);
+  margin-bottom: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: 2fr 1fr auto;
+    align-items: end;
+  }
+}
+
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+
+.due {
+  color: var(--bv-warning);
+  font-weight: 700;
+}
+
+.more {
+  margin-top: var(--bv-space-4);
+}

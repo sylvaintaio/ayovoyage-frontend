@@ -1,0 +1,57 @@
+<div class="container page narrow">
+  <bv-state [loading]="loading()" [error]="error()" (retry)="load(token())">
+    @if (invitation(); as inv) {
+      <span class="eyebrow">Votre avis</span>
+      @if (done()) {
+        <h1>Merci {{ inv.first_name }} !</h1>
+        @if ((rating() ?? 5) <= 2) {
+          <p class="lead">
+            Nous sommes désolés que votre voyage ne se soit pas bien passé. Notre service client a reçu votre avis
+            et vous recontactera rapidement.
+          </p>
+        } @else {
+          <p class="lead">Votre avis aide {{ inv.company_name }} à s’améliorer et guide les autres voyageurs.</p>
+        }
+        <a class="btn btn--primary" routerLink="/" fragment="reserver">Réserver un prochain voyage</a>
+      } @else if (inv.reviewed) {
+        <h1>Avis déjà donné</h1>
+        <p class="lead">Merci, vous avez déjà donné votre avis sur ce voyage.</p>
+      } @else if (inv.expired) {
+        <h1>Lien expiré</h1>
+        <p class="lead">Le délai pour donner votre avis sur ce voyage est passé.</p>
+      } @else {
+        <h1>Comment s’est passé votre voyage ?</h1>
+        <p class="trip">
+          <strong>{{ inv.origin_city }} → {{ inv.destination_city }}</strong>
+          · {{ inv.departure_at | date: 'EEEE d MMMM, HH:mm' }} · {{ inv.company_name }}
+        </p>
+
+        <form class="card stack" (ngSubmit)="send()">
+          <bv-star-rating label="Note globale" name="rating" size="lg" [(value)]="rating" />
+          <div class="details">
+            <bv-star-rating label="Ponctualité" name="punctuality" [(value)]="punctuality" />
+            <bv-star-rating label="Confort du bus" name="comfort" [(value)]="comfort" />
+            <bv-star-rating label="Accueil et équipage" name="staff" [(value)]="staff" />
+            <bv-star-rating label="Propreté" name="cleanliness" [(value)]="cleanliness" />
+          </div>
+          <div class="field">
+            <label for="rv-comment">Votre commentaire (facultatif)</label>
+            <textarea id="rv-comment" name="comment" class="textarea" rows="4" maxlength="1000"
+              placeholder="Ce qui vous a plu, ce que nous pouvons améliorer…"
+              [ngModel]="comment()" (ngModelChange)="comment.set($event)"></textarea>
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" name="consent" [ngModel]="consent()" (ngModelChange)="consent.set($event)" />
+            J’accepte que mon avis soit publié sur le site avec mon prénom ({{ inv.first_name }}) et ma ville de départ.
+          </label>
+          @if (sendError(); as e) {
+            <p class="alert alert--danger" role="alert">{{ e }}</p>
+          }
+          <button type="submit" class="btn btn--primary btn--lg btn--block" [disabled]="sending()">
+            {{ sending() ? 'Envoi…' : 'Envoyer mon avis' }}
+          </button>
+        </form>
+      }
+    }
+  </bv-state>
+</div>

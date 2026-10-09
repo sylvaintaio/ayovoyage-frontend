@@ -1,0 +1,10 @@
+<header class="banner">
+  <div class="container">
+    <nav class="crumbs" aria-label="Fil d'Ariane"><a routerLink="/">Accueil</a><span class="sep" aria-hidden="true">›</span>{{ title() }}</nav>
+    <h1>{{ title() }}</h1>
+    @if (lead()) {
+      <p class="banner__lead">{{ lead() }}</p>
+    }
+    <ng-content />
+  </div>
+</header>

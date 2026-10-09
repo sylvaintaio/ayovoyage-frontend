@@ -1,0 +1,61 @@
+<bv-booking-steps [current]="booking()?.status === 'confirmed' ? 3 : 2" />
+<div class="container page narrow stack">
+  @if (booking()?.status === 'confirmed') {
+    @let b = booking()!;
+    <div class="alert alert--success">
+      <h1>Réservation confirmée</h1>
+      <p>Référence <strong>{{ b.reference }}</strong>. Vos billets ont été envoyés par SMS{{ b.contact_email ? ' et par e-mail' : '' }}.</p>
+    </div>
+    <p class="muted">
+      {{ b.departure.origin_city }} → {{ b.departure.destination_city }}. Présentez votre QR code à l'embarquement, au moins 30 minutes avant le départ.
+    </p>
+    <div class="grid grid-2">
+      @for (t of b.tickets; track t.id) {
+        <article class="card ticket">
+          <bv-qr-code [value]="t.qr_payload" [size]="200" [label]="'QR code du billet de ' + t.passenger_name" />
+          <div>
+            <p class="strong">{{ t.passenger_name }}</p>
+            <p class="muted small">Siège {{ t.seat_label }} · {{ t.ticket_number }}</p>
+            <a class="btn btn--sm" [href]="'/v1/tickets/' + t.id + '/pdf' | apiUrl" download>Télécharger le PDF</a>
+          </div>
+        </article>
+      }
+    </div>
+    <a class="btn btn--primary" [routerLink]="['/compte/reservations', b.id]">Voir ma réservation</a>
+  } @else if (payment()?.status === 'failed' || payment()?.status === 'cancelled') {
+    <div class="alert alert--danger stack-sm">
+      <h1>Paiement non abouti</h1>
+      <p>Le paiement a été refusé ou annulé. Aucun montant n'a été débité.</p>
+      <a class="btn btn--sm" [routerLink]="['/reservation', id(), 'paiement']">Réessayer le paiement</a>
+    </div>
+  } @else if (payment()?.status === 'succeeded' && booking() && booking()?.status !== 'confirmed') {
+    <div class="alert alert--warning">
+      <h1>Paiement reçu après expiration</h1>
+      <p>Votre siège avait été libéré entre-temps. Un remboursement intégral a été créé automatiquement.</p>
+    </div>
+  } @else if (timedOut()) {
+    <div class="alert alert--warning stack-sm">
+      <h1>Confirmation en attente</h1>
+      <p>Le prestataire n'a pas encore confirmé votre paiement. Vous recevrez un SMS dès la confirmation.</p>
+      <a class="btn btn--sm" routerLink="/compte">Mes réservations</a>
+    </div>
+  } @else {
+    <div class="card waiting" role="status">
+      <span class="spinner" aria-hidden="true"></span>
+      <div>
+        <h1>Confirmation du paiement…</h1>
+        <p class="muted">Validez le paiement sur votre téléphone si nécessaire. Cette page se met à jour automatiquement.</p>
+      </div>
+    </div>
+    @if (payment()?.provider === 'mock') {
+      <div class="card stack-sm">
+        <p class="badge badge--warning">Environnement de développement</p>
+        <p>Paiement simulé de {{ payment()?.amount | money }} :</p>
+        <div class="cluster">
+          <button type="button" class="btn btn--primary" (click)="simulate('succeeded')">Simuler un paiement réussi</button>
+          <button type="button" class="btn" (click)="simulate('failed')">Simuler un échec</button>
+        </div>
+      </div>
+    }
+  }
+</div>

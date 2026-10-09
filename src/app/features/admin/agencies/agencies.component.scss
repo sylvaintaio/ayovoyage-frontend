@@ -1,0 +1,11 @@
+.head {
+  margin-bottom: var(--bv-space-4);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.badge + .badge {
+  margin-left: var(--bv-space-1);
+}

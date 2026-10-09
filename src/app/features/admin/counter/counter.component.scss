@@ -1,0 +1,72 @@
+@use 'mixins' as *;
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-lg) {
+    grid-template-columns: 260px minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+}
+
+.date {
+  width: auto;
+  min-height: 34px;
+  padding-block: 0;
+}
+
+.deps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-2);
+  margin-top: var(--bv-space-3);
+}
+
+.dep {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: var(--bv-space-3);
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-sm);
+  background: var(--bv-surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--bv-primary);
+  }
+
+  &--active {
+    border-color: var(--bv-primary);
+    background: var(--bv-primary-soft);
+  }
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: var(--bv-space-3);
+  border-top: 1px solid var(--bv-line);
+
+  strong {
+    font-size: var(--bv-text-xl);
+  }
+}
+
+.invoice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bv-space-2);
+  padding-top: var(--bv-space-2);
+  border-top: 1px solid var(--bv-line);
+
+  span {
+    flex-basis: 100%;
+  }
+}

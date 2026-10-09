@@ -1,0 +1,19 @@
+.upper {
+  text-transform: uppercase;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-2) var(--bv-space-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    width: 100%;
+    margin-bottom: var(--bv-space-2);
+    font-size: var(--bv-text-sm);
+    font-weight: 700;
+  }
+}

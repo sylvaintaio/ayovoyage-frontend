@@ -1,0 +1,21 @@
+<form class="bv-dialog stack" role="dialog" aria-labelledby="ie-title" (ngSubmit)="send()">
+  <h2 id="ie-title">Envoyer {{ invoice.kind === 'credit_note' ? 'l’avoir' : 'la facture' }} {{ invoice.number }}</h2>
+  <p class="muted small">Le PDF est joint à l’e-mail. L’envoi apparaît dans les messages du client.</p>
+  <div class="field">
+    <label for="ie-to">Destinataire</label>
+    <input id="ie-to" name="to" class="input" type="email" autocomplete="email" maxlength="254" required
+      [ngModel]="to()" (ngModelChange)="to.set($event)" />
+    @if (invoice.customer_email && to() !== invoice.customer_email) {
+      <span class="field__hint">Adresse du client : {{ invoice.customer_email }}</span>
+    } @else if (!invoice.customer_email) {
+      <span class="field__hint">Le client n’a pas laissé d’adresse : saisissez-en une (comptable de l’entreprise…).</span>
+    }
+  </div>
+  @if (error(); as e) {
+    <p class="alert alert--danger" role="alert">{{ e }}</p>
+  }
+  <div class="form-actions">
+    <button type="button" class="btn" (click)="ref.close()">Annuler</button>
+    <button type="submit" class="btn btn--primary" [disabled]="sending()">{{ sending() ? 'Envoi…' : 'Envoyer' }}</button>
+  </div>
+</form>

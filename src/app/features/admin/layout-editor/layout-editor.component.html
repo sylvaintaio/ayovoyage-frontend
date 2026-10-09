@@ -1,0 +1,144 @@
+<a routerLink="/admin/plans" class="small">← Plans de sièges</a>
+<div class="spread head">
+  <h1>{{ isNew() ? 'Nouveau plan' : name() }}</h1>
+  <div class="cluster">
+    @if (readOnly()) {
+      <span class="badge badge--warning">Utilisé par des départs : lecture seule</span>
+      <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save(true)">Dupliquer en nouvelle version</button>
+    } @else {
+      <button type="button" class="btn btn--primary" [disabled]="saving() || errors().length > 0" (click)="save()">Enregistrer</button>
+    }
+  </div>
+</div>
+
+@if (categories().length === 0) {
+  <p class="alert alert--info">Créez d'abord les <a routerLink="/admin/categories">catégories de sièges</a> (Standard, Premium, VIP…).</p>
+}
+
+<div class="layout">
+  <section class="card" aria-labelledby="t-grid">
+    <h2 id="t-grid" class="sr-only">Grille du plan</h2>
+    @if (!readOnly()) {
+      <div class="toolbar" role="toolbar" aria-label="Outils">
+        @for (t of tools; track t.id) {
+          <button type="button" class="btn btn--sm" [class.btn--primary]="tool() === t.id" [attr.aria-pressed]="tool() === t.id" (click)="tool.set(t.id)">{{ t.label }}</button>
+        }
+        @if (tool() === 'seat') {
+          <label class="sr-only" for="le-brush">Catégorie du pinceau</label>
+          <select id="le-brush" class="select brush" [ngModel]="brushCategory()" (ngModelChange)="brushCategory.set($event)">
+            @for (c of categories(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+          </select>
+        }
+      </div>
+      <p class="muted small">Choisissez un outil puis cliquez sur les cases. « Sélection » permet de régler un siège (numéro, supplément, attributs).</p>
+    }
+
+    <div class="bus" [style.--cols]="cols()">
+      @for (row of grid(); track $index) {
+        <div class="row">
+          <span class="row-index" aria-hidden="true">{{ $index + 1 }}</span>
+          @for (item of row; track item.c) {
+            <button
+              type="button"
+              class="cell {{ cellClass(item.cell) }}"
+              [class.cell--selected]="selectedKey() === item.r + ':' + item.c"
+              [style.--cat]="item.cell?.category_id ? colorById().get(item.cell!.category_id!) : null"
+              [attr.aria-label]="'Rangée ' + (item.r + 1) + ', colonne ' + (item.c + 1) + (item.cell ? ' : ' + item.cell.kind + ' ' + (item.cell.seat_label ?? '') : ' : vide')"
+              (click)="apply(item.r, item.c)"
+            >
+              @switch (item.cell?.kind) {
+                @case ('seat') { {{ item.cell.seat_label ?? '?' }} }
+                @case ('driver') { Ch. }
+                @case ('door') { Porte }
+                @case ('toilet') { WC }
+                @default { }
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <aside class="stack">
+    <section class="card stack-sm" aria-labelledby="t-general">
+      <h2 id="t-general" class="card__title">Plan</h2>
+      <div class="field">
+        <label for="le-name">Nom</label>
+        <input id="le-name" class="input" [ngModel]="name()" (ngModelChange)="name.set($event)" [disabled]="readOnly()" />
+      </div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="le-rows">Rangées</label>
+          <input id="le-rows" class="input" type="number" min="1" max="40" [ngModel]="rows()" (ngModelChange)="resize(+$event, cols())" [disabled]="readOnly()" />
+        </div>
+        <div class="field">
+          <label for="le-cols">Colonnes</label>
+          <input id="le-cols" class="input" type="number" min="1" max="8" [ngModel]="cols()" (ngModelChange)="resize(rows(), +$event)" [disabled]="readOnly()" />
+        </div>
+      </div>
+      <p class="strong">{{ seatCount() }} sièges</p>
+      <ul class="list-plain small stats">
+        @for (s of stats(); track s.name) {
+          <li><span class="swatch" [style.background]="s.color"></span>{{ s.name }} : {{ s.count }}</li>
+        }
+      </ul>
+      @if (!readOnly()) {
+        <button type="button" class="btn btn--sm" (click)="renumber()">Renuméroter automatiquement</button>
+      }
+      @for (e of errors().slice(0, 3); track e) {
+        <p class="field__error">{{ e }}</p>
+      }
+    </section>
+
+    @if (!readOnly()) {
+      <section class="card stack-sm" aria-labelledby="t-gen">
+        <h2 id="t-gen" class="card__title">Générer un autocar</h2>
+        <div class="grid grid-2">
+          <div class="field"><label for="le-gr">Rangées</label><input id="le-gr" class="input" type="number" min="2" max="40" [ngModel]="genRows()" (ngModelChange)="genRows.set(+$event)" /></div>
+          <div class="field">
+            <label for="le-cfg">Configuration</label>
+            <select id="le-cfg" class="select" [ngModel]="genLeft() + '+' + genRight()" (ngModelChange)="genLeft.set(+$event.split('+')[0]); genRight.set(+$event.split('+')[1])">
+              <option value="2+2">2 + 2</option>
+              <option value="2+1">2 + 1 (confort)</option>
+              <option value="1+1">1 + 1 (VIP)</option>
+              <option value="3+2">3 + 2</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" class="btn btn--sm" (click)="generate()">Générer (remplace le plan)</button>
+      </section>
+    }
+
+    @if (selected(); as s) {
+      @if (s.kind === 'seat') {
+        <section class="card stack-sm" aria-labelledby="t-seat">
+          <h2 id="t-seat" class="card__title">Siège {{ s.seat_label }}</h2>
+          <div class="field">
+            <label for="le-label">Numéro</label>
+            <input id="le-label" class="input" maxlength="6" [ngModel]="s.seat_label" (ngModelChange)="updateSelected({ seat_label: $event })" [disabled]="readOnly()" />
+          </div>
+          <div class="field">
+            <label for="le-cat">Catégorie</label>
+            <select id="le-cat" class="select" [ngModel]="s.category_id" (ngModelChange)="updateSelected({ category_id: $event })" [disabled]="readOnly()">
+              @for (c of categories(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+            </select>
+          </div>
+          <div class="field">
+            <label for="le-extra">Supplément propre (F CFA)</label>
+            <input id="le-extra" class="input" type="number" min="0" step="100" [ngModel]="s.extra_surcharge ?? 0" (ngModelChange)="updateSelected({ extra_surcharge: +$event })" [disabled]="readOnly()" />
+          </div>
+          <fieldset class="attrs">
+            <legend class="field__label">Attributs (meilleur siège disponible)</legend>
+            @for (a of attributes; track a.id) {
+              <label class="checkbox">
+                <input type="checkbox" [checked]="hasAttribute(a.id)" (change)="toggleAttribute(a.id, $any($event.target).checked)" [disabled]="readOnly()" />
+                {{ a.label }}
+              </label>
+            }
+          </fieldset>
+        </section>
+      }
+    }
+  </aside>
+</div>

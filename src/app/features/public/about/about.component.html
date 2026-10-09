@@ -1,0 +1,45 @@
+<bv-page-banner title="Qui sommes-nous" [lead]="about.title" />
+<bv-stats-band class="stats-tight" />
+
+<section class="section section--white" aria-labelledby="t-story">
+  <div class="container split">
+    <div>
+      <h2 id="t-story" class="section-title">Relier les villes, rapprocher les gens</h2>
+      @for (p of about.story; track $index) {
+        <p [class.lead]="$first">{{ p }}</p>
+      }
+    </div>
+    <bv-bus-illustration [companyName]="company.name" />
+  </div>
+</section>
+
+<section class="section section--night" aria-labelledby="t-mission">
+  <div class="container mission">
+    <h2 id="t-mission" class="section-title">« {{ about.mission }} »</h2>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="t-values">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="t-values" class="section-title">Ce qui nous guide chaque jour</h2>
+    </div>
+    <bv-card-grid [items]="about.values" [columns]="4" />
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="t-fleet">
+  <div class="container split">
+    <div>
+      <h2 id="t-fleet" class="section-title">Nos engagements</h2>
+      <ul class="check-list">
+        @for (c of about.commitments; track c) {
+          <li>{{ c }}</li>
+        }
+      </ul>
+    </div>
+    <bv-card-grid [items]="comfort" [columns]="2" />
+  </div>
+</section>
+
+<bv-cta-band title="Voyagez avec nous" text="Découvrez nos lignes et réservez votre siège en ligne." secondaryLabel="Nous contacter" />

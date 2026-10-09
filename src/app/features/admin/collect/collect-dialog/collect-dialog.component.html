@@ -1,0 +1,53 @@
+<form class="bv-dialog stack" role="dialog" aria-labelledby="co-title" (ngSubmit)="confirm()">
+  <h2 id="co-title">Encaisser {{ booking.reference }}</h2>
+  <dl class="dl">
+    <dt>Client</dt>
+    <dd>{{ booking.contact_name }} · {{ booking.contact_phone }}</dd>
+    <dt>Trajet</dt>
+    <dd>{{ booking.route_name }} — {{ booking.departure_at | date: 'EEE d MMM HH:mm' }}</dd>
+    <dt>Montant</dt>
+    <dd class="amount figures">{{ booking.total_amount | money }}</dd>
+  </dl>
+
+  <fieldset class="methods">
+    <legend>Mode de paiement</legend>
+    <label class="method" [class.on]="method() === 'cash'">
+      <input type="radio" name="method" value="cash" [checked]="method() === 'cash'" (change)="method.set('cash')" />
+      <span><strong>Espèces</strong><small>Comptées dans la caisse de l'agence</small></span>
+    </label>
+    <label class="method" [class.on]="method() === 'mobile_money'">
+      <input type="radio" name="method" value="mobile_money" [checked]="method() === 'mobile_money'" (change)="method.set('mobile_money')" />
+      <span><strong>Mobile Money</strong><small>Reçu sur le numéro marchand de l'agence</small></span>
+    </label>
+  </fieldset>
+
+  @if (method() === 'mobile_money') {
+    <div class="field">
+      <label for="co-ref">Référence de la transaction</label>
+      <input id="co-ref" name="reference" class="input mono" maxlength="60" autocomplete="off"
+        [ngModel]="reference()" (ngModelChange)="reference.set($event)" />
+      <span class="field__hint">Inscrite dans le SMS de confirmation reçu par l'agence.</span>
+    </div>
+  }
+
+  @if (needsAgency) {
+    <div class="field">
+      <label for="co-agency">Agence d'encaissement</label>
+      <select id="co-agency" name="agency" class="select" [ngModel]="agencyId()" (ngModelChange)="agencyId.set($event)">
+        @for (a of agencies(); track a.id) {
+          <option [value]="a.id">{{ a.name }}</option>
+        }
+      </select>
+    </div>
+  }
+
+  @if (error(); as e) {
+    <p class="alert alert--danger" role="alert">{{ e }}</p>
+  }
+  <div class="form-actions">
+    <button type="button" class="btn" (click)="ref.close()">Annuler</button>
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">
+      {{ saving() ? 'Encaissement…' : 'Encaisser ' + (booking.total_amount | money) }}
+    </button>
+  </div>
+</form>

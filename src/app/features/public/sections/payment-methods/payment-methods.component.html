@@ -1,0 +1,8 @@
+<div class="pay">
+  <span class="pay__label"><bv-icon name="shield" [size]="18" /> Paiement sécurisé</span>
+  <ul class="list-plain cluster">
+    @for (m of methods; track m) {
+      <li class="chip">{{ m }}</li>
+    }
+  </ul>
+</div>

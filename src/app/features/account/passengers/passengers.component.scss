@@ -1,0 +1,22 @@
+@use 'mixins' as *;
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+
+  p {
+    margin: 0;
+  }
+}

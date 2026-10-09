@@ -1,0 +1,72 @@
+<form class="bv-dialog stack" role="dialog" aria-labelledby="rd-title" [formGroup]="form" (ngSubmit)="save()">
+  <h2 id="rd-title">{{ data.rule ? 'Modifier le tarif' : 'Nouveau tarif « réservez tôt »' }}</h2>
+  <p class="muted small">
+    Les clients qui réservent assez tôt paient moins cher, dans la limite d'un nombre de places par départ.
+    Le prix réduit s'affiche barré dans les résultats de recherche.
+  </p>
+
+  <div class="field">
+    <label for="rd-label">Nom affiché</label>
+    <input id="rd-label" class="input" formControlName="label" maxlength="80" />
+  </div>
+  <div class="field">
+    <label for="rd-route">Ligne</label>
+    <select id="rd-route" class="select" formControlName="route_id">
+      <option value="">Toutes les lignes</option>
+      @for (r of data.routes; track r.id) {
+        <option [value]="r.id">{{ r.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="grid grid-2">
+    <div class="field">
+      <label for="rd-days">Réservé au moins (jours avant le départ)</label>
+      <input id="rd-days" class="input" type="number" formControlName="min_days_before" />
+    </div>
+    <div class="field">
+      <label for="rd-pct">Remise (%)</label>
+      <input id="rd-pct" class="input" type="number" formControlName="percent" />
+    </div>
+    <div class="field">
+      <label for="rd-quota">Places à ce tarif par départ</label>
+      <input id="rd-quota" class="input" type="number" formControlName="seat_quota" />
+    </div>
+    <div></div>
+    <div class="field">
+      <label for="rd-from">Départs à partir du</label>
+      <input id="rd-from" class="input" type="date" formControlName="valid_from" />
+    </div>
+    <div class="field">
+      <label for="rd-to">Jusqu'au</label>
+      <input id="rd-to" class="input" type="date" formControlName="valid_to" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="rd-ex">Jours de départ exclus (fêtes, forte affluence)</label>
+    <div class="ex-row">
+      <input id="rd-ex" class="input" type="date" [ngModel]="newDate()" (ngModelChange)="newDate.set($event)" [ngModelOptions]="{ standalone: true }" />
+      <button type="button" class="btn" [disabled]="!newDate()" (click)="addDate()">Ajouter</button>
+    </div>
+    @if (excluded().length) {
+      <ul class="dates list-plain">
+        @for (d of excluded(); track d) {
+          <li class="chip">
+            {{ d | date: 'EEE d MMM yyyy' }}
+            <button type="button" class="link" [attr.aria-label]="'Retirer le ' + d" (click)="removeDate(d)">×</button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <label class="checkbox"><input type="checkbox" formControlName="is_active" /> Tarif actif</label>
+
+  @if (error(); as e) {
+    <p class="alert alert--danger" role="alert">{{ e }}</p>
+  }
+  <div class="form-actions">
+    <button type="button" class="btn" (click)="ref.close()">Annuler</button>
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+  </div>
+</form>

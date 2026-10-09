@@ -1,0 +1,56 @@
+<bv-page-banner
+  title="Voyager, envoyer, se déplacer en groupe"
+  lead="Des solutions pour les voyageurs, les familles, les commerçants et les entreprises, partout où nous allons."
+/>
+
+<section class="section">
+  <div class="container">
+    <bv-card-grid [items]="services" [columns]="3" />
+  </div>
+</section>
+
+<section class="section section--white" id="classes" aria-labelledby="t-classes">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="t-classes" class="section-title">Standard, Premium ou VIP</h2>
+      <p class="lead">Chaque catégorie a sa couleur sur le plan du bus : vous voyez exactement où vous serez assis.</p>
+    </div>
+    <bv-offers />
+  </div>
+</section>
+
+<section class="section section--sand" aria-labelledby="t-comfort">
+  <div class="container split">
+    <div>
+      <h2 id="t-comfort" class="section-title">Confort et sécurité</h2>
+      <ul class="check-list">
+        @for (c of commitments; track c) {
+          <li>{{ c }}</li>
+        }
+      </ul>
+    </div>
+    <bv-card-grid [items]="comfort" [columns]="2" />
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="t-groups">
+  <div class="container split">
+    <div>
+      <h2 id="t-groups" class="section-title">Un voyage organisé pour votre groupe</h2>
+      <p class="lead">Mariages, funérailles, excursions, séminaires : réservez plusieurs sièges ou un bus entier, avec un interlocuteur dédié.</p>
+      <ul class="check-list">
+        <li>Devis rapide et tarifs de groupe</li>
+        <li>Facturation centralisée pour les entreprises</li>
+        <li>Départ depuis l’agence ou le lieu de votre choix (selon disponibilité)</li>
+      </ul>
+      <a class="btn btn--primary demand" routerLink="/contact">Demander un devis</a>
+    </div>
+    <div class="pay-box">
+      <h3>Payer simplement</h3>
+      <p class="muted">Mobile Money, carte bancaire ou espèces en agence. Les proches à l’étranger peuvent aussi payer votre billet en ligne par carte.</p>
+      <bv-payment-methods />
+    </div>
+  </div>
+</section>
+
+<bv-cta-band title="Envie de partir ?" text="Trouvez votre départ et choisissez votre siège en quelques clics." />

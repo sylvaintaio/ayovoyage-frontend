@@ -1,0 +1,96 @@
+@use 'mixins' as *;
+
+:host {
+  display: block;
+}
+
+.head {
+  margin-bottom: var(--bv-space-2);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--bv-space-3);
+  margin: var(--bv-space-4) 0;
+
+  .field {
+    margin: 0;
+  }
+
+  .search {
+    flex: 1 1 14rem;
+  }
+}
+
+.page {
+  display: grid;
+  gap: var(--bv-space-4);
+  justify-items: start;
+
+  > .table-wrap,
+  > .kpis {
+    width: 100%;
+  }
+}
+
+.kpis {
+  display: grid;
+  gap: var(--bv-space-3);
+
+  @include from($bp-md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.kpi {
+  display: grid;
+  gap: 2px;
+
+  &--main {
+    border-color: var(--bv-primary);
+    background: var(--bv-primary-soft);
+  }
+}
+
+.kpi__label {
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-sm);
+}
+
+.kpi__value {
+  font-size: var(--bv-text-xl);
+  font-weight: 800;
+}
+
+.kpi__sub {
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-xs);
+}
+
+.negative {
+  color: var(--bv-danger);
+}
+
+.badge {
+  margin-left: var(--bv-space-1);
+}
+
+td .btn + .btn {
+  margin-left: var(--bv-space-1);
+}
+
+.sent-mark {
+  color: var(--bv-success);
+  font-weight: 800;
+}
+
+.failed-mark {
+  color: var(--bv-danger);
+  font-weight: 800;
+}

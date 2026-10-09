@@ -1,0 +1,49 @@
+.invoices {
+  display: grid;
+  gap: var(--bv-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.invoice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bv-space-2) var(--bv-space-4);
+  padding: var(--bv-space-3);
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-sm);
+}
+
+.info {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: 2px;
+}
+
+.amount {
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.negative {
+    color: var(--bv-danger);
+  }
+}
+
+.certified {
+  color: var(--bv-success);
+}
+
+.actions {
+  display: flex;
+  gap: var(--bv-space-2);
+}
+
+.email {
+  color: var(--bv-ink-muted);
+
+  &--failed {
+    color: var(--bv-danger);
+  }
+}

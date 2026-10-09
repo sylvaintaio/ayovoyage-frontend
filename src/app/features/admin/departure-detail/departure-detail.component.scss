@@ -1,0 +1,65 @@
+@use 'mixins' as *;
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+  margin: var(--bv-space-3) 0 var(--bv-space-4);
+
+  h1 {
+    margin-bottom: var(--bv-space-1);
+  }
+}
+
+.cap::first-letter {
+  text-transform: uppercase;
+}
+
+.kpis {
+  margin-bottom: var(--bv-space-4);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-2);
+}
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-lg) {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+}
+
+.manifest li {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: var(--bv-space-2);
+  padding: var(--bv-space-2) 0;
+  border-bottom: 1px solid var(--bv-line);
+
+  &.done .seat-label {
+    background: var(--bv-success-soft);
+    color: var(--bv-success);
+  }
+
+  &.off {
+    opacity: 0.5;
+    text-decoration: line-through;
+  }
+}
+
+.seat-label {
+  border-radius: 4px;
+  background: var(--bv-surface-alt);
+  font-weight: 700;
+  font-size: var(--bv-text-xs);
+  text-align: center;
+  line-height: 1.8;
+}

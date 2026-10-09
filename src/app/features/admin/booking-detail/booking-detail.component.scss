@@ -1,0 +1,30 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-4);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+
+  h1 {
+    margin-bottom: var(--bv-space-1);
+  }
+}
+
+.cap::first-letter {
+  text-transform: uppercase;
+}
+
+.danger-zone {
+  border-color: var(--bv-danger);
+}
+
+.payments-title {
+  margin: var(--bv-space-5) 0 var(--bv-space-2);
+  font-size: var(--bv-text-md);
+}

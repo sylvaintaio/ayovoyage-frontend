@@ -1,0 +1,91 @@
+<section class="card stack-sm" aria-labelledby="t-change">
+  <div class="spread">
+    <h2 id="t-change" class="card__title">Changer de départ</h2>
+    <button type="button" class="btn btn--sm btn--ghost" (click)="closed.emit()">Fermer</button>
+  </div>
+  <p class="small muted">
+    Même trajet, mêmes passagers, jusqu’au départ du bus. Le montant dû est encaissé en espèces et les nouveaux billets remplacent immédiatement les anciens.
+  </p>
+
+  <div class="row">
+    <div class="field">
+      <label for="cc-day">Jour</label>
+      <input id="cc-day" class="input" type="date" [min]="minDay" [max]="maxDay()" [ngModel]="day()" (ngModelChange)="day.set($event); search()" />
+    </div>
+    @if (needsAgency) {
+      <div class="field">
+        <label for="cc-agency">Agence d’encaissement</label>
+        <select id="cc-agency" class="input" [ngModel]="agencyId()" (ngModelChange)="agencyId.set($event); select()">
+          @for (a of agencies(); track a.id) {
+            <option [value]="a.id">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+    }
+  </div>
+
+  @if (searching()) {
+    <p class="small muted">Recherche…</p>
+  } @else if (departures().length === 0) {
+    <p class="small muted">Aucun départ avec assez de places ce jour-là.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Départ</th><th scope="col">Agences</th><th scope="col">Bus</th><th scope="col" class="text-right">Places</th><th scope="col"><span class="sr-only">Choisir</span></th></tr>
+        </thead>
+        <tbody>
+          @for (d of departures(); track d.id) {
+            <tr [class.on]="selected()?.id === d.id">
+              <td class="strong">{{ d.departure_at | date: 'HH:mm' }}</td>
+              <td class="small">{{ d.origin_agency_name }} → {{ d.destination_agency_name }}</td>
+              <td class="small">{{ d.bus_model }}</td>
+              <td class="text-right">{{ d.available_seats }}</td>
+              <td class="text-right">
+                <button type="button" class="btn btn--sm" [class.btn--primary]="selected()?.id === d.id" (click)="select(d)">
+                  {{ selected()?.id === d.id ? 'Choisi' : 'Choisir' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (quote(); as q) {
+    <div class="quote">
+      <dl class="dl">
+        <dt>Nouveau tarif</dt>
+        <dd>{{ q.new_fare | money }}</dd>
+        <dt>Déjà payé</dt>
+        <dd>− {{ (q.credit < q.new_fare ? q.credit : q.new_fare) | money }}</dd>
+        <dt>Frais de modification</dt>
+        <dd>{{ q.fee ? (q.fee | money) : 'Offerts' }}</dd>
+        <dt class="strong">À encaisser</dt>
+        <dd class="strong">{{ q.amount_due | money }}</dd>
+      </dl>
+      @if (policy().change.fee_total) {
+        <label class="checkbox">
+          <input type="checkbox" [ngModel]="waiveFee()" (ngModelChange)="toggleWaive($event)" />
+          Offrir les frais de modification ({{ policy().change.fee_total | money }})
+        </label>
+      }
+      @if (q.non_refundable_gap) {
+        <p class="alert alert--warning">Départ moins cher : la différence de {{ q.non_refundable_gap | money }} n’est pas remboursée.</p>
+      }
+    </div>
+  }
+
+  @if (error()) {
+    <p class="alert alert--danger" role="alert">{{ error() }}</p>
+  }
+
+  @if (quote(); as q) {
+    <div class="form-actions">
+      <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="confirm()">
+        {{ q.amount_due ? 'Encaisser ' + (q.amount_due | money) + ' en espèces et confirmer' : 'Confirmer le changement' }}
+      </button>
+    </div>
+  }
+</section>

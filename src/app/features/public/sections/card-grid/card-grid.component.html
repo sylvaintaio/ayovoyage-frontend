@@ -1,0 +1,54 @@
+@switch (variant()) {
+  @case ('list') {
+    <ol class="list-plain v-list" [class]="'v-list cols-' + columns()">
+      @for (c of items(); track c.title; let i = $index) {
+        <li>
+          <span class="v-list__index">{{ pad(i) }}</span>
+          <h3>{{ c.title }}</h3>
+          <p>{{ c.text }}</p>
+        </li>
+      }
+    </ol>
+  }
+  @case ('timeline') {
+    <ol class="list-plain v-timeline">
+      @for (c of items(); track c.title; let i = $index) {
+        <li>
+          <span class="v-timeline__dot"><span class="step">{{ i + 1 }}</span></span>
+          <h3>{{ c.title }}</h3>
+          <p>{{ c.text }}</p>
+        </li>
+      }
+    </ol>
+  }
+  @case ('inline') {
+    <ul class="list-plain v-inline">
+      @for (c of items(); track c.title) {
+        <li>
+          <bv-icon [name]="c.icon" />
+          <span><strong>{{ c.title }}</strong> {{ c.text }}</span>
+        </li>
+      }
+    </ul>
+  }
+  @default {
+    <ul class="list-plain grid-cards" [class]="'grid-cards cols-' + columns()" [class.bento]="variant() === 'bento'">
+      @for (c of items(); track c.title; let i = $index) {
+        <li class="feature-card" [class.numbered]="numbered()" [class.feature-card--lead]="variant() === 'bento' && i === 0">
+          <span class="icon-tile" [class.icon-tile--accent]="tone() === 'accent'">
+            @if (numbered()) {
+              <span class="step">{{ i + 1 }}</span>
+            } @else {
+              <bv-icon [name]="c.icon" />
+            }
+          </span>
+          <h3>{{ c.title }}</h3>
+          <p>{{ c.text }}</p>
+          @if (c.link) {
+            <a class="link-arrow" [routerLink]="c.link">{{ c.linkLabel ?? 'En savoir plus' }} <bv-icon name="arrow" [size]="16" /></a>
+          }
+        </li>
+      }
+    </ul>
+  }
+}

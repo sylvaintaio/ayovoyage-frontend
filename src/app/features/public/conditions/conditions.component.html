@@ -1,0 +1,93 @@
+<bv-page-banner
+  title="Conditions de voyage"
+  lead="Annulation, changement de départ et remboursement : les règles exactes, appliquées automatiquement à votre réservation."
+/>
+
+<section class="section section--white">
+  <div class="container narrow stack">
+    <div class="principles">
+      <div class="principle">
+        <strong>Réservation non payée</strong>
+        <span>Annulable à tout moment, sans frais. Sans paiement, les sièges sont libérés automatiquement.</span>
+      </div>
+      <div class="principle">
+        <strong>Départ annulé par la compagnie</strong>
+        <span>Remboursement intégral, sans frais ni délai. Vous êtes prévenu par SMS et par e-mail.</span>
+      </div>
+      <div class="principle">
+        <strong>Passager embarqué</strong>
+        <span>Une fois un passager embarqué, la réservation ne peut plus être annulée ni modifiée.</span>
+      </div>
+    </div>
+
+    @for (c of companies(); track c.policy.company_name) {
+      <article class="card company" [attr.aria-labelledby]="'co-' + $index">
+        @if (companies().length > 1) {
+          <h2 [id]="'co-' + $index" class="company__name">{{ c.policy.company_name }}</h2>
+        } @else {
+          <h2 [id]="'co-' + $index" class="sr-only">{{ c.policy.company_name }}</h2>
+        }
+        <div class="cols">
+          <section class="col">
+            <h3>Annuler un voyage payé</h3>
+            <ul class="list">
+              <li>En ligne, depuis votre espace client, jusqu’à <strong>{{ c.policy.cancellation_cutoff_hours }} h avant le départ</strong>. Ensuite, adressez-vous à l’agence.</li>
+              <li>
+                @if (c.policy.cancellation_fee_percent) {
+                  Frais d’annulation : <strong>{{ c.policy.cancellation_fee_percent }} %</strong> du prix payé ; le reste est remboursé.
+                } @else {
+                  Sans frais : remboursement intégral.
+                }
+              </li>
+              <li>Les points de fidélité utilisés vous sont rendus.</li>
+              <li>Toute la réservation est annulée (tous les passagers).</li>
+            </ul>
+          </section>
+          <section class="col">
+            <h3>Changer de départ</h3>
+            @if (c.policy.change_enabled) {
+              <ul class="list">
+                <li>Jusqu’à <strong>{{ c.policy.change_cutoff_hours }} h avant le départ</strong>, depuis votre espace client.</li>
+                <li>Même trajet et mêmes passagers, vers un départ ayant lieu dans les <strong>{{ c.policy.change_window_days }} jours</strong> suivant le départ initial.</li>
+                <li>
+                  @if (c.policy.change_fee_amount) {
+                    Frais : <strong>{{ c.policy.change_fee_amount | money }} par passager</strong>.
+                  } @else {
+                    Sans frais de modification.
+                  }
+                  Si le nouveau départ est plus cher, vous payez la différence ; s’il est moins cher, la différence n’est pas remboursée.
+                </li>
+                <li>{{ c.policy.change_max_count === 1 ? 'Une seule modification' : c.policy.change_max_count + ' modifications au plus' }} par réservation. Vos billets restent valables jusqu’au paiement de la modification.</li>
+              </ul>
+            } @else {
+              <p class="muted">Cette compagnie ne propose pas le changement de départ : annulez puis réservez à nouveau.</p>
+            }
+          </section>
+        </div>
+        @if (c.perks.length) {
+          <div class="perks">
+            <p class="perks__title">Avantages fidélité</p>
+            <ul class="list-plain">
+              @for (t of c.perks; track t.code) {
+                <li><span class="tier">{{ t.name }}</span> {{ tierSummary(t, c.policy) }}</li>
+              }
+            </ul>
+            <a routerLink="/fidelite" class="small">Découvrir le programme de fidélité</a>
+          </div>
+        }
+      </article>
+    }
+
+    <section class="card refund" aria-labelledby="t-refund">
+      <h2 id="t-refund" class="card__title">Comment se passe le remboursement ?</h2>
+      <ol class="steps">
+        <li>Votre demande est enregistrée dès l’annulation : le montant exact est affiché avant de confirmer.</li>
+        <li>La compagnie vérifie et valide la demande.</li>
+        <li>Le montant vous est reversé par Mobile Money ou en agence.</li>
+      </ol>
+      <p class="small muted">Les frais de modification déjà payés ne sont pas remboursés.</p>
+    </section>
+  </div>
+</section>
+
+<bv-cta-band title="Une question sur votre réservation ?" text="Notre service client vous répond par téléphone et sur WhatsApp." primaryLabel="Nous contacter" primaryLink="/contact" />

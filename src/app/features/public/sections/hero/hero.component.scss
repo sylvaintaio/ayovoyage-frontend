@@ -1,0 +1,160 @@
+@use 'mixins' as *;
+
+// Premier écran : fond vert profond uni, filet jaune en pied (repère de marque).
+.hero {
+  padding-top: var(--bv-space-6);
+  border-bottom: 6px solid var(--bv-accent);
+  background: var(--bv-night);
+  color: #fff;
+
+  @include from($bp-md) {
+    padding-top: var(--bv-space-7);
+  }
+
+  // Mobile : accroche, recherche, puis tableau. Grand écran : tableau à droite,
+  // recherche sur toute la largeur en dessous.
+  &__grid {
+    display: grid;
+    grid-template-areas: 'text' 'search' 'board';
+    gap: var(--bv-space-5);
+    align-items: start;
+    padding-bottom: var(--bv-space-6);
+
+    @include from($bp-md) {
+      grid-template-areas: 'text board' 'search search';
+      grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
+      gap: var(--bv-space-6) var(--bv-space-7);
+    }
+  }
+
+  &__text {
+    grid-area: text;
+  }
+
+  .eyebrow {
+    margin-bottom: var(--bv-space-4);
+    color: var(--bv-accent);
+  }
+
+  h1 {
+    margin-bottom: var(--bv-space-4);
+    font-size: var(--bv-text-3xl);
+    line-height: 1.05;
+
+    @include from($bp-lg) {
+      font-size: 3.25rem;
+    }
+  }
+
+  &__lead {
+    max-width: 520px;
+    font-size: var(--bv-text-lg);
+    color: var(--bv-night-ink);
+  }
+
+  &__search {
+    grid-area: search;
+    color: var(--bv-ink);
+  }
+}
+
+// Tableau des départs : fond noir-vert, heures jaunes condensées.
+.board {
+  grid-area: board;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-board);
+  overflow: hidden;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--bv-space-3) var(--bv-space-4);
+    border-bottom: 1px solid rgb(255 255 255 / 14%);
+
+    h2 {
+      margin: 0;
+      font-size: var(--bv-text-sm);
+      font-stretch: var(--bv-stretch-board);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+  }
+
+  &__clock {
+    color: var(--bv-accent);
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 4.25rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--bv-space-3);
+    padding: var(--bv-space-3) var(--bv-space-4);
+    border-bottom: 1px solid rgb(255 255 255 / 8%);
+    color: #fff;
+
+    &:hover {
+      background: rgb(255 255 255 / 6%);
+      text-decoration: none;
+    }
+  }
+
+  &__rows li:last-child &__row {
+    border-bottom: 0;
+  }
+
+  // Sur téléphone, quatre départs suffisent.
+  &__rows li:nth-child(n + 5) {
+    @include until($bp-md) {
+      display: none;
+    }
+  }
+
+  &__time {
+    color: var(--bv-accent);
+    font-size: var(--bv-text-2xl);
+    line-height: 1;
+  }
+
+  &__route {
+    display: grid;
+    min-width: 0;
+  }
+
+  &__city {
+    overflow: hidden;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  &__from {
+    color: var(--bv-night-ink);
+    font-size: var(--bv-text-xs);
+  }
+
+  &__status {
+    color: #fff;
+    font-size: var(--bv-text-md);
+    text-align: right;
+    white-space: nowrap;
+
+    &--few {
+      color: var(--bv-accent);
+    }
+
+    &--boarding {
+      color: #6ee7a8;
+    }
+  }
+
+  &__empty {
+    margin: 0;
+    padding: var(--bv-space-5) var(--bv-space-4);
+    color: var(--bv-night-ink);
+  }
+}

@@ -1,0 +1,34 @@
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="parcels().length === 0"
+  emptyIcon="parcel"
+  emptyTitle="Aucun colis"
+  emptyText="Les colis que vous envoyez ou recevez en agence apparaissent ici, s’ils sont enregistrés avec votre numéro ou votre e-mail."
+  (retry)="load()"
+>
+  @for (group of [{ title: 'Colis à recevoir et reçus', items: received() }, { title: 'Colis envoyés', items: sent() }]; track group.title) {
+    @if (group.items.length) {
+      <section class="group">
+        <h2 class="group__title">{{ group.title }}</h2>
+        <ul class="list-plain stack-sm">
+          @for (p of group.items; track p.tracking_number) {
+            <li>
+              <a class="card row" [routerLink]="['/colis/suivi', p.tracking_number]">
+                <div>
+                  <p class="strong">{{ p.origin_city }} → {{ p.destination_city }}</p>
+                  <p class="small muted">
+                    <span class="mono">{{ p.tracking_number }}</span> ·
+                    {{ p.direction === 'sent' ? 'pour ' + p.recipient_name : 'de ' + p.sender_name }} ·
+                    {{ p.created_at | date: 'd MMM y' }}
+                  </p>
+                </div>
+                <bv-status-badge [status]="p.status" domain="parcel" />
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</bv-state>

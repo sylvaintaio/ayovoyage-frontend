@@ -1,0 +1,89 @@
+<div class="page">
+  <header>
+    <h2>Signaler un problème</h2>
+    <p class="muted">Retard, bagage perdu ou abîmé, colis non reçu… Décrivez la situation : nous vous répondons par SMS et dans « Réclamations ».</p>
+  </header>
+
+  <div class="choices" role="radiogroup" aria-label="Le problème concerne">
+    <button type="button" role="radio" class="choice" [class.choice--on]="subject() === 'trip'" [attr.aria-checked]="subject() === 'trip'" (click)="subject.set('trip')">
+      <span class="icon-tile"><bv-icon name="bus" /></span>
+      <span><strong>Un voyage ou un bagage</strong><br /><span class="small muted">Retard, incident à bord, bagage perdu ou endommagé</span></span>
+    </button>
+    <button type="button" role="radio" class="choice" [class.choice--on]="subject() === 'parcel'" [attr.aria-checked]="subject() === 'parcel'" (click)="subject.set('parcel')">
+      <span class="icon-tile icon-tile--accent"><bv-icon name="parcel" /></span>
+      <span><strong>Un colis</strong><br /><span class="small muted">Colis en retard, non reçu, abîmé ou ouvert</span></span>
+    </button>
+  </div>
+
+  @if (subject() === 'trip') {
+    <section class="card stack-sm" aria-labelledby="t-trip">
+      <h3 id="t-trip" class="card__title">Quelle réservation ?</h3>
+      @if (loading()) {
+        <p class="small muted">Chargement…</p>
+      } @else if (bookings().length) {
+        <ul class="list-plain stack-sm">
+          @for (b of bookings(); track b.id) {
+            <li>
+              <button type="button" class="row" (click)="chooseBooking(b)">
+                <span>
+                  <strong>{{ b.route_name }}</strong><br />
+                  <span class="small muted">{{ b.reference }} · {{ b.departure_at | date: 'EEE d MMM y, HH:mm' }} · {{ b.company_name }}</span>
+                </span>
+                <bv-status-badge [status]="b.status" domain="booking" />
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="small muted">Aucune réservation sur votre compte. Pour un billet acheté en agence, présentez-vous au guichet ou <a routerLink="/contact">contactez-nous</a>.</p>
+      }
+    </section>
+  }
+
+  @if (subject() === 'parcel') {
+    <form class="card stack-sm" (ngSubmit)="sendParcel()" novalidate aria-labelledby="t-parcel">
+      <h3 id="t-parcel" class="card__title">Quel colis ?</h3>
+      @if (parcels().length) {
+        <div class="chips" role="group" aria-label="Mes colis">
+          @for (p of parcels(); track p.tracking_number) {
+            <button type="button" class="chip-btn" [class.on]="tracking() === p.tracking_number" (click)="tracking.set(p.tracking_number)">
+              {{ p.tracking_number }} · {{ p.origin_city }} → {{ p.destination_city }}
+            </button>
+          }
+        </div>
+      }
+      <div class="grid-2">
+        <div class="field">
+          <label for="rp-trk">Numéro de suivi</label>
+          <input id="rp-trk" class="input mono" name="trk" placeholder="CL…" autocomplete="off" [ngModel]="tracking()" (ngModelChange)="tracking.set($event)" />
+        </div>
+        <div class="field">
+          <label for="rp-ph">Téléphone de l’expéditeur ou du destinataire</label>
+          <input id="rp-ph" class="input" type="tel" name="ph" [ngModel]="phone()" (ngModelChange)="phone.set($event)" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="rp-cat">Problème</label>
+        <select id="rp-cat" class="select" name="cat" [ngModel]="category()" (ngModelChange)="category.set($event)">
+          @for (c of categories; track c[0]) {
+            <option [value]="c[0]">{{ c[1] }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="rp-desc">Que s’est-il passé ?</label>
+        <textarea id="rp-desc" class="textarea" rows="4" name="desc" [ngModel]="description()" (ngModelChange)="description.set($event)"></textarea>
+      </div>
+      <div class="field">
+        <span class="strong small">Photos (facultatif)</span>
+        <bv-photo-picker [(photos)]="photos" />
+      </div>
+      @if (error()) {
+        <p class="alert alert--danger" role="alert">{{ error() }}</p>
+      }
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="sending() || !canSend()">Envoyer la réclamation</button>
+      </div>
+    </form>
+  }
+</div>

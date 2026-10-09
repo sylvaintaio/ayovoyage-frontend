@@ -1,0 +1,44 @@
+<div class="spread head">
+  <h1>Remboursements</h1>
+  <div class="field">
+    <label class="sr-only" for="rf-status">Statut</label>
+    <select id="rf-status" class="select" [ngModel]="status()" (ngModelChange)="status.set($event); load()">
+      <option value="requested">À traiter</option>
+      <option value="approved">Approuvés (à verser)</option>
+      <option value="processed">Versés</option>
+      <option value="rejected">Refusés</option>
+      <option value="">Tous</option>
+    </select>
+  </div>
+</div>
+<p class="muted small">Au-delà du seuil fixé dans les paramètres, seuls un administrateur ou la finance peuvent approuver, et jamais la personne qui a demandé le remboursement.</p>
+
+<bv-state [loading]="loading()" [error]="error()" [empty]="refunds().length === 0" emptyText="Aucun remboursement dans cette catégorie." (retry)="load()">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th scope="col">Réservation</th><th scope="col">Montant</th><th scope="col">Motif</th><th scope="col">Origine</th><th scope="col">Date</th><th scope="col">Statut</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        @for (r of refunds(); track r.id) {
+          <tr>
+            <td><a [routerLink]="['/admin/reservations', r.booking_id]" class="strong">{{ r.booking_reference }}</a></td>
+            <td class="nowrap strong">{{ r.amount | money }}</td>
+            <td>{{ r.reason }}</td>
+            <td>{{ r.requested_by_type === 'customer' ? 'Client' : r.requested_by_type === 'staff' ? 'Personnel' : 'Automatique' }}</td>
+            <td class="nowrap">{{ r.created_at | date }}</td>
+            <td><bv-status-badge [status]="r.status" domain="refund" /></td>
+            <td class="text-right nowrap">
+              @if (r.status === 'requested') {
+                <button type="button" class="btn btn--sm btn--primary" (click)="decide(r, true)">Approuver</button>
+                <button type="button" class="btn btn--sm" (click)="decide(r, false)">Refuser</button>
+              } @else if (r.status === 'approved' && canPay) {
+                <button type="button" class="btn btn--sm btn--primary" (click)="markPaid(r)">Marquer versé</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</bv-state>

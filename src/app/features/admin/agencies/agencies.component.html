@@ -1,0 +1,37 @@
+<div class="spread head">
+  <h1>Agences</h1>
+  @if (auth.hasRole('company_admin')) {
+    <a class="btn btn--primary" routerLink="/admin/agences/nouvelle">Nouvelle agence</a>
+  }
+</div>
+
+<bv-state [loading]="loading()" [error]="error()" [empty]="agencies().length === 0" emptyText="Aucune agence." (retry)="load()">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th scope="col">Agence</th><th scope="col">Ville</th><th scope="col">Contact</th><th scope="col">Services</th><th scope="col">Statut</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        @for (a of agencies(); track a.id) {
+          <tr>
+            <td class="strong">{{ a.name }}<br /><span class="muted small">{{ a.address }}</span></td>
+            <td>{{ a.city_name }}</td>
+            <td class="nowrap">{{ a.phone }}</td>
+            <td>
+              @for (s of a.services; track s) {
+                <span class="badge">{{ services[s] ?? s }}</span>
+              }
+            </td>
+            <td><span class="badge" [class.badge--success]="a.is_active">{{ a.is_active ? 'Ouverte' : 'Fermée' }}</span></td>
+            <td class="text-right nowrap">
+              <a class="btn btn--sm btn--ghost" [routerLink]="['/agences', a.slug]" target="_blank">Page publique</a>
+              @if (canEdit(a)) {
+                <a class="btn btn--sm" [routerLink]="['/admin/agences', a.id]">Modifier</a>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</bv-state>

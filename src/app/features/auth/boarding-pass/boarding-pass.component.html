@@ -1,0 +1,32 @@
+<div class="pass">
+  <div class="pass__main">
+    <div class="pass__head">
+      <span class="pass__brand">{{ companyName() }}</span>
+      <span class="pass__class">VIP</span>
+    </div>
+    <div class="pass__route">
+      <div>
+        <span class="code">CTN</span>
+        <span class="city">Cotonou</span>
+      </div>
+      <span class="pass__line"><span class="pass__bus"></span></span>
+      <div class="to">
+        <span class="code">PKO</span>
+        <span class="city">Parakou</span>
+      </div>
+    </div>
+    <dl class="pass__info">
+      <div><dt>Départ</dt><dd>07:00</dd></div>
+      <div><dt>Siège</dt><dd>1A</dd></div>
+      <div><dt>Quai</dt><dd>Jonquet</dd></div>
+    </dl>
+  </div>
+  <div class="pass__stub ticket-cut">
+    <div class="qr">
+      @for (cell of qr; track $index) {
+        <span [class.on]="cell"></span>
+      }
+    </div>
+    <span class="pass__number">BV7K3M9Q</span>
+  </div>
+</div>

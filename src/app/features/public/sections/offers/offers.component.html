@@ -1,0 +1,28 @@
+<div class="offers">
+  @for (o of offers(); track o.code) {
+    <article class="offer" [class.offer--featured]="o.code === featured()">
+      <header class="offer__head">
+        <h3><span class="offer__swatch" [style.background]="o.color" aria-hidden="true"></span>{{ o.name }}</h3>
+        @if (o.code === featured()) {
+          <span class="offer__badge">Le plus confortable</span>
+        }
+      </header>
+      <p class="offer__desc">{{ o.description }}</p>
+      <p class="offer__price">
+        @if (o.surcharge_amount === 0) {
+          <strong class="figures">Sans supplément</strong>
+        } @else {
+          <strong class="figures">+ {{ o.surcharge_amount | money }}</strong>
+          <span class="small">par trajet</span>
+        }
+      </p>
+      <ul class="check-list small">
+        @for (p of o.perks; track p) {
+          <li>{{ p }}</li>
+        } @empty {
+          <li>Siège confortable et bagage en soute inclus</li>
+        }
+      </ul>
+    </article>
+  }
+</div>

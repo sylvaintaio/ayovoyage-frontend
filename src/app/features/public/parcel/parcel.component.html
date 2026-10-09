@@ -1,0 +1,43 @@
+<bv-page-banner [title]="parcel.title" [lead]="parcel.intro">
+  <div class="cluster actions">
+    <a class="btn btn--accent" routerLink="/agences" [queryParams]="{ service: 'parcel_drop' }">Trouver une agence de dépôt</a>
+  </div>
+</bv-page-banner>
+
+<section class="section" aria-labelledby="t-how">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="t-how" class="section-title">De votre agence jusqu’au destinataire</h2>
+    </div>
+    <bv-card-grid [items]="parcel.steps" [columns]="4" [numbered]="true" tone="accent" />
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="t-rules">
+  <div class="container split">
+    <div>
+      <h2 id="t-rules" class="section-title">Bon à savoir</h2>
+      <ul class="check-list">
+        @for (r of parcel.rules; track r) {
+          <li>{{ r }}</li>
+        }
+      </ul>
+    </div>
+    <form id="suivi" class="track card" (ngSubmit)="track()" role="search" aria-labelledby="t-track">
+      <h3 id="t-track">Suivre un colis</h3>
+      <p class="muted small">Saisissez le numéro inscrit sur le reçu ou le SMS (il commence par CL), ou scannez le QR code de l’étiquette avec votre téléphone.</p>
+      <label class="sr-only" for="track-number">Numéro de suivi</label>
+      <input id="track-number" class="input mono" name="number" placeholder="CL7K3M9QXT" autocomplete="off" [ngModel]="number()" (ngModelChange)="number.set($event)" />
+      <button type="submit" class="btn btn--primary" [disabled]="number().trim().length < 6">Suivre</button>
+    </form>
+  </div>
+</section>
+
+<section class="section section--sand" aria-labelledby="t-faq">
+  <div class="container narrow">
+    <h2 id="t-faq" class="section-title">Questions sur les colis</h2>
+    <bv-faq-list [categories]="['Bagages et colis']" />
+  </div>
+</section>
+
+<bv-cta-band title="Un envoi régulier ?" text="Commerçants et entreprises : parlons de vos besoins et de nos tarifs." primaryLabel="Nous contacter" primaryLink="/contact" />

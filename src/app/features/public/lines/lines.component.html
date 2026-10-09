@@ -1,0 +1,52 @@
+<bv-page-banner
+  title="Nos lignes et nos tarifs"
+  lead="Tous nos trajets réguliers, avec le prix de chaque classe. Le prix exact de votre siège s’affiche sur le plan du bus au moment de réserver."
+/>
+
+<section class="section">
+  <div class="container">
+    <bv-popular-routes [limit]="24" />
+  </div>
+</section>
+
+@if (store.routes().length && offers().length) {
+  <section class="section section--white" aria-labelledby="t-grid">
+    <div class="container">
+      <h2 id="t-grid" class="section-title">Grille tarifaire</h2>
+      <p class="muted">Prix par passager et par trajet, bagage en soute inclus.</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Ligne</th>
+              <th scope="col">Durée</th>
+              <th scope="col">Départs / semaine</th>
+              @for (o of offers(); track o.code) {
+                <th scope="col">{{ o.name }}</th>
+              }
+              <th scope="col"><span class="sr-only">Réserver</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of store.routes(); track r.name) {
+              <tr>
+                <td class="strong">{{ r.origin_city }} → {{ r.destination_city }}</td>
+                <td class="nowrap">{{ duration(r.duration_minutes) }}</td>
+                <td>{{ r.departures_next_7_days }}</td>
+                @for (o of offers(); track o.code) {
+                  <td class="nowrap">{{ r.from_price + o.surcharge_amount | money }}</td>
+                }
+                <td class="text-right">
+                  <a class="btn btn--sm btn--primary" routerLink="/recherche" [queryParams]="{ from: r.origin_slug, to: r.destination_slug, date: tomorrow }">Réserver</a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted note">Les membres du programme de fidélité bénéficient d’une réduction selon leur niveau. Certains sièges peuvent avoir un supplément particulier (avant du bus, espace pour les jambes).</p>
+    </div>
+  </section>
+}
+
+<bv-cta-band title="Vous ne trouvez pas votre trajet ?" text="Contactez-nous : nous organisons aussi des voyages de groupe sur mesure." primaryLabel="Nous contacter" primaryLink="/contact" />

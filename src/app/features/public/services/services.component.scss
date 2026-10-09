@@ -1,0 +1,21 @@
+@use 'mixins' as *;
+
+.split {
+  display: grid;
+  gap: var(--bv-space-6);
+  align-items: center;
+
+  @include from($bp-md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.demand {
+  margin-top: var(--bv-space-4);
+}
+
+.pay-box {
+  padding: var(--bv-space-6);
+  border-radius: var(--bv-radius-xl);
+  background: var(--bv-sand);
+}

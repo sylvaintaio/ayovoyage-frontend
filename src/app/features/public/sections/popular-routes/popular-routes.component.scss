@@ -1,0 +1,77 @@
+@use 'mixins' as *;
+
+// Lignes présentées comme un horaire : une ligne par trajet, séparées par des filets.
+.timetable {
+  border-top: 1px solid var(--bv-line-strong);
+}
+
+.line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--bv-space-1) var(--bv-space-4);
+  align-items: center;
+  padding: var(--bv-space-4) var(--bv-space-2);
+  border-bottom: 1px solid var(--bv-line-strong);
+  color: var(--bv-ink);
+
+  @include from($bp-md) {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr) auto 24px;
+  }
+
+  &:hover {
+    text-decoration: none;
+    background: var(--bv-surface);
+
+    .line__go {
+      color: var(--bv-ink);
+      transform: translateX(3px);
+    }
+  }
+
+  &__cities {
+    font-size: var(--bv-text-lg);
+    font-weight: 700;
+  }
+
+  &__arrow {
+    margin-inline: var(--bv-space-2);
+    color: var(--bv-accent-strong);
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bv-space-1) var(--bv-space-4);
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: var(--bv-text-sm);
+    color: var(--bv-ink-muted);
+
+    @include from($bp-md) {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+
+  &__price {
+    display: flex;
+    align-items: baseline;
+    gap: var(--bv-space-2);
+    white-space: nowrap;
+
+    strong {
+      font-size: var(--bv-text-xl);
+      color: var(--bv-primary);
+    }
+  }
+
+  &__go {
+    display: none;
+    color: var(--bv-ink-soft);
+    transition: transform 0.15s, color 0.15s;
+
+    @include from($bp-md) {
+      display: block;
+    }
+  }
+}

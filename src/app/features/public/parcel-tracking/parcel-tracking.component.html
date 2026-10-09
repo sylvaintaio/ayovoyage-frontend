@@ -1,0 +1,91 @@
+<section class="section">
+  <div class="container narrow stack">
+    <a routerLink="/colis" class="small">← Envoyer un colis</a>
+
+    @if (loading()) {
+      <p class="muted">Recherche du colis…</p>
+    } @else if (notFound()) {
+      <div class="card empty">
+        <bv-icon name="parcel" [size]="32" />
+        <h1>Colis introuvable</h1>
+        <p class="muted">Vérifiez le numéro <strong class="mono">{{ numero() }}</strong> : il figure sur le reçu de dépôt et dans le SMS (il commence par CL).</p>
+        <a class="btn" routerLink="/colis">Saisir un autre numéro</a>
+      </div>
+    } @else if (parcel(); as p) {
+      <header class="head">
+        <p class="eyebrow">{{ p.company_name }} · colis <span class="mono">{{ p.tracking_number }}</span></p>
+        <h1>{{ p.status_label }}</h1>
+        <p class="muted">{{ p.origin_city }} → {{ p.destination_city }} · {{ p.pieces }} pièce{{ p.pieces > 1 ? 's' : '' }} · de {{ p.sender_name }} pour {{ p.recipient_name }}</p>
+      </header>
+
+      @if (p.status !== 'cancelled' && p.status !== 'returned') {
+        <ol class="progress" aria-label="Progression">
+          @for (s of stages; track s.label; let i = $index) {
+            <li [class.done]="i < stage()" [class.current]="i === stage()" [attr.aria-current]="i === stage() ? 'step' : null">
+              <span class="progress__dot" aria-hidden="true"></span>
+              <span class="progress__label">{{ s.label }}</span>
+            </li>
+          }
+        </ol>
+      }
+
+      @if (p.status === 'ready') {
+        <div class="callout">
+          <h2>Votre colis vous attend</h2>
+          <p>
+            À <strong>{{ p.destination_agency }}</strong>{{ p.destination_address ? ', ' + p.destination_address : '' }}. Présentez le
+            <strong>code de retrait</strong> reçu par SMS et une pièce d’identité.
+          </p>
+          @if (p.amount_due) {
+            <p>Montant à régler au retrait : <strong>{{ p.amount_due | money }}</strong>.</p>
+          }
+          @if (p.destination_phone) {
+            <a class="btn btn--sm" [href]="'tel:' + p.destination_phone"><bv-icon name="phone" [size]="16" /> Appeler l’agence</a>
+          }
+        </div>
+      } @else if (p.status === 'delivered') {
+        <div class="callout callout--done">
+          <h2>Colis remis</h2>
+          <p>Remis au destinataire le {{ p.delivered_at | date: 'EEEE d MMMM à HH:mm' }}.</p>
+        </div>
+      }
+
+      <div class="grid-2">
+        <section class="card">
+          <h2 class="card__title">Historique</h2>
+          <bv-timeline [items]="steps()" />
+        </section>
+        <section class="card stack-sm places">
+          <h2 class="card__title">Trajet</h2>
+          <div>
+            <p class="small muted">Déposé à</p>
+            <p class="strong">{{ p.origin_agency }}</p>
+          </div>
+          <div>
+            <p class="small muted">À retirer à</p>
+            <p class="strong">{{ p.destination_agency }}</p>
+            @if (p.destination_address) {
+              <p class="small">{{ p.destination_address }}</p>
+            }
+          </div>
+          @if (p.current_agency && p.status !== 'ready') {
+            <div>
+              <p class="small muted">Actuellement</p>
+              <p class="strong">{{ p.current_agency }}</p>
+            </div>
+          }
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="t-report">
+        <div class="spread">
+          <div>
+            <h2 id="t-report" class="card__title">Un problème avec ce colis ?</h2>
+            <p class="small muted">Retard, colis abîmé, perdu… L’expéditeur ou le destinataire peut ouvrir une réclamation (connexion requise).</p>
+          </div>
+          <a class="btn" routerLink="/compte/signaler" [queryParams]="{ colis: p.tracking_number }"><bv-icon name="alert" [size]="16" /> Signaler un problème</a>
+        </div>
+      </section>
+    }
+  </div>
+</section>

@@ -1,0 +1,59 @@
+<div class="shell" [class.shell--open]="sidebarOpen()">
+  <aside class="sidebar" aria-label="Menu du back-office">
+    <a routerLink="/admin" class="brand">
+      <bv-brand-mark tone="light" compact />
+      <span>Back-office</span>
+    </a>
+    <nav>
+      @for (group of nav(); track group.title) {
+        <p class="group">{{ group.title }}</p>
+        <ul class="list-plain">
+          @for (item of group.items; track item.link) {
+            <li>
+              <a
+                [routerLink]="item.link"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                (click)="sidebarOpen.set(false)"
+                >{{ item.label }}</a
+              >
+            </li>
+          }
+        </ul>
+      }
+    </nav>
+    <a routerLink="/" class="back small">← Site public</a>
+  </aside>
+
+  <div class="content">
+    <header class="topbar">
+      <button
+        type="button"
+        class="btn btn--ghost btn--sm menu-toggle"
+        [attr.aria-expanded]="sidebarOpen()"
+        (click)="sidebarOpen.set(!sidebarOpen())"
+      >
+        Menu
+      </button>
+      <div class="user">
+        <span class="strong">{{ auth.displayName() }}</span>
+        <span class="badge">{{ roleLabel() }}</span>
+        <button type="button" class="btn btn--sm" (click)="logout()">Déconnexion</button>
+      </div>
+    </header>
+    @if (mfaReminder(); as m) {
+      @if (!onSecurityPage()) {
+        <div class="mfa-banner" role="status">
+          <span
+            ><strong>Sécurisez votre compte.</strong> La double authentification sera obligatoire à
+            partir du {{ m.required_from | date: 'd MMMM' }}.</span
+          >
+          <a class="btn btn--sm btn--dark" routerLink="/admin/securite">Activer maintenant</a>
+        </div>
+      }
+    }
+    <main class="main">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -1,0 +1,206 @@
+<bv-booking-steps [current]="1" />
+<div class="container page">
+  <bv-state [loading]="loading()" [error]="error()" (retry)="reload()">
+    @if (departure(); as d) {
+      <header class="summary card">
+        <div>
+          <p class="muted small">{{ d.company_name }}</p>
+          <h1>{{ d.origin_city }} → {{ d.destination_city }}</h1>
+          <p class="trip">
+            <strong>{{ d.departure_at | date: 'EEEE d MMMM, HH:mm' }}</strong>
+            <span class="muted"> · arrivée prévue {{ d.arrival_eta | date: 'HH:mm' }} ({{ duration(d.duration_minutes) }})</span>
+          </p>
+          <p class="muted small">Départ : {{ d.origin_agency_name }} — {{ d.origin_agency_address }}</p>
+        </div>
+        <div class="summary__side small">
+          <span>{{ d.bus_model }}</span>
+          <span>{{ d.included_baggage_kg }} kg de bagage inclus</span>
+          <span class="strong">{{ d.available_seats }} {{ d.available_seats > 1 ? 'places libres' : 'place libre' }}</span>
+        </div>
+      </header>
+
+      @if (d.early_bird; as eb) {
+        <p class="early-bird">
+          <strong>{{ eb.label }} : −{{ eb.percent }} %</strong>
+          sur {{ eb.seats_left > 1 ? 'les ' + eb.seats_left + ' dernières places' : 'la dernière place' }} à ce tarif pour ce départ.
+        </p>
+      }
+
+      <div class="layout">
+        <section class="card" aria-labelledby="titre-sieges">
+          <div class="spread">
+            <h2 id="titre-sieges">1. Vos sièges</h2>
+            <div class="mode" role="radiogroup" aria-label="Mode de choix des sièges">
+              <button type="button" class="btn btn--sm" [class.btn--primary]="mode() === 'manual'" role="radio"
+                [attr.aria-checked]="mode() === 'manual'" (click)="mode.set('manual')">Je choisis sur le plan</button>
+              <button type="button" class="btn btn--sm" [class.btn--primary]="mode() === 'auto'" role="radio"
+                [attr.aria-checked]="mode() === 'auto'" (click)="mode.set('auto')">Meilleur siège disponible</button>
+            </div>
+          </div>
+
+          @if (mode() === 'manual') {
+            <p class="muted small">Touchez un siège libre pour le sélectionner ({{ maxPassengers }} maximum).</p>
+            <bv-seat-map
+              [seatMap]="d.seat_map"
+              [categories]="d.categories"
+              [maxSelection]="maxPassengers"
+              [(selected)]="selectedSeats"
+            />
+          } @else {
+            <div class="grid grid-2 auto">
+              <div class="field">
+                <label for="dep-count">Nombre de passagers</label>
+                <select id="dep-count" class="select" [ngModel]="autoCount()" (ngModelChange)="autoCount.set(+$event)">
+                  @for (n of counts; track n) {
+                    <option [value]="n">{{ n }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="dep-cat">Catégorie</label>
+                <select id="dep-cat" class="select" [ngModel]="prefCategory()" (ngModelChange)="prefCategory.set($event)">
+                  <option value="">Peu importe</option>
+                  @for (c of d.categories; track c.id) {
+                    <option [value]="c.code" [disabled]="c.available === 0">
+                      {{ c.name }} — {{ c.price | money }}{{ c.available === 0 ? ' (complet)' : '' }}
+                    </option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="dep-pos">Placement</label>
+                <select id="dep-pos" class="select" [ngModel]="prefPosition()" (ngModelChange)="prefPosition.set($event)">
+                  <option value="any">Peu importe</option>
+                  <option value="window">Côté fenêtre</option>
+                  <option value="aisle">Côté couloir</option>
+                  <option value="front">À l'avant</option>
+                </select>
+              </div>
+              <label class="checkbox together">
+                <input type="checkbox" [ngModel]="prefTogether()" (ngModelChange)="prefTogether.set($event)" />
+                Placer les passagers côte à côte
+              </label>
+            </div>
+            @for (c of d.categories; track c.id) {
+              @if (c.code === prefCategory() && c.perks.length) {
+                <p class="alert alert--info small">{{ c.name }} : {{ c.perks.join(' · ') }}</p>
+              }
+            }
+          }
+        </section>
+
+        <aside class="card side" aria-labelledby="titre-passagers">
+          <h2 id="titre-passagers">2. Passagers</h2>
+          @if (passengerCount() === 0) {
+            <p class="muted small">Sélectionnez vos sièges sur le plan.</p>
+          }
+          @for (name of names(); track $index) {
+            <div class="field">
+              <label [for]="'p' + $index">
+                Passager {{ $index + 1 }}
+                @if (mode() === 'manual' && cells()[$index]; as cell) {
+                  <span class="muted">— siège {{ cell.seat_label }} · {{ cell.price | money }}</span>
+                }
+              </label>
+              <input [id]="'p' + $index" class="input" [value]="name" (input)="setName($index, $any($event.target).value)"
+                autocomplete="name" placeholder="Nom et prénom" />
+            </div>
+          }
+
+          <h2>3. Contact</h2>
+          <form class="stack-sm" [formGroup]="contact" (ngSubmit)="submit()">
+            <div class="field">
+              <label for="c-name">Nom</label>
+              <input id="c-name" class="input" formControlName="name" autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="c-phone">Téléphone (billet par SMS)</label>
+              <input id="c-phone" class="input" formControlName="phone" type="tel" autocomplete="tel" />
+            </div>
+            <div class="field">
+              <label for="c-email">E-mail (facultatif)</label>
+              <input id="c-email" class="input" formControlName="email" type="email" autocomplete="email" />
+            </div>
+
+            <label class="checkbox">
+              <input type="checkbox" [checked]="withCompany()" (change)="withCompany.set($any($event.target).checked)" />
+              Facture au nom d'une entreprise
+            </label>
+            @if (withCompany()) {
+              <div class="field">
+                <label for="c-company">Raison sociale</label>
+                <input id="c-company" class="input" formControlName="billing_name" maxlength="160" autocomplete="organization" />
+              </div>
+              <div class="field">
+                <label for="c-ifu">IFU (facultatif)</label>
+                <input id="c-ifu" class="input" formControlName="billing_tax_id" inputmode="numeric" maxlength="30" />
+                <span class="field__hint">Imprimé sur la facture, téléchargeable dans votre espace après le paiement.</span>
+              </div>
+            }
+
+            @if (loyalty(); as l) {
+              @if (l.points_balance > 0) {
+                <div class="field loyalty">
+                  <label for="c-points">Utiliser mes points ({{ l.points_balance }} disponibles, niveau {{ l.tier_name }})</label>
+                  <input id="c-points" class="input" type="number" min="0" [max]="l.points_balance"
+                    [ngModel]="redeemPoints()" (ngModelChange)="redeemPoints.set(+$event || 0)" [ngModelOptions]="{ standalone: true }" />
+                  <span class="field__hint">≈ {{ redeemPoints() * pointValue() | money }} de réduction (plafonnée par la compagnie).</span>
+                </div>
+              }
+            }
+
+            <div class="field promo">
+              <label for="c-promo">Code promo</label>
+              @if (promo()?.valid) {
+                <p class="promo__ok">
+                  <span><strong class="mono">{{ promo()!.code }}</strong> — {{ promo()!.message }}</span>
+                  <button type="button" class="btn btn--sm btn--ghost" (click)="removePromo()">Retirer</button>
+                </p>
+              } @else {
+                <div class="promo__row">
+                  <input id="c-promo" class="input mono" maxlength="30" autocomplete="off" placeholder="Ex. TABASKI26"
+                    [ngModel]="promoInput()" (ngModelChange)="promoInput.set($event)" [ngModelOptions]="{ standalone: true }"
+                    (keydown.enter)="$event.preventDefault(); applyPromo()" />
+                  <button type="button" class="btn" [disabled]="checkingPromo() || promoInput().trim().length < 3" (click)="applyPromo()">
+                    {{ checkingPromo() ? '…' : 'Appliquer' }}
+                  </button>
+                </div>
+                @if (promo(); as p) {
+                  <span class="field__error">{{ p.message }}</span>
+                }
+              }
+            </div>
+
+            @if (earlyBird() > 0) {
+              <div class="discount-line">
+                <span>{{ departure()?.early_bird?.label }} (−{{ departure()?.early_bird?.percent }} %)</span>
+                <span>− {{ earlyBird() | money }}</span>
+              </div>
+            }
+            @if (promo()?.valid && promo()!.discount > 0) {
+              <div class="discount-line">
+                <span>Code {{ promo()!.code }}</span>
+                <span>− {{ promo()!.discount | money }}</span>
+              </div>
+            }
+            <div class="total">
+              <span>Total estimé</span>
+              <strong>{{ estimate() | money }}</strong>
+            </div>
+            <p class="field__hint">Le montant exact (réduction de fidélité incluse) est calculé à l'étape suivante. Vos sièges sont bloqués pendant le paiement.</p>
+
+            @if (auth.isCustomer()) {
+              <button type="submit" class="btn btn--primary btn--block" [disabled]="submitting() || passengerCount() === 0">
+                {{ submitting() ? 'Réservation…' : 'Continuer vers le paiement' }}
+              </button>
+            } @else {
+              <button type="submit" class="btn btn--primary btn--block" [disabled]="passengerCount() === 0">
+                Se connecter pour réserver
+              </button>
+            }
+          </form>
+        </aside>
+      </div>
+    }
+  </bv-state>
+</div>

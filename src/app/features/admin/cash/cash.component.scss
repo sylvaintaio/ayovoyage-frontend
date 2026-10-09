@@ -1,0 +1,107 @@
+@use 'mixins' as *;
+
+:host {
+  display: block;
+}
+
+.head {
+  align-items: flex-end;
+  margin-bottom: var(--bv-space-4);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-3);
+
+  .field {
+    margin: 0;
+  }
+}
+
+.kpis {
+  display: grid;
+  gap: var(--bv-space-3);
+  margin-bottom: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.kpi {
+  display: grid;
+  gap: 2px;
+
+  &--main {
+    border-color: var(--bv-primary);
+    background: var(--bv-primary-soft);
+  }
+}
+
+.kpi__label {
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-sm);
+}
+
+.kpi__value {
+  font-size: var(--bv-text-xl);
+  font-weight: 800;
+}
+
+.kpi__sub {
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-xs);
+}
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+  margin-bottom: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: start;
+  }
+}
+
+.input--lg {
+  font-size: var(--bv-text-lg);
+  font-weight: 700;
+}
+
+.diff {
+  margin: 0;
+  padding: var(--bv-space-2) var(--bv-space-3);
+  border-radius: var(--bv-radius-sm);
+  font-weight: 700;
+
+  &.ok {
+    background: var(--bv-success-soft);
+    color: var(--bv-success);
+  }
+
+  &.neg {
+    background: var(--bv-danger-soft);
+  }
+
+  &.pos {
+    background: var(--bv-warning-soft);
+  }
+}
+
+.neg {
+  color: var(--bv-danger);
+}
+
+.pos {
+  color: var(--bv-warning);
+}
+
+.closed .dl {
+  margin: 0;
+}

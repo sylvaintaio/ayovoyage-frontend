@@ -1,0 +1,103 @@
+<h1>Vente au guichet</h1>
+
+<div class="layout">
+  <section class="card" aria-labelledby="t-deps">
+    <div class="spread">
+      <h2 id="t-deps" class="card__title">Départs</h2>
+      <input class="input date" type="date" aria-label="Date des départs" [ngModel]="date()" (ngModelChange)="date.set($event); loadDepartures()" />
+    </div>
+    <bv-state [loading]="loading()" [error]="error()" [empty]="departures().length === 0" emptyText="Aucun départ ouvert à la vente ce jour." (retry)="loadDepartures()">
+      <ul class="list-plain deps">
+        @for (d of departures(); track d.id) {
+          <li>
+            <button type="button" class="dep" [class.dep--active]="current()?.departure?.id === d.id" (click)="choose(d.id)">
+              <span class="strong">{{ d.departure_at | date: 'HH:mm' }}</span>
+              <span>{{ d.route_name }}</span>
+              <span class="small muted">{{ d.seat_count - d.sold_seats }} libre(s) · {{ d.plate_number }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </bv-state>
+  </section>
+
+  @if (current(); as cur) {
+    <section class="card" aria-labelledby="t-plan">
+      <h2 id="t-plan" class="card__title">{{ cur.departure.route_name }} — {{ cur.departure.departure_at | date: 'HH:mm' }}</h2>
+      <bv-seat-map [seatMap]="cur.seat_map" [categories]="cur.categories" [(selected)]="selected" />
+    </section>
+
+    <aside class="card stack-sm" aria-labelledby="t-vente">
+      <h2 id="t-vente" class="card__title">Encaissement</h2>
+      @if (sold(); as s) {
+        <div class="alert alert--success stack-sm">
+          <strong>Vente {{ s.reference }} — {{ s.total_amount | money }}</strong>
+          @for (t of s.tickets; track t.id) {
+            <a class="btn btn--sm" [href]="'/v1/admin/tickets/' + t.id + '/pdf' | apiUrl" target="_blank" rel="noopener">
+              Imprimer le billet {{ t.seat_label }} — {{ t.passenger_name }}
+            </a>
+          }
+          @if (soldInvoice(); as inv) {
+            <div class="invoice-actions">
+              <span class="small">Facture {{ inv.number }}</span>
+              <a class="btn btn--sm" [href]="invoicePdf(inv, 'ticket')" target="_blank" rel="noopener">Ticket</a>
+              <a class="btn btn--sm btn--ghost" [href]="invoicePdf(inv, 'a4')" target="_blank" rel="noopener">A4</a>
+            </div>
+          }
+        </div>
+      }
+      <form class="stack-sm" [formGroup]="contact" (ngSubmit)="sell()">
+        @if (needsAgency) {
+          <div class="field">
+            <label for="ct-agency">Agence d'encaissement</label>
+            <select id="ct-agency" class="select" [value]="agencyId()" (change)="agencyId.set($any($event.target).value)">
+              @for (a of agencies(); track a.id) {
+                <option [value]="a.id">{{ a.name }}</option>
+              }
+            </select>
+          </div>
+        }
+        <div class="field">
+          <label for="ct-phone">Téléphone du client</label>
+          <input id="ct-phone" class="input" type="tel" formControlName="phone" />
+          <span class="field__hint">Identifie le client : ses voyages comptent pour la fidélité.</span>
+        </div>
+        <div class="field">
+          <label for="ct-name">Nom du client</label>
+          <input id="ct-name" class="input" formControlName="name" />
+        </div>
+        <div class="field">
+          <label for="ct-email">E-mail (facultatif)</label>
+          <input id="ct-email" class="input" type="email" formControlName="email" />
+        </div>
+        <label class="checkbox">
+          <input type="checkbox" [checked]="withCompany()" (change)="withCompany.set($any($event.target).checked)" />
+          Facture au nom d'une entreprise
+        </label>
+        @if (withCompany()) {
+          <div class="field">
+            <label for="ct-company">Raison sociale</label>
+            <input id="ct-company" class="input" formControlName="billing_name" maxlength="160" />
+          </div>
+          <div class="field">
+            <label for="ct-ifu">IFU (facultatif)</label>
+            <input id="ct-ifu" class="input" formControlName="billing_tax_id" inputmode="numeric" maxlength="30" />
+          </div>
+        }
+        @for (n of names(); track $index) {
+          <div class="field">
+            <label [for]="'ct-p' + $index">Passager — siège {{ cells()[$index]?.seat_label }}</label>
+            <input [id]="'ct-p' + $index" class="input" [value]="n" placeholder="Par défaut : nom du client" (input)="setName($index, $any($event.target).value)" />
+          </div>
+        }
+        <div class="total">
+          <span>À encaisser</span>
+          <strong>{{ total() | money }}</strong>
+        </div>
+        <button type="submit" class="btn btn--primary btn--block" [disabled]="selling() || selected().length === 0">
+          {{ selling() ? 'Enregistrement…' : 'Encaisser en espèces' }}
+        </button>
+      </form>
+    </aside>
+  }
+</div>

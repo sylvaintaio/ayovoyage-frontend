@@ -1,0 +1,54 @@
+<div class="shell" [class.shell--staff]="variant() === 'staff'">
+  <aside class="side">
+    <a routerLink="/" class="brand" [attr.aria-label]="company.name + ', accueil'">
+      <bv-brand-mark tone="light" />
+    </a>
+
+    @if (variant() === 'customer') {
+      <div class="side__body">
+        <h2>Votre prochain voyage commence ici.</h2>
+        <bv-boarding-pass class="side__pass" [companyName]="company.name" />
+        <ul class="list-plain side__points">
+          <li><bv-icon name="ticket" [size]="18" /> Vos billets toujours sur votre téléphone, même sans réseau</li>
+          <li><bv-icon name="star" [size]="18" /> Des points de fidélité à chaque voyage</li>
+          <li><bv-icon name="users" [size]="18" /> Vos proches enregistrés pour réserver plus vite</li>
+        </ul>
+      </div>
+    } @else {
+      <div class="side__body">
+        <span class="side__tag">Espace professionnel</span>
+        <h2>Pilotez vos départs, vos ventes et vos équipes.</h2>
+        <div class="console" aria-hidden="true">
+          <div class="console__row"><span>Ventes du jour</span><strong>Guichet + en ligne</strong></div>
+          <div class="console__bars">
+            @for (h of [38, 62, 48, 80, 56, 92, 70]; track $index) {
+              <span [style.height.%]="h"></span>
+            }
+          </div>
+          <div class="console__row"><span>Départs</span><strong>Embarquement en cours</strong></div>
+        </div>
+        <ul class="list-plain side__points">
+          <li><bv-icon name="shield" [size]="18" /> Accès selon votre rôle, actions journalisées</li>
+          <li><bv-icon name="clock" [size]="18" /> Session fermée automatiquement après inactivité</li>
+        </ul>
+      </div>
+    }
+
+    <p class="side__foot">© {{ year }} {{ company.name }}</p>
+  </aside>
+
+  <main class="main">
+    <header class="main__top">
+      <a routerLink="/" class="brand brand--compact" [attr.aria-label]="company.name + ', accueil'">
+        <bv-brand-mark />
+      </a>
+      <a routerLink="/" class="back"><bv-icon name="arrow" [size]="16" class="back__icon" /> Retour au site</a>
+    </header>
+    <div class="main__content">
+      <ng-content />
+    </div>
+    <footer class="main__foot">
+      <ng-content select="[authFooter]" />
+    </footer>
+  </main>
+</div>

@@ -1,0 +1,54 @@
+@use 'mixins' as *;
+
+.info {
+  margin-top: var(--bv-space-4);
+}
+
+.pay-row {
+  display: flex;
+  margin-top: var(--bv-space-6);
+  padding-top: var(--bv-space-5);
+  border-top: 1px solid var(--bv-line);
+}
+
+.split {
+  display: grid;
+  gap: var(--bv-space-6);
+  align-items: start;
+
+  @include from($bp-md) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .eyebrow {
+    margin-bottom: var(--bv-space-3);
+  }
+}
+
+.commitments {
+  margin-top: var(--bv-space-5);
+}
+
+.faq {
+  display: grid;
+  gap: var(--bv-space-6);
+
+  @include from($bp-md) {
+    grid-template-columns: 1fr 1.6fr;
+  }
+
+  .eyebrow {
+    margin-bottom: var(--bv-space-2);
+  }
+}
+
+// Encadré agences : filet épais en tête, sans fond décoratif.
+.agencies {
+  margin-top: var(--bv-space-6);
+  padding-top: var(--bv-space-5);
+  border-top: 2px solid var(--bv-ink);
+
+  h3 {
+    margin-bottom: var(--bv-space-2);
+  }
+}

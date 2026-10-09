@@ -1,0 +1,25 @@
+<div class="head">
+  <div class="container head__inner">
+    <div class="who">
+      <span class="who__avatar" aria-hidden="true">{{ initials() }}</span>
+      <div>
+        <p class="who__hello">Bonjour,</p>
+        <h1>{{ auth.displayName() }}</h1>
+        <p class="who__phone">{{ contact() }}</p>
+      </div>
+    </div>
+    <div class="cluster">
+      <a class="btn btn--accent" routerLink="/"><bv-icon name="search" [size]="18" /> Nouvelle réservation</a>
+      <button type="button" class="btn btn--ghost logout" (click)="logout()">Déconnexion</button>
+    </div>
+  </div>
+</div>
+
+<div class="container page">
+  <nav class="tabs" aria-label="Mon espace">
+    @for (l of links; track l.path) {
+      <a [routerLink]="l.path" routerLinkActive="active">{{ l.label }}</a>
+    }
+  </nav>
+  <router-outlet />
+</div>

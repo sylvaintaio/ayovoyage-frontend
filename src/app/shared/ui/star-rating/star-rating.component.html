@@ -1,0 +1,15 @@
+<fieldset class="rating" [class.rating--lg]="size() === 'lg'">
+  <legend>{{ label() }}</legend>
+  <div class="rating__stars">
+    @for (s of stars; track s) {
+      <label class="star" [class.star--on]="(value() ?? 0) >= s" [title]="labels[s]">
+        <input type="radio" [name]="name()" [value]="s" [checked]="value() === s" (change)="value.set(s)" />
+        <span aria-hidden="true">★</span>
+        <span class="sr-only">{{ s }} sur 5 — {{ labels[s] }}</span>
+      </label>
+    }
+    @if (value(); as v) {
+      <span class="rating__text">{{ labels[v] }}</span>
+    }
+  </div>
+</fieldset>

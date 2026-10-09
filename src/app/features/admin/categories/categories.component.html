@@ -1,0 +1,49 @@
+<div class="spread head">
+  <h1>Catégories de sièges</h1>
+  <button type="button" class="btn btn--primary" (click)="edit('new')">Nouvelle catégorie</button>
+</div>
+<p class="muted small">Prix d'un siège = tarif de base du départ + supplément de la catégorie + supplément propre au siège (défini dans le plan).</p>
+
+<div class="layout">
+  <bv-state [loading]="loading()" [error]="error()" [empty]="categories().length === 0" emptyText="Aucune catégorie." (retry)="load()">
+    <ul class="list-plain stack-sm">
+      @for (c of categories(); track c.id) {
+        <li class="card cat" [style.--cat]="c.color">
+          <div>
+            <p class="strong">{{ c.name }} <span class="muted small">({{ c.code }})</span></p>
+            <p class="small muted">{{ c.description }}</p>
+            @if (c.perks.length) {
+              <p class="small">{{ c.perks.join(' · ') }}</p>
+            }
+          </div>
+          <div class="right">
+            <span class="strong">+ {{ c.surcharge_amount | money }}</span>
+            <button type="button" class="btn btn--sm" (click)="edit(c)">Modifier</button>
+          </div>
+        </li>
+      }
+    </ul>
+  </bv-state>
+
+  @if (editing(); as current) {
+    <form class="card stack-sm" [formGroup]="form" (ngSubmit)="save()" aria-labelledby="t-cat">
+      <h2 id="t-cat" class="card__title">{{ current === 'new' ? 'Nouvelle catégorie' : 'Modifier la catégorie' }}</h2>
+      <div class="grid grid-2">
+        <div class="field"><label for="ca-code">Code</label><input id="ca-code" class="input" formControlName="code" placeholder="vip" /></div>
+        <div class="field"><label for="ca-name">Nom affiché</label><input id="ca-name" class="input" formControlName="name" /></div>
+        <div class="field"><label for="ca-sur">Supplément (F CFA)</label><input id="ca-sur" class="input" type="number" step="100" formControlName="surcharge_amount" /></div>
+        <div class="field"><label for="ca-color">Couleur sur le plan</label><input id="ca-color" class="input color" type="color" formControlName="color" /></div>
+      </div>
+      <div class="field"><label for="ca-desc">Description</label><input id="ca-desc" class="input" formControlName="description" /></div>
+      <div class="field">
+        <label for="ca-perks">Avantages (un par ligne)</label>
+        <textarea id="ca-perks" class="textarea" formControlName="perks" placeholder="Embarquement prioritaire&#10;Bagage supplémentaire"></textarea>
+      </div>
+      <div class="field"><label for="ca-order">Ordre d'affichage</label><input id="ca-order" class="input" type="number" formControlName="sort_order" /></div>
+      <div class="form-actions">
+        <button type="button" class="btn" (click)="editing.set(null)">Annuler</button>
+        <button type="submit" class="btn btn--primary" [disabled]="saving()">Enregistrer</button>
+      </div>
+    </form>
+  }
+</div>

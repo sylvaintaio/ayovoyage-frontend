@@ -1,0 +1,25 @@
+<ol class="list-plain tiers">
+  @for (t of store.tiers(); track t.code; let i = $index; let n = $count) {
+    <li class="tier">
+      <span class="tier__level" [attr.aria-label]="'Niveau ' + (i + 1) + ' sur ' + n">
+        @for (step of steps(n); track step) {
+          <span class="tier__bar" [class.tier__bar--on]="step <= i"></span>
+        }
+      </span>
+      <span class="tier__name">{{ t.name }}</span>
+      <span class="tier__cond">{{ t.min_trips === 0 ? 'Dès l’inscription' : t.min_trips + ' voyages / 12 mois' }}</span>
+      @if (t.discount_percent) {
+        <span class="tier__discount figures">−{{ t.discount_percent }} %</span>
+        <span class="tier__discount-label">sur vos billets</span>
+      } @else {
+        <span class="tier__discount tier__discount--text figures">Points</span>
+        <span class="tier__discount-label">à chaque voyage</span>
+      }
+      <ul class="check-list small">
+        @for (p of t.perks; track p) {
+          <li>{{ p }}</li>
+        }
+      </ul>
+    </li>
+  }
+</ol>

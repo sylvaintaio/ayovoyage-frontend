@@ -1,0 +1,26 @@
+@use 'mixins' as *;
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-5);
+
+  @include from($bp-md) {
+    grid-template-columns: 1fr 1.4fr;
+    align-items: start;
+  }
+}
+
+.channel {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-4);
+  color: var(--bv-ink);
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+a.channel:hover {
+  border-color: var(--bv-primary);
+}

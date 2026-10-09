@@ -1,0 +1,25 @@
+@use 'mixins' as *;
+
+.narrow {
+  max-width: 680px;
+}
+
+.eyebrow {
+  margin-bottom: var(--bv-space-2);
+}
+
+.trip {
+  margin-bottom: var(--bv-space-5);
+  color: var(--bv-ink-muted);
+}
+
+.details {
+  display: grid;
+  gap: var(--bv-space-4);
+  padding: var(--bv-space-4) 0;
+  border-block: 1px solid var(--bv-line);
+
+  @include from($bp-sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

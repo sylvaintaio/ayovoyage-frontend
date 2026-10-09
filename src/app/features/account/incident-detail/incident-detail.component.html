@@ -1,0 +1,52 @@
+<bv-state [loading]="loading()" [error]="error()" (retry)="load(id())">
+  @if (incident(); as i) {
+    <div class="page">
+      <a routerLink="/compte/reclamations" class="small">← Mes réclamations</a>
+      <header class="head">
+        <div>
+          <h2>{{ categories[i.category] }}</h2>
+          <p class="small muted">
+            Dossier {{ i.reference }} · ouvert le {{ i.created_at | date: 'd MMMM y' }}
+          </p>
+        </div>
+        <bv-status-badge [status]="i.status" domain="incident" />
+      </header>
+      @if (i.resolution && !open()) {
+        <p class="alert alert--success"><strong>Solution :</strong> {{ i.resolution }}</p>
+      }
+      <ol class="list-plain thread">
+        @for (e of i.events; track $index) {
+          <li class="msg" [class.msg--me]="e.author_type !== 'staff' && e.author_type !== 'system'">
+            <p class="msg__meta">
+              {{ e.author_type === 'staff' ? 'Service client' : 'Vous' }} ·
+              {{ e.created_at | date: 'd MMM, HH:mm' }}
+            </p>
+            <p class="msg__text">{{ e.action === 'created' ? i.description : e.note }}</p>
+          </li>
+        }
+      </ol>
+      @if (open()) {
+        <form class="card stack-sm" (ngSubmit)="send()">
+          <label for="mi-msg" class="strong">Ajouter une précision</label>
+          <textarea
+            id="mi-msg"
+            class="textarea"
+            rows="3"
+            name="msg"
+            [ngModel]="message()"
+            (ngModelChange)="message.set($event)"
+          ></textarea>
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn--primary"
+              [disabled]="sending() || message().trim().length < 2"
+            >
+              Envoyer
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+  }
+</bv-state>

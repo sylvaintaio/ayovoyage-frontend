@@ -1,0 +1,52 @@
+.page {
+  display: grid;
+  gap: var(--bv-space-4);
+}
+
+.invite {
+  border-top: 4px solid var(--bv-accent);
+
+  h2 {
+    margin: var(--bv-space-2) 0;
+  }
+}
+
+.code-label {
+  margin: var(--bv-space-4) 0 0;
+}
+
+.code {
+  margin: 0 0 var(--bv-space-4);
+  color: var(--bv-primary);
+  font-size: var(--bv-text-3xl);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.link {
+  margin: var(--bv-space-3) 0 0;
+  word-break: break-all;
+}
+
+.enter {
+  display: flex;
+  gap: var(--bv-space-2);
+
+  .input {
+    flex: 1;
+    text-transform: uppercase;
+  }
+}
+
+.friends li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bv-space-2) var(--bv-space-3);
+  padding: var(--bv-space-3) 0;
+  border-bottom: 1px solid var(--bv-line);
+
+  .badge {
+    margin-left: auto;
+  }
+}

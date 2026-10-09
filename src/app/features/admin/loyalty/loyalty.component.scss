@@ -1,0 +1,61 @@
+@use 'mixins' as *;
+
+.kpis {
+  margin-bottom: var(--bv-space-4);
+}
+
+.tiers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-3);
+}
+
+.tier {
+  display: grid;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-3);
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-sm);
+
+  @include from($bp-md) {
+    grid-template-columns: 1fr 1fr 110px 110px 2fr auto;
+    align-items: end;
+  }
+}
+
+.adjust {
+  margin-top: var(--bv-space-5);
+}
+
+.tier__rules {
+  display: grid;
+  gap: var(--bv-space-3);
+  margin: 0;
+  padding: var(--bv-space-3);
+  border: 1px dashed var(--bv-line);
+  border-radius: var(--bv-radius-sm);
+
+  legend {
+    padding: 0 var(--bv-space-1);
+    color: var(--bv-ink-muted);
+    font-size: var(--bv-text-xs);
+    font-weight: 600;
+  }
+
+  @include from($bp-md) {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr 1.4fr;
+    align-items: end;
+
+    .checkbox {
+      padding-bottom: var(--bv-space-3);
+    }
+  }
+}
+
+.sub {
+  margin: var(--bv-space-4) 0 0;
+  padding-top: var(--bv-space-4);
+  border-top: 1px solid var(--bv-line);
+  font-size: var(--bv-text-md);
+}

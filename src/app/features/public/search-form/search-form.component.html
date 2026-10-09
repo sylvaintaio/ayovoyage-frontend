@@ -1,0 +1,30 @@
+<form class="search" [class.search--compact]="compact()" [formGroup]="form" (ngSubmit)="submit()" aria-label="Rechercher un départ">
+  <div class="field">
+    <label for="sf-from">Départ</label>
+    <select id="sf-from" class="select" formControlName="from" required>
+      <option value="" disabled>Ville de départ</option>
+      @for (c of cities(); track c.id) {
+        <option [value]="c.slug">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+
+  <button type="button" class="btn btn--ghost swap" aria-label="Inverser départ et arrivée" (click)="swap()">⇄</button>
+
+  <div class="field">
+    <label for="sf-to">Arrivée</label>
+    <select id="sf-to" class="select" formControlName="to" required>
+      <option value="" disabled>Ville d'arrivée</option>
+      @for (c of cities(); track c.id) {
+        <option [value]="c.slug">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="sf-date">Date</label>
+    <input id="sf-date" class="input" type="date" formControlName="date" [min]="today" required />
+  </div>
+
+  <button type="submit" class="btn btn--primary submit">Rechercher</button>
+</form>

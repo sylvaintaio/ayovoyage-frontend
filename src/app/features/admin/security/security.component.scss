@@ -1,0 +1,36 @@
+@use 'mixins' as *;
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+  }
+}
+
+.card {
+  max-width: 640px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.tips ul {
+  display: grid;
+  gap: var(--bv-space-2);
+  margin: 0;
+  padding-left: var(--bv-space-5);
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-sm);
+  line-height: 1.5;
+}

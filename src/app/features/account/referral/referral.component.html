@@ -1,0 +1,66 @@
+<bv-state [loading]="loading()" [error]="error()" (retry)="load()">
+  @if (info(); as i) {
+    <div class="page">
+      <section class="card invite" aria-labelledby="t-invite">
+        <span class="eyebrow">Parrainage</span>
+        <h2 id="t-invite">Invitez vos proches</h2>
+        <p>
+          @if (i.referee_reward) {
+            Ils bénéficient de <strong>{{ i.referee_reward | money }}</strong> de remise sur leur premier voyage,
+          } @else {
+            Ils découvrent la réservation en ligne,
+          }
+          @if (i.referrer_points) {
+            et vous gagnez <strong>{{ i.referrer_points }} points</strong> de fidélité quand ils ont voyagé.
+          } @else {
+            et voyagent avec vous.
+          }
+        </p>
+        <p class="code-label small muted">Votre code</p>
+        <p class="code mono">{{ i.code }}</p>
+        <div class="cluster">
+          <a class="btn btn--primary" [href]="whatsappShare(i)" target="_blank" rel="noopener">Partager sur WhatsApp</a>
+          <button type="button" class="btn" (click)="copy(i)">Copier le lien</button>
+        </div>
+        <p class="small muted link">{{ i.share_url }}</p>
+      </section>
+
+      @if (i.referred_by) {
+        <p class="alert alert--success">
+          Vous avez été invité par <strong>{{ i.referred_by }}</strong>.
+          @if (i.welcome_available) { Votre offre de bienvenue s'applique automatiquement à votre premier voyage payé. }
+        </p>
+      } @else if (i.can_enter_code) {
+        <form class="card stack-sm" (ngSubmit)="submit()" aria-labelledby="t-code">
+          <h2 id="t-code" class="card__title">Un proche vous a invité ?</h2>
+          <div class="enter">
+            <label for="rf-code" class="sr-only">Code de parrainage</label>
+            <input id="rf-code" name="code" class="input mono" maxlength="20" placeholder="Code de votre parrain"
+              [ngModel]="code()" (ngModelChange)="code.set($event)" />
+            <button type="submit" class="btn" [disabled]="saving() || code().trim().length < 4">Valider</button>
+          </div>
+          <p class="field__hint">Possible tant que vous n'avez pas encore voyagé.</p>
+        </form>
+      }
+
+      <section class="card" aria-labelledby="t-friends">
+        <h2 id="t-friends" class="card__title">Vos filleuls</h2>
+        @if (i.friends.length === 0) {
+          <p class="muted">Personne pour le moment. Partagez votre lien !</p>
+        } @else {
+          <ul class="friends list-plain">
+            @for (f of i.friends; track $index) {
+              <li>
+                <span class="strong">{{ f.first_name }}</span>
+                <span class="small muted">inscrit le {{ f.created_at | date: 'd MMM yyyy' }}</span>
+                <span class="badge" [class.badge--success]="f.status === 'rewarded'">
+                  {{ f.status === 'rewarded' ? 'Points gagnés' : f.status === 'pending' ? 'Pas encore voyagé' : 'Non éligible' }}
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+  }
+</bv-state>

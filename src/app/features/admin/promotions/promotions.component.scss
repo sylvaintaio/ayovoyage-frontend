@@ -1,0 +1,68 @@
+@use 'mixins' as *;
+
+:host {
+  display: block;
+}
+
+.head {
+  margin-bottom: var(--bv-space-2);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.page {
+  display: grid;
+  gap: var(--bv-space-4);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+
+  p {
+    margin: 0;
+  }
+}
+
+.search {
+  display: flex;
+  gap: var(--bv-space-2);
+
+  .input {
+    width: min(280px, 60vw);
+  }
+}
+
+.badge {
+  margin-left: var(--bv-space-1);
+}
+
+td .btn + .btn {
+  margin-left: var(--bv-space-1);
+}
+
+.stats-row td {
+  background: var(--bv-surface-alt);
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-3) var(--bv-space-6);
+  margin: 0;
+
+  dt {
+    color: var(--bv-ink-muted);
+    font-size: var(--bv-text-xs);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--bv-text-lg);
+  }
+}

@@ -1,0 +1,192 @@
+<bv-state [loading]="loading()" [error]="error()" (retry)="load(id())">
+  @if (incident(); as i) {
+    <div class="page">
+      <a routerLink="/admin/reclamations" class="small">← Réclamations</a>
+      <header class="head">
+        <div>
+          <h1>{{ i.reference }} — {{ categories[i.category] }}</h1>
+          <p class="muted">
+            {{ subjects[i.subject_type] }}
+            @if (i.parcel_id) {
+              <a [routerLink]="['/admin/colis', i.parcel_id]">{{ i.tracking_number }}</a>
+            } @else if (i.baggage_tag) {
+              {{ i.baggage_tag }}
+            }
+            @if (i.booking_reference) {
+              · réservation {{ i.booking_reference }}
+            }
+            · ouvert le {{ i.created_at | date: 'd MMMM à HH:mm' }}
+          </p>
+        </div>
+        <div class="cluster">
+          <bv-status-badge [status]="i.priority" domain="priority" />
+          <bv-status-badge [status]="i.status" domain="incident" />
+        </div>
+      </header>
+
+      <div class="layout">
+        <div class="stack">
+          <section class="card stack-sm">
+            <h2 class="card__title">Déclaration</h2>
+            <p class="who">
+              <strong>{{ i.reporter_name }}</strong> ·
+              <a [href]="'tel:' + i.reporter_phone">{{ i.reporter_phone }}</a>&nbsp;
+              <span class="muted"
+                >({{
+                  i.reporter_type === 'staff'
+                    ? 'saisi en agence'
+                    : i.reporter_type === 'customer'
+                      ? 'client connecté'
+                      : 'formulaire de suivi'
+                }})</span
+              >
+            </p>
+            <p class="desc">{{ i.description }}</p>
+            @if (i.attachments.length) {
+              <div class="photos">
+                @for (a of i.attachments; track a) {
+                  <a [href]="'/v1/admin/attachments/' + a | apiUrl" target="_blank" rel="noopener">
+                    <img
+                      [src]="'/v1/admin/attachments/' + a | apiUrl"
+                      alt="Photo jointe par le déclarant"
+                    />
+                  </a>
+                }
+              </div>
+            }
+          </section>
+
+          <section class="card stack-sm" aria-labelledby="t-thread">
+            <h2 id="t-thread" class="card__title">Échanges</h2>
+            @if (i.status !== 'resolved' && i.status !== 'rejected') {
+              <form class="reply" (ngSubmit)="comment()">
+                <label for="id-msg" class="sr-only">Message</label>
+                <textarea
+                  id="id-msg"
+                  class="textarea"
+                  rows="3"
+                  name="msg"
+                  [placeholder]="
+                    isPublic()
+                      ? 'Réponse au client (envoyée par SMS)…'
+                      : 'Note interne, invisible du client…'
+                  "
+                  [ngModel]="message()"
+                  (ngModelChange)="message.set($event)"
+                ></textarea>
+                <div class="spread">
+                  <label class="checkbox"
+                    ><input
+                      type="checkbox"
+                      name="pub"
+                      [ngModel]="isPublic()"
+                      (ngModelChange)="isPublic.set($event)"
+                    />
+                    Visible par le client</label
+                  >
+                  <button
+                    type="submit"
+                    class="btn btn--primary btn--sm"
+                    [disabled]="busy() || message().trim().length < 2"
+                  >
+                    {{ isPublic() ? 'Envoyer au client' : 'Ajouter la note' }}
+                  </button>
+                </div>
+              </form>
+            }
+            <ol class="list-plain thread">
+              @for (e of events(); track $index) {
+                <li
+                  class="msg"
+                  [class.msg--internal]="!e.is_public"
+                  [class.msg--client]="e.author_type !== 'staff' && e.author_type !== 'system'"
+                >
+                  <p class="msg__meta">
+                    <strong>{{ e.author_name || 'Système' }}</strong> ·
+                    {{ actions[e.action] ?? e.action }} · {{ e.created_at | date: 'd MMM, HH:mm' }}
+                    @if (!e.is_public) {
+                      <span class="badge">Interne</span>
+                    }
+                  </p>
+                  @if (e.note) {
+                    <p class="msg__text">{{ e.note }}</p>
+                  }
+                </li>
+              }
+            </ol>
+          </section>
+        </div>
+
+        <aside class="card stack-sm" aria-labelledby="t-treat">
+          <h2 id="t-treat" class="card__title">Traitement</h2>
+          <div class="field">
+            <label for="id-status">Statut</label>
+            <select
+              id="id-status"
+              class="select"
+              [ngModel]="status()"
+              (ngModelChange)="status.set($event)"
+            >
+              <option value="open">Ouvert</option>
+              <option value="in_progress">En cours</option>
+              <option value="resolved">Résolu</option>
+              <option value="rejected">Clos sans suite</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="id-prio">Priorité</label>
+            <select
+              id="id-prio"
+              class="select"
+              [ngModel]="priority()"
+              (ngModelChange)="priority.set($event)"
+            >
+              <option value="low">Basse</option>
+              <option value="normal">Normale</option>
+              <option value="high">Haute</option>
+              <option value="urgent">Urgente</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="id-assign">Responsable</label>
+            @if (staff().length) {
+              <select
+                id="id-assign"
+                class="select"
+                [ngModel]="assignedTo()"
+                (ngModelChange)="assignedTo.set($event)"
+              >
+                <option value="">Non attribué</option>
+                @for (s of staff(); track s.id) {
+                  <option [value]="s.id">{{ s.full_name }}</option>
+                }
+              </select>
+            } @else {
+              <p class="small">{{ i.assigned_name || 'Non attribué' }}</p>
+            }
+            @if (assignedTo() !== auth.me()?.staff?.id) {
+              <button type="button" class="link" (click)="assignToMe()">Me l’attribuer</button>
+            }
+          </div>
+          <div class="field">
+            <label for="id-res">Solution {{ closing() ? '(envoyée au client)' : '' }}</label>
+            <textarea
+              id="id-res"
+              class="textarea"
+              rows="4"
+              [ngModel]="resolution()"
+              (ngModelChange)="resolution.set($event)"
+              placeholder="Ex. colis retrouvé et livré ; indemnisation de 15 000 F en agence…"
+            ></textarea>
+          </div>
+          <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="save()">
+            Enregistrer
+          </button>
+          @if (i.resolved_at) {
+            <p class="small muted">Clos le {{ i.resolved_at | date: 'd MMMM à HH:mm' }}.</p>
+          }
+        </aside>
+      </div>
+    </div>
+  }
+</bv-state>

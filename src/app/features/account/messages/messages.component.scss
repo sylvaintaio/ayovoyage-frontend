@@ -1,0 +1,130 @@
+@use 'mixins' as *;
+
+.msg {
+  padding: 0;
+  overflow: hidden;
+
+  &[open] .msg__head {
+    border-bottom: 1px solid var(--bv-line);
+  }
+}
+
+.msg__head {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-4);
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover .msg__title {
+    color: var(--bv-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bv-primary);
+    outline-offset: -2px;
+  }
+}
+
+.msg__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bv-primary-soft);
+  color: var(--bv-primary);
+
+  &--sms {
+    background: var(--bv-accent-soft);
+    color: var(--bv-accent-strong);
+  }
+}
+
+.msg__main {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.msg__title {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.msg__meta {
+  overflow: hidden;
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msg__side {
+  display: grid;
+  flex: none;
+  justify-items: end;
+  gap: 4px;
+}
+
+.msg__date {
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-xs);
+  white-space: nowrap;
+}
+
+.msg__date--inline {
+  display: none;
+}
+
+.msg__failed {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--bv-danger-soft);
+  color: var(--bv-danger);
+  font-size: var(--bv-text-xs);
+  font-weight: 700;
+}
+
+.msg__simulated {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--bv-surface-alt);
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-xs);
+  font-weight: 700;
+}
+
+.msg__body {
+  margin: 0;
+  padding: var(--bv-space-4);
+  color: var(--bv-ink);
+  font-size: var(--bv-text-sm);
+  line-height: 1.6;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+@include until($bp-sm) {
+  .msg__head {
+    align-items: flex-start;
+  }
+
+  .msg__side .msg__date {
+    display: none;
+  }
+
+  .msg__date--inline {
+    display: block;
+  }
+}

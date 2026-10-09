@@ -1,0 +1,87 @@
+<section class="band">
+  <div class="container">
+    <button type="button" class="summary" [attr.aria-expanded]="editing()" (click)="editing.set(!editing())">
+      <span class="summary__route">{{ cityName(from()) }} <bv-icon name="arrow" [size]="16" /> {{ cityName(to()) }}</span>
+      <span class="summary__date">{{ date() | date: 'EEE d MMM' }}</span>
+      <span class="summary__edit">{{ editing() ? 'Fermer' : 'Modifier' }}</span>
+    </button>
+    <div class="band__form" [class.band__form--open]="editing()">
+      <bv-search-form [from]="from() ?? ''" [to]="to() ?? ''" [date]="date() ?? ''" [compact]="true" />
+    </div>
+  </div>
+</section>
+
+<div class="container page">
+  <div class="toolbar">
+    <h1 class="title">Départs du {{ date() | date: 'EEEE d MMMM' }}</h1>
+    <nav class="days" aria-label="Changer de jour">
+      <a class="btn btn--sm" routerLink="/recherche" [queryParams]="{ from: from(), to: to(), date: shiftDate(-1) }">
+        <bv-icon name="arrow" [size]="16" class="flip" /> Veille
+      </a>
+      <a class="btn btn--sm" routerLink="/recherche" [queryParams]="{ from: from(), to: to(), date: shiftDate(1) }">
+        Lendemain <bv-icon name="arrow" [size]="16" />
+      </a>
+    </nav>
+  </div>
+
+  <bv-state
+    [loading]="loading()"
+    [error]="error()"
+    [empty]="results().length === 0"
+    emptyIcon="bus"
+    emptyTitle="Aucun départ ce jour-là"
+    emptyText="Essayez la veille ou le lendemain, ou contactez-nous pour un voyage de groupe."
+    (retry)="retry()"
+  >
+    <ul class="list-plain results">
+      @for (r of results(); track r.id) {
+        <li class="ticket">
+          <div class="ticket__main">
+            <div class="ticket__company">
+              <span class="strong">{{ r.company_name }}</span>
+              <span class="muted small">{{ r.bus_model }}</span>
+            </div>
+            <div class="trip">
+              <div class="trip__end">
+                <span class="trip__time">{{ r.departure_at | date: 'HH:mm' }}</span>
+                <span class="trip__place">{{ r.origin_agency_name }}</span>
+              </div>
+              <div class="trip__line">
+                <span class="trip__duration">{{ duration(r.duration_minutes) }}</span>
+              </div>
+              <div class="trip__end trip__end--to">
+                <span class="trip__time">{{ r.arrival_eta | date: 'HH:mm' }}</span>
+                <span class="trip__place">{{ r.destination_agency_name }}</span>
+              </div>
+            </div>
+            <ul class="list-plain perks">
+              <li><bv-icon name="bag" [size]="16" /> {{ r.included_baggage_kg }} kg inclus</li>
+              @for (a of r.bus_amenities; track a) {
+                <li><bv-icon [name]="amenity(a).icon" [size]="16" /> {{ amenity(a).label }}</li>
+              }
+            </ul>
+          </div>
+
+          <div class="ticket__stub ticket-cut">
+            <span class="muted small">à partir de</span>
+            @if (r.early_bird; as eb) {
+              <span class="eb">−{{ eb.percent }} % réservez tôt</span>
+              <span class="price">{{ discounted(r.base_price, eb.percent) | money }}</span>
+              <s class="was small">{{ r.base_price | money }}</s>
+            } @else {
+              <span class="price">{{ r.base_price | money }}</span>
+            }
+            <span class="seats" [class.seats--low]="r.available_seats < 10">
+              {{ r.available_seats }} {{ r.available_seats > 1 ? 'places libres' : 'place libre' }}
+            </span>
+            @if (r.available_seats > 0) {
+              <a class="btn btn--primary btn--block" [routerLink]="['/departs', r.id]">Choisir mes sièges</a>
+            } @else {
+              <span class="badge badge--danger">Complet</span>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  </bv-state>
+</div>

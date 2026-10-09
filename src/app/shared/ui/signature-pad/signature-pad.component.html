@@ -1,0 +1,16 @@
+<div class="pad" [class.pad--empty]="empty()">
+  <canvas
+    #canvas
+    aria-label="Zone de signature"
+    role="img"
+    (pointerdown)="start($event)"
+    (pointermove)="move($event)"
+    (pointerup)="end()"
+    (pointercancel)="end()"
+    (pointerleave)="end()"
+  ></canvas>
+  @if (empty()) {
+    <span class="hint" aria-hidden="true">Signez ici</span>
+  }
+  <button type="button" class="clear" (click)="clear()" [disabled]="empty()">Effacer</button>
+</div>

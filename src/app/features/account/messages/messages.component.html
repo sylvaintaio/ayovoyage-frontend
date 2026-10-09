@@ -1,0 +1,43 @@
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="messages().length === 0"
+  emptyIcon="mail"
+  emptyTitle="Aucun message pour l’instant"
+  emptyText="Les e-mails et SMS que nous vous envoyons (bienvenue, billets, horaires…) apparaîtront ici."
+  (retry)="load()"
+>
+  <ul class="list-plain stack-sm">
+    @for (m of messages(); track m.id) {
+      <li>
+        <details class="card msg">
+          <summary class="msg__head">
+            <span class="msg__icon" [class.msg__icon--sms]="m.channel !== 'email'" aria-hidden="true">
+              <bv-icon [name]="m.channel === 'email' ? 'mail' : 'chat'" [size]="18" />
+            </span>
+            <span class="msg__main">
+              <span class="msg__title">{{ title(m) }}</span>
+              <span class="msg__meta">
+                {{ m.channel === 'email' ? 'E-mail' : 'SMS' }} · {{ m.recipient }}{{ m.company ? ' · ' + m.company : '' }}
+              </span>
+              <time class="msg__date msg__date--inline" [attr.datetime]="m.created_at">{{ m.created_at | date: 'd MMM y, HH:mm' }}</time>
+            </span>
+            <span class="msg__side">
+              <time class="msg__date" [attr.datetime]="m.created_at">{{ m.created_at | date: 'd MMM y, HH:mm' }}</time>
+              @if (m.status === 'failed') {
+                <span class="msg__failed">Non distribué</span>
+              } @else if (m.status === 'simulated') {
+                <span class="msg__simulated" title="Mode test : aucun envoi réel">Non envoyé (test)</span>
+              }
+            </span>
+          </summary>
+          @if (m.body) {
+            <p class="msg__body">{{ m.body }}</p>
+          } @else {
+            <p class="msg__body muted">Contenu non conservé pour ce message.</p>
+          }
+        </details>
+      </li>
+    }
+  </ul>
+</bv-state>

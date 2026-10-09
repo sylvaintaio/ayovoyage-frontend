@@ -1,0 +1,34 @@
+@use 'mixins' as *;
+
+.filters {
+  display: grid;
+  gap: var(--bv-space-3);
+
+  @include from($bp-md) {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+.agency {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-2);
+
+  p {
+    margin: 0;
+  }
+
+  .card__title {
+    margin: 0;
+  }
+}
+
+.services {
+  gap: var(--bv-space-1);
+}
+
+.actions {
+  margin-top: auto;
+  padding-top: var(--bv-space-2);
+  gap: var(--bv-space-2);
+}

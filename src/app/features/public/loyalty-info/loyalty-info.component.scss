@@ -1,0 +1,36 @@
+@use 'mixins' as *;
+
+.actions {
+  margin-top: var(--bv-space-4);
+}
+
+.rules {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.rule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-2);
+  padding: var(--bv-space-5);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-sand);
+
+  strong {
+    font-size: var(--bv-text-xl);
+    color: var(--bv-primary);
+  }
+
+  span {
+    color: var(--bv-ink-muted);
+  }
+}
+
+.narrow {
+  max-width: 860px;
+}

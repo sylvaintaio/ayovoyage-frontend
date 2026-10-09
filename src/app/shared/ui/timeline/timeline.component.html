@@ -1,0 +1,22 @@
+<ol class="timeline">
+  @for (it of items(); track $index) {
+    <li class="item" [class.item--current]="it.tone === 'current'" [class.item--alert]="it.tone === 'alert'">
+      <span class="dot" aria-hidden="true"></span>
+      <div class="body">
+        <p class="label">{{ it.label }}</p>
+        <p class="meta">
+          <time [attr.datetime]="it.at">{{ it.at | date: 'EEE d MMM, HH:mm' }}</time>
+          @if (it.place) {
+            · {{ it.place }}
+          }
+          @if (it.author) {
+            · {{ it.author }}
+          }
+        </p>
+        @if (it.note) {
+          <p class="note">{{ it.note }}</p>
+        }
+      </div>
+    </li>
+  }
+</ol>

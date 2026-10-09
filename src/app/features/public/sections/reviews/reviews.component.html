@@ -1,0 +1,35 @@
+@if (data(); as d) {
+  @if (d.reviews.length) {
+    <section class="section section--sand" aria-labelledby="t-reviews">
+      <div class="container">
+        <div class="section__bar">
+          <div class="section__head">
+            <span class="eyebrow">Avis</span>
+            <h2 id="t-reviews" class="section-title">L’avis de nos voyageurs</h2>
+          </div>
+          <p class="score">
+            <span class="score__value figures">{{ d.average | number: '1.1-1' }}</span>
+            <span class="score__on">/ 5</span>
+            <span class="score__count">{{ d.total }} avis vérifiés</span>
+          </p>
+        </div>
+        <ul class="list-plain reviews">
+          @for (r of d.reviews; track r.id) {
+            <li class="review">
+              <span class="review__stars" [attr.aria-label]="r.rating + ' sur 5'">
+                @for (s of stars; track s) {
+                  <span aria-hidden="true" [class.on]="s <= r.rating">★</span>
+                }
+              </span>
+              <p class="review__text">« {{ r.comment }} »</p>
+              <p class="review__who"><strong>{{ r.name }}</strong>, {{ r.city }} · {{ r.route }}</p>
+              @if (r.reply) {
+                <p class="review__reply"><strong>Réponse de {{ r.company_name }} :</strong> {{ r.reply }}</p>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+  }
+}

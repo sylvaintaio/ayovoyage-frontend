@@ -1,0 +1,108 @@
+@use 'mixins' as *;
+
+:host {
+  display: block;
+}
+
+.head {
+  margin-bottom: var(--bv-space-2);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.page {
+  display: grid;
+  gap: var(--bv-space-4);
+}
+
+.kpis {
+  display: grid;
+  gap: var(--bv-space-3);
+
+  @include from($bp-md) {
+    grid-template-columns: 1fr 1fr 1.4fr;
+  }
+}
+
+.kpi {
+  display: grid;
+  gap: 2px;
+}
+
+.kpi__label {
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-sm);
+}
+
+.kpi__value {
+  font-size: var(--bv-text-xl);
+}
+
+.kpi__sub {
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-xs);
+}
+
+.criteria dl {
+  display: grid;
+  grid-template-columns: repeat(4, auto 1fr);
+  gap: 2px var(--bv-space-2);
+  margin: var(--bv-space-1) 0 0;
+  font-size: var(--bv-text-sm);
+
+  dt {
+    color: var(--bv-ink-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+  }
+}
+
+.reviews {
+  display: grid;
+  gap: var(--bv-space-3);
+}
+
+.review {
+  display: grid;
+  gap: var(--bv-space-2);
+
+  &--bad {
+    border-left: 4px solid var(--bv-danger);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__stars {
+    color: var(--bv-line-strong);
+    font-size: var(--bv-text-lg);
+    letter-spacing: 2px;
+
+    .on {
+      color: var(--bv-accent);
+    }
+  }
+
+  &__reply {
+    padding: var(--bv-space-3);
+    border-left: 3px solid var(--bv-primary);
+    background: var(--bv-surface-alt);
+    font-size: var(--bv-text-sm);
+  }
+}
+
+.actions {
+  margin-top: var(--bv-space-1);
+}

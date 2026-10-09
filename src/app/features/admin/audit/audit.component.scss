@@ -1,0 +1,29 @@
+.head {
+  margin-bottom: var(--bv-space-2);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.filter {
+  width: auto;
+}
+
+pre {
+  max-height: 260px;
+  margin: 0;
+  padding: var(--bv-space-3);
+  overflow: auto;
+  border-radius: var(--bv-radius-sm);
+  background: var(--bv-surface-alt);
+  font-size: var(--bv-text-xs);
+}
+
+.detail td {
+  background: var(--bv-surface);
+}
+
+.more {
+  margin-top: var(--bv-space-4);
+}

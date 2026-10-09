@@ -1,0 +1,152 @@
+<div class="spread head">
+  <h1>Promotions</h1>
+</div>
+<p class="muted small">
+  Codes promo à communiquer aux clients, et tarifs réduits pour ceux qui réservent tôt. Chaque remise apparaît
+  sur la facture ; un code d'une réservation non payée redevient disponible.
+</p>
+
+<nav class="tabs" aria-label="Type de promotion">
+  <a href="" [class.active]="tab() === 'codes'" (click)="$event.preventDefault(); tab.set('codes')">Codes promo</a>
+  <a href="" [class.active]="tab() === 'rules'" (click)="$event.preventDefault(); tab.set('rules')">Réservez tôt</a>
+</nav>
+
+<bv-state [loading]="loading()" [error]="error()" (retry)="load()">
+  @if (tab() === 'codes') {
+    <div class="page">
+      <div class="toolbar">
+        <form class="search" role="search" (ngSubmit)="load()">
+          <input class="input" type="search" name="q" maxlength="40" placeholder="Code ou libellé" aria-label="Rechercher un code"
+            [ngModel]="q()" (ngModelChange)="q.set($event)" />
+          <button type="submit" class="btn">Rechercher</button>
+        </form>
+        @if (canEdit) {
+          <div class="cluster">
+            <button type="button" class="btn" (click)="openPromo('batch')">Générer une série</button>
+            <button type="button" class="btn btn--primary" (click)="openPromo('create')">Nouveau code</button>
+          </div>
+        }
+      </div>
+
+      @if (lastBatch(); as b) {
+        <p class="alert alert--success spread">
+          <span>{{ b.count }} codes à usage unique générés.</span>
+          <a class="btn btn--sm" [href]="exportUrl(b.id)" download>Télécharger la liste (CSV)</a>
+        </p>
+      }
+
+      @if (codes().length === 0) {
+        <p class="muted">Aucun code promo pour le moment.</p>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Code</th>
+                <th scope="col">Remise</th>
+                <th scope="col">Validité</th>
+                <th scope="col" class="text-right">Utilisations</th>
+                <th scope="col" class="text-right">Coût</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of codes(); track p.id) {
+                <tr>
+                  <td>
+                    <span class="mono strong">{{ p.code }}</span>
+                    @if (!p.is_active) { <span class="badge">Inactif</span> }
+                    @else if (expired(p)) { <span class="badge">Expiré</span> }
+                    @if (p.label) { <br /><span class="small muted">{{ p.label }}</span> }
+                  </td>
+                  <td class="small">
+                    {{ p.description }}
+                    @if (p.first_trip_only) { <br /><span class="muted">Premier voyage</span> }
+                    @if (p.min_amount) { <br /><span class="muted">Dès {{ p.min_amount | money }}</span> }
+                  </td>
+                  <td class="small nowrap">
+                    {{ p.valid_from ? (p.valid_from | date: 'dd/MM/yy') : '—' }} → {{ p.valid_to ? (p.valid_to | date: 'dd/MM/yy') : '—' }}
+                  </td>
+                  <td class="text-right figures">{{ p.uses }}{{ p.usage_limit ? ' / ' + p.usage_limit : '' }}</td>
+                  <td class="text-right figures nowrap">{{ p.discount_total | money }}</td>
+                  <td class="text-right nowrap">
+                    <button type="button" class="btn btn--sm btn--ghost" (click)="toggleStats(p)">Résultats</button>
+                    @if (canEdit) {
+                      <button type="button" class="btn btn--sm" (click)="openPromo('edit', p)">Modifier</button>
+                    }
+                  </td>
+                </tr>
+                @if (stats()[p.id]; as s) {
+                  <tr class="stats-row">
+                    <td colspan="6">
+                      <dl class="stats">
+                        <div><dt>Réservations payées</dt><dd class="figures">{{ s.uses }}</dd></div>
+                        <div><dt>En attente</dt><dd class="figures">{{ s.pending }}</dd></div>
+                        <div><dt>Clients</dt><dd class="figures">{{ s.customers }}</dd></div>
+                        <div><dt>Chiffre d'affaires</dt><dd class="figures">{{ s.revenue | money }}</dd></div>
+                        <div><dt>Coût des remises</dt><dd class="figures">{{ s.discount_total | money }}</dd></div>
+                      </dl>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        <a class="small" [href]="exportUrl()" download>Exporter tous les codes (CSV)</a>
+      }
+    </div>
+  } @else {
+    <div class="page">
+      <div class="toolbar">
+        <p class="muted small">Une seule règle s'applique par départ : la plus avantageuse pour le client.</p>
+        @if (canEdit) {
+          <button type="button" class="btn btn--primary" (click)="openRule()">Nouveau tarif</button>
+        }
+      </div>
+      @if (rules().length === 0) {
+        <p class="muted">Aucun tarif « réservez tôt ».</p>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Tarif</th>
+                <th scope="col">Ligne</th>
+                <th scope="col">Condition</th>
+                <th scope="col" class="text-right">Remise</th>
+                <th scope="col" class="text-right">Places / départ</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of rules(); track r.id) {
+                <tr>
+                  <td>
+                    <span class="strong">{{ r.label }}</span>
+                    @if (!r.is_active) { <span class="badge">Inactif</span> }
+                    @if (r.valid_from || r.valid_to) {
+                      <br /><span class="small muted">Départs {{ r.valid_from ? 'du ' + (r.valid_from | date: 'dd/MM/yy') : '' }} {{ r.valid_to ? 'au ' + (r.valid_to | date: 'dd/MM/yy') : '' }}</span>
+                    }
+                    @if (r.excluded_dates.length) {
+                      <br /><span class="small muted">{{ r.excluded_dates.length }} jour(s) exclu(s)</span>
+                    }
+                  </td>
+                  <td class="small">{{ r.route_name || 'Toutes' }}</td>
+                  <td class="small">Au moins {{ r.min_days_before }} jour(s) avant</td>
+                  <td class="text-right figures">−{{ r.percent }} %</td>
+                  <td class="text-right figures">{{ r.seat_quota }}</td>
+                  <td class="text-right">
+                    @if (canEdit) {
+                      <button type="button" class="btn btn--sm" (click)="openRule(r)">Modifier</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</bv-state>

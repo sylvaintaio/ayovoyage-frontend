@@ -1,0 +1,200 @@
+<h1>Paramètres de la compagnie</h1>
+
+<form class="stack box" [formGroup]="form" (ngSubmit)="save()">
+  <section class="card stack-sm" aria-labelledby="t-co">
+    <h2 id="t-co" class="card__title">Compagnie</h2>
+    <div class="grid grid-2">
+      <div class="field"><label for="se-name">Nom commercial</label><input id="se-name" class="input" formControlName="name" /></div>
+      <div class="field"><label for="se-legal">Raison sociale</label><input id="se-legal" class="input" formControlName="legal_name" /></div>
+      <div class="field"><label for="se-phone">Téléphone</label><input id="se-phone" class="input" type="tel" formControlName="phone" /></div>
+      <div class="field"><label for="se-email">E-mail</label><input id="se-email" class="input" type="email" formControlName="email" /></div>
+    </div>
+    <div class="field"><label for="se-logo">Logo (adresse de l'image)</label><input id="se-logo" class="input" formControlName="logo_url" /></div>
+  </section>
+
+  <section class="card stack-sm" aria-labelledby="t-billing">
+    <h2 id="t-billing" class="card__title">Facturation</h2>
+    <p class="muted small">
+      Imprimé sur chaque facture et avoir. Une facture est émise automatiquement à chaque paiement encaissé.
+    </p>
+    <div class="grid grid-2">
+      <div class="field">
+        <label for="se-ifu">IFU</label>
+        <input id="se-ifu" class="input" formControlName="tax_id" inputmode="numeric" maxlength="30" />
+        <span class="field__hint">Identifiant fiscal unique (13 chiffres).</span>
+      </div>
+      <div class="field">
+        <label for="se-rccm">RCCM</label>
+        <input id="se-rccm" class="input" formControlName="trade_register" maxlength="60" placeholder="RB/COT/24 B 1234" />
+      </div>
+    </div>
+    <div class="field">
+      <label for="se-address">Adresse du siège</label>
+      <input id="se-address" class="input" formControlName="address" maxlength="300" />
+    </div>
+    <div class="grid grid-2">
+      <div class="field">
+        <label for="se-prefix">Préfixe des numéros</label>
+        <input id="se-prefix" class="input" formControlName="invoice_prefix" maxlength="8" autocapitalize="characters" />
+        <span class="field__hint">Ex. FAC → FAC-2026-000001. Les avoirs sont numérotés AV-….</span>
+        @if (form.controls.invoice_prefix.invalid && form.controls.invoice_prefix.touched) {
+          <span class="field__error">2 à 8 lettres majuscules ou chiffres.</span>
+        }
+      </div>
+    </div>
+    <div class="field">
+      <label for="se-footer">Mentions en pied de facture</label>
+      <textarea id="se-footer" class="textarea" rows="3" formControlName="invoice_footer" maxlength="1000"
+        placeholder="Ex. TVA non applicable — régime de la taxe professionnelle synthétique."></textarea>
+      <span class="field__hint">Régime fiscal, conditions, coordonnées bancaires… à valider avec votre comptable.</span>
+    </div>
+  </section>
+
+  <section class="card stack-sm" aria-labelledby="t-rules">
+    <h2 id="t-rules" class="card__title">Règles commerciales</h2>
+    <div class="grid grid-2">
+      <div class="field">
+        <label for="se-hold">Blocage des sièges pendant le paiement (minutes)</label>
+        <input id="se-hold" class="input" type="number" formControlName="booking_hold_minutes" />
+      </div>
+      <div class="field">
+        <label for="se-cutoff">Fermeture des ventes en ligne avant départ (minutes)</label>
+        <input id="se-cutoff" class="input" type="number" formControlName="sales_cutoff_minutes" />
+        <span class="field__hint">Le guichet peut vendre jusqu'au départ.</span>
+      </div>
+      <div class="field">
+        <label for="se-cancel">Annulation par le client jusqu'à (heures avant départ)</label>
+        <input id="se-cancel" class="input" type="number" formControlName="cancellation_cutoff_hours" />
+      </div>
+      <div class="field">
+        <label for="se-fee">Frais d'annulation (%)</label>
+        <input id="se-fee" class="input" type="number" formControlName="cancellation_fee_percent" />
+      </div>
+      <div class="field">
+        <label for="se-threshold">Seuil de double validation des remboursements (F CFA)</label>
+        <input id="se-threshold" class="input" type="number" step="1000" formControlName="refund_approval_threshold" />
+        <span class="field__hint">Au-delà : validation par un administrateur ou la finance, jamais par le demandeur.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card stack-sm" aria-labelledby="t-paylater" formGroupName="pay_later">
+    <h2 id="t-paylater" class="card__title">Paiement en agence</h2>
+    <label class="checkbox">
+      <input type="checkbox" formControlName="enabled" />
+      <span>Les clients peuvent réserver en ligne et payer plus tard en agence</span>
+    </label>
+    @if (form.controls.pay_later.controls.enabled.value) {
+      <p class="muted small">
+        Les places restent bloquées jusqu'à la date limite ; le client reçoit la référence, la liste des agences et un rappel.
+        Sans paiement, les places sont libérées automatiquement.
+      </p>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="se-pl-hold">Délai pour payer (heures)</label>
+          <input id="se-pl-hold" class="input" type="number" formControlName="hold_hours" />
+        </div>
+        <div class="field">
+          <label for="se-pl-cutoff">Paiement au plus tard (minutes avant le départ)</label>
+          <input id="se-pl-cutoff" class="input" type="number" step="15" formControlName="cutoff_minutes" />
+          <span class="field__hint">La date limite est la plus proche des deux.</span>
+        </div>
+        <div class="field">
+          <label for="se-pl-seats">Places au plus par réservation</label>
+          <input id="se-pl-seats" class="input" type="number" formControlName="max_seats" />
+        </div>
+        <div class="field">
+          <label for="se-pl-active">Réservations en attente au plus par numéro</label>
+          <input id="se-pl-active" class="input" type="number" formControlName="max_active" />
+        </div>
+        <div class="field">
+          <label for="se-pl-quota">Part maximale d'un départ en attente de paiement (%)</label>
+          <input id="se-pl-quota" class="input" type="number" formControlName="quota_percent" />
+          <span class="field__hint">Évite qu'un bus soit bloqué par des réservations jamais payées.</span>
+        </div>
+        <div class="field">
+          <label for="se-pl-strikes">Oublis tolérés (30 jours)</label>
+          <input id="se-pl-strikes" class="input" type="number" formControlName="strikes" />
+          <span class="field__hint">Au-delà, l'option est retirée au numéro pendant 30 jours.</span>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="card stack-sm" aria-labelledby="t-change">
+    <h2 id="t-change" class="card__title">Modification des billets</h2>
+    <label class="checkbox">
+      <input type="checkbox" formControlName="change_enabled" />
+      <span>Les clients peuvent changer de départ depuis leur espace</span>
+    </label>
+    @if (form.controls.change_enabled.value) {
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="se-ch-cutoff">Modification jusqu'à (heures avant départ)</label>
+          <input id="se-ch-cutoff" class="input" type="number" formControlName="change_cutoff_hours" />
+        </div>
+        <div class="field">
+          <label for="se-ch-fee">Frais par passager (F CFA)</label>
+          <input id="se-ch-fee" class="input" type="number" step="100" formControlName="change_fee_amount" />
+          <span class="field__hint">Offerts aux niveaux de fidélité qui ont l'avantage « modification gratuite ».</span>
+        </div>
+        <div class="field">
+          <label for="se-ch-max">Modifications possibles par réservation</label>
+          <input id="se-ch-max" class="input" type="number" formControlName="change_max_count" />
+        </div>
+        <div class="field">
+          <label for="se-ch-window">Nouveau départ au plus tard (jours après le départ initial)</label>
+          <input id="se-ch-window" class="input" type="number" formControlName="change_window_days" />
+        </div>
+      </div>
+      <p class="field__hint">Même trajet et mêmes passagers. Différence de tarif à payer si le nouveau départ est plus cher ; non remboursée s'il est moins cher.</p>
+    }
+  </section>
+
+  <section class="card stack-sm" aria-labelledby="t-bag">
+    <h2 id="t-bag" class="card__title">Bagages</h2>
+    <div class="field">
+      <label for="se-bag">Excédent de bagage, par kilo (F CFA)</label>
+      <input id="se-bag" class="input" type="number" step="50" formControlName="baggage_extra_per_kg" />
+      <span class="field__hint">Facturé au-delà du poids inclus sur la ligne, cumulé par passager.</span>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">Enregistrer</button>
+  </div>
+</form>
+
+<section class="card stack-sm box tariffs" aria-labelledby="t-parcels">
+  <h2 id="t-parcels" class="card__title">Tarifs colis</h2>
+  <p class="small muted">Prix = prix de base + prix par kilo au-delà du poids inclus (kilo entamé) + assurance (% de la valeur déclarée), arrondi à 25 F.</p>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Catégorie</th>
+          <th scope="col">Prix de base</th>
+          <th scope="col">Kg inclus</th>
+          <th scope="col">Prix / kg en plus</th>
+          <th scope="col">Poids max (kg)</th>
+          <th scope="col">Assurance %</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of tariffs(); track t.category; let i = $index) {
+          <tr>
+            <td><input class="input input--sm" [value]="t.label" (change)="setTariff(i, 'label', $any($event.target).value)" [attr.aria-label]="'Libellé ' + t.category" /></td>
+            <td><input class="input input--sm" type="number" step="100" [value]="t.base_price" (change)="setTariff(i, 'base_price', $any($event.target).value)" aria-label="Prix de base" /></td>
+            <td><input class="input input--sm" type="number" step="0.5" [value]="t.included_kg" (change)="setTariff(i, 'included_kg', $any($event.target).value)" aria-label="Kilos inclus" /></td>
+            <td><input class="input input--sm" type="number" step="25" [value]="t.price_per_kg" (change)="setTariff(i, 'price_per_kg', $any($event.target).value)" aria-label="Prix par kilo" /></td>
+            <td><input class="input input--sm" type="number" step="1" [value]="t.max_weight_kg" (change)="setTariff(i, 'max_weight_kg', $any($event.target).value)" aria-label="Poids maximal" /></td>
+            <td><input class="input input--sm" type="number" step="0.5" [value]="t.insurance_percent" (change)="setTariff(i, 'insurance_percent', $any($event.target).value)" aria-label="Assurance" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="form-actions">
+    <button type="button" class="btn btn--primary" [disabled]="savingTariffs()" (click)="saveTariffs()">Enregistrer les tarifs</button>
+  </div>
+</section>

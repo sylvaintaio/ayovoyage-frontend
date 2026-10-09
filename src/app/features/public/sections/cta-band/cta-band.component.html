@@ -1,0 +1,16 @@
+<section class="cta">
+  <div class="container cta__inner">
+    <div>
+      <h2>{{ title() }}</h2>
+      @if (text()) {
+        <p>{{ text() }}</p>
+      }
+    </div>
+    <div class="cluster">
+      <a class="btn btn--brand btn--lg" [routerLink]="primaryLink()">{{ primaryLabel() }}</a>
+      @if (secondaryLabel()) {
+        <a class="btn btn--ghost cta__secondary" [routerLink]="secondaryLink()">{{ secondaryLabel() }}</a>
+      }
+    </div>
+  </div>
+</section>

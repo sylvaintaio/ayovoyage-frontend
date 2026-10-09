@@ -1,0 +1,86 @@
+// ------------------------------------------------------------------
+// Jetons de design. Une seule source de vérité pour tout le site :
+// site public, espace client et back-office.
+// ------------------------------------------------------------------
+:root {
+  // Marque « gare routière » : un vert profond, un jaune signal réservé aux
+  // actions et aux repères, des neutres papier. Rien d'autre.
+  --bv-primary: #0b4d3a;
+  --bv-primary-strong: #073a2b;
+  --bv-primary-soft: #e2ece8;
+  --bv-primary-tint: #f0f5f3;
+  --bv-accent: #f5b700;
+  --bv-accent-strong: #e0a600;
+  --bv-accent-soft: #fff3c4;
+  --bv-on-accent: #121614; // texte sur jaune (le blanc n'y est pas lisible)
+
+  // Neutres
+  --bv-ink: #121614;
+  --bv-ink-muted: #4b544f;
+  --bv-ink-soft: #7d8681;
+  --bv-line: #e1e3df;
+  --bv-line-strong: #c6cbc6;
+  --bv-surface: #fff;
+  --bv-surface-alt: #f4f4f1; // gris papier : fonds de section
+  --bv-bg: #f4f4f1;
+  --bv-sand: var(--bv-surface-alt); // ancien nom, conservé pour compatibilité
+  --bv-night: #0a2a20;
+  --bv-night-2: #113a2d;
+  --bv-night-ink: #b9cdc4;
+  --bv-board: #061a14; // tableau des départs
+
+  // États (distincts du vert de marque)
+  --bv-success: #157347;
+  --bv-success-soft: #e3f1e9;
+  --bv-warning: #8a5a00;
+  --bv-warning-soft: #fff3c4;
+  --bv-danger: #b42318;
+  --bv-danger-soft: #fdeceb;
+  --bv-info: #1d4ed8;
+  --bv-info-soft: #e8eefc;
+
+  // Typographie — échelle modulaire (1.2)
+  --bv-font: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', roboto, arial, sans-serif;
+  --bv-stretch-display: 108%; // titres légèrement élargis, comme une signalétique
+  --bv-stretch-board: 78%; // heures, prix, numéros : condensés, façon tableau des départs
+  --bv-text-xs: 0.75rem; // 12
+  --bv-text-sm: 0.875rem; // 14
+  --bv-text-md: 1rem; // 16
+  --bv-text-lg: 1.125rem; // 18
+  --bv-text-xl: 1.375rem; // 22
+  --bv-text-2xl: 1.75rem; // 28
+  --bv-text-3xl: 2.25rem; // 36
+  --bv-text-4xl: 3rem; // 48
+
+  // Espacements (grille de 4 px)
+  --bv-space-1: 0.25rem; // 4
+  --bv-space-2: 0.5rem; // 8
+  --bv-space-3: 0.75rem; // 12
+  --bv-space-4: 1rem; // 16
+  --bv-space-5: 1.5rem; // 24
+  --bv-space-6: 2rem; // 32
+  --bv-space-7: 3rem; // 48
+  --bv-space-8: 4.5rem; // 72
+
+  // Formes : angles nets, comme des panneaux
+  --bv-radius-sm: 4px; // badges, petits éléments
+  --bv-radius: 6px; // boutons, champs
+  --bv-radius-lg: 8px; // cartes
+  --bv-radius-xl: 12px; // grands panneaux, fenêtres
+
+  // Hauteurs de contrôles (boutons et champs alignés au pixel)
+  --bv-control-sm: 36px;
+  --bv-control: 44px;
+  --bv-control-lg: 52px;
+
+  // Élévations : discrètes, les filets font l'essentiel du travail
+  --bv-shadow-sm: none;
+  --bv-shadow: 0 1px 2px rgb(18 22 20 / 6%), 0 4px 12px rgb(18 22 20 / 6%);
+  --bv-shadow-lg: 0 2px 4px rgb(10 42 32 / 8%), 0 16px 40px rgb(10 42 32 / 16%);
+  --bv-focus: 0 0 0 3px rgb(11 77 58 / 28%);
+
+  // Mise en page
+  --bv-container: 1180px;
+  --bv-header-h: 64px;
+  --bv-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}

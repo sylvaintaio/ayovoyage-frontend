@@ -1,0 +1,139 @@
+<bv-auth-shell variant="customer">
+  <div class="steps" aria-hidden="true">
+    <span [class.on]="true"></span>
+    <span [class.on]="step() !== 'identify'"></span>
+    <span [class.on]="step() === 'name'"></span>
+  </div>
+
+  @switch (step()) {
+    @case ('identify') {
+      <h1>Connexion</h1>
+      @if (parrain()) {
+        <p class="alert alert--success">Un proche vous invite : profitez d'une offre de bienvenue sur votre premier voyage.</p>
+      }
+      @if (forReport()) {
+        <p class="alert alert--info">Connectez-vous pour signaler un problème : vous pourrez ensuite suivre votre réclamation et échanger avec le service client.</p>
+      }
+      <p class="intro">
+        Pas de mot de passe à retenir : nous vous envoyons un code
+        {{ channel() === 'email' ? 'par e-mail' : 'par SMS' }}. Nouveau voyageur ? Votre compte est créé en même temps.
+      </p>
+
+      @if (channels().length > 1) {
+        <div class="switch" role="radiogroup" aria-label="Recevoir le code par">
+          <button type="button" role="radio" [attr.aria-checked]="channel() === 'email'" [class.on]="channel() === 'email'" (click)="setChannel('email')">
+            <bv-icon name="mail" [size]="16" /> E-mail
+          </button>
+          <button type="button" role="radio" [attr.aria-checked]="channel() === 'sms'" [class.on]="channel() === 'sms'" (click)="setChannel('sms')">
+            <bv-icon name="phone" [size]="16" /> SMS
+          </button>
+        </div>
+      }
+
+      <form class="form" (ngSubmit)="sendCode()" novalidate>
+        @if (channel() === 'email') {
+          <div class="field">
+            <label for="login-email">Adresse e-mail</label>
+            <input
+              id="login-email"
+              name="email"
+              class="input"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="vous@exemple.com"
+              [ngModel]="email()"
+              (ngModelChange)="email.set($event); error.set(null)"
+              [attr.aria-invalid]="!!error()"
+            />
+            <span class="field__hint">Pensez à vérifier vos courriers indésirables si le code n’arrive pas.</span>
+          </div>
+        } @else {
+          <div class="field">
+            <label for="login-phone">Numéro de téléphone</label>
+            <div class="input-group" [class.input-group--error]="!!error()">
+              @if (!international()) {
+                <span class="input-group__addon">+229</span>
+              }
+              <input
+                id="login-phone"
+                name="phone"
+                class="input"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel-national"
+                placeholder="01 97 00 00 00"
+                [ngModel]="phone()"
+                (ngModelChange)="onPhoneInput($event)"
+                [attr.aria-invalid]="!!error()"
+                aria-describedby="phone-hint"
+              />
+            </div>
+            <span id="phone-hint" class="field__hint">Hors du Bénin, commencez par l’indicatif : +33…, +225…</span>
+          </div>
+        }
+        @if (error()) {
+          <p class="alert alert--danger" role="alert">{{ error() }}</p>
+        }
+        <button type="submit" class="btn btn--primary btn--lg btn--block" [disabled]="busy() || !canSend()">
+          @if (busy()) { <span class="spinner" aria-hidden="true"></span> Envoi du code… } @else { Recevoir mon code }
+        </button>
+        <p class="consent">
+          En continuant, vous acceptez nos <a routerLink="/conditions">conditions de voyage</a> et notre
+          <a routerLink="/confidentialite">politique de confidentialité</a>. Un compte est créé automatiquement si vous n’en avez pas.
+        </p>
+      </form>
+    }
+
+    @case ('code') {
+      <h1>Vérification</h1>
+      <p class="intro">
+        Saisissez le code à 6 chiffres envoyé {{ channel() === 'email' ? 'à' : 'au' }}
+        <strong class="nowrap">{{ shownDestination() }}</strong>.
+        <button type="button" class="link" (click)="changeDestination()">Modifier</button>
+      </p>
+
+      <form class="form" (ngSubmit)="verify()" novalidate>
+        <bv-otp-input [(value)]="code" [invalid]="codeInvalid()" [disabled]="busy()" (completed)="verify($event)" />
+        @if (error()) {
+          <p class="alert alert--danger" role="alert">{{ error() }}</p>
+        }
+        <button type="submit" class="btn btn--primary btn--lg btn--block" [disabled]="busy() || code().length !== 6">
+          @if (busy()) { <span class="spinner" aria-hidden="true"></span> Vérification… } @else { Me connecter }
+        </button>
+        <p class="resend">
+          @if (resendIn() > 0) {
+            Code non reçu ? Nouvel envoi possible dans <strong>{{ resendIn() }} s</strong>
+          } @else {
+            Code non reçu ? <button type="button" class="link" [disabled]="busy()" (click)="sendCode()">Renvoyer un code</button>
+          }
+        </p>
+      </form>
+    }
+
+    @case ('name') {
+      <h1>Bienvenue à bord</h1>
+      <p class="intro">Votre compte est créé. Comment devons-nous vous appeler ? Ce nom figurera sur vos billets.</p>
+      <form class="form" (ngSubmit)="saveName()" novalidate>
+        <div class="field">
+          <label for="login-name">Nom et prénom</label>
+          <input id="login-name" name="fullName" class="input" autocomplete="name" placeholder="Ex. Mariam Adjovi"
+            [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" />
+        </div>
+        @if (error()) {
+          <p class="alert alert--danger" role="alert">{{ error() }}</p>
+        }
+        <button type="submit" class="btn btn--primary btn--lg btn--block" [disabled]="busy()">Continuer</button>
+      </form>
+    }
+  }
+
+  <div authFooter class="help">
+    Besoin d’aide ?
+    @if (whatsapp) {
+      <a [href]="whatsapp" target="_blank" rel="noopener"><bv-icon name="chat" [size]="16" /> Écrivez-nous sur WhatsApp</a>
+    } @else {
+      <a routerLink="/contact">Contactez-nous</a>
+    }
+  </div>
+</bv-auth-shell>

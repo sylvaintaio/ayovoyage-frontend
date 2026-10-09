@@ -1,0 +1,146 @@
+<bv-auth-shell variant="staff">
+  @switch (step()) {
+    @case ('verify') {
+      <h1>Vérification en deux étapes</h1>
+      <p class="intro">
+        @if (useRecovery()) {
+          Saisissez l’un de vos codes de secours. Chaque code ne fonctionne qu’une seule fois.
+        } @else {
+          Ouvrez votre application d’authentification et saisissez le code à 6 chiffres affiché pour
+          {{ brand }}.
+        }
+      </p>
+      <form class="form" (ngSubmit)="verify()" novalidate>
+        @if (useRecovery()) {
+          <div class="field">
+            <label for="al-recovery">Code de secours</label>
+            <input
+              id="al-recovery"
+              class="input mono"
+              autocomplete="off"
+              placeholder="XXXX-XXXX"
+              [value]="recovery()"
+              (input)="recovery.set($any($event.target).value)"
+            />
+          </div>
+        } @else {
+          <bv-otp-input
+            [(value)]="code"
+            [disabled]="busy()"
+            [invalid]="!!error()"
+            label="Code de l’application"
+            (completed)="verify($event)"
+          />
+        }
+        @if (error()) {
+          <p class="alert alert--danger" role="alert">{{ error() }}</p>
+        }
+        <button type="submit" class="btn btn--dark btn--lg btn--block" [disabled]="busy()">
+          @if (busy()) {
+            <span class="spinner" aria-hidden="true"></span> Vérification…
+          } @else {
+            Valider
+          }
+        </button>
+      </form>
+      <div class="alt">
+        <button type="button" class="link" (click)="toggleRecovery()">
+          {{
+            useRecovery()
+              ? 'Utiliser le code de l’application'
+              : 'Téléphone indisponible ? Utiliser un code de secours'
+          }}
+        </button>
+        <button type="button" class="link link--muted" (click)="restart()">
+          Changer de compte
+        </button>
+      </div>
+    }
+    @case ('setup') {
+      <h1>Sécurisez votre compte</h1>
+      <p class="intro">
+        La double authentification est obligatoire pour accéder au back-office. Vous n’aurez à la
+        configurer qu’une seule fois.
+      </p>
+      <bv-mfa-setup [mfaToken]="mfaToken()" (activated)="activated($event)" />
+      <div class="alt">
+        <button type="button" class="link link--muted" (click)="restart()">Annuler</button>
+      </div>
+    }
+    @case ('codes') {
+      <h1>Double authentification activée</h1>
+      <bv-recovery-codes
+        [codes]="recoveryCodes()"
+        [account]="form.controls.email.value"
+        doneLabel="Accéder au back-office"
+        (done)="enter()"
+      />
+    }
+    @default {
+      <h1>Espace professionnel</h1>
+      <p class="intro">Connectez-vous avec l’adresse e-mail fournie par votre compagnie.</p>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        @if (error()) {
+          <p class="alert alert--danger" role="alert">{{ error() }}</p>
+        }
+        <div class="field">
+          <label for="al-email">Adresse e-mail</label>
+          <input
+            id="al-email"
+            class="input"
+            type="email"
+            autocomplete="username"
+            placeholder="prenom.nom@compagnie.bj"
+            formControlName="email"
+          />
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <span class="field__error">Saisissez une adresse e-mail valide.</span>
+          }
+        </div>
+        <div class="field">
+          <label for="al-password">Mot de passe</label>
+          <div class="input-group">
+            <input
+              id="al-password"
+              class="input"
+              [type]="showPassword() ? 'text' : 'password'"
+              autocomplete="current-password"
+              formControlName="password"
+              (keydown)="detectCaps($event)"
+              (keyup)="detectCaps($event)"
+            />
+            <button
+              type="button"
+              class="toggle"
+              [attr.aria-pressed]="showPassword()"
+              [attr.aria-label]="
+                showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
+              (click)="showPassword.set(!showPassword())"
+            >
+              {{ showPassword() ? 'Masquer' : 'Afficher' }}
+            </button>
+          </div>
+          @if (capsLock()) {
+            <span class="field__hint caps">Majuscules verrouillées</span>
+          }
+        </div>
+        <button type="submit" class="btn btn--dark btn--lg btn--block" [disabled]="busy()">
+          @if (busy()) {
+            <span class="spinner" aria-hidden="true"></span> Connexion…
+          } @else {
+            Se connecter
+          }
+        </button>
+      </form>
+
+      <p class="security">
+        <bv-icon name="shield" [size]="16" /> Après 5 essais incorrects (mot de passe ou code), le
+        compte est bloqué 15 minutes.
+      </p>
+    }
+  }
+
+  <div authFooter>Mot de passe oublié ? Contactez l’administrateur de votre compagnie.</div>
+</bv-auth-shell>

@@ -1,0 +1,11 @@
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="invoices().length === 0"
+  emptyIcon="card"
+  emptyTitle="Aucune facture pour l’instant"
+  emptyText="Une facture est émise à chaque paiement (billets, bagages, colis) et un avoir à chaque remboursement."
+  (retry)="load()"
+>
+  <bv-invoice-list [invoices]="invoices()" />
+</bv-state>

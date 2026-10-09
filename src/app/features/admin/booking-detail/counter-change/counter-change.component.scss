@@ -1,0 +1,22 @@
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--bv-space-3);
+}
+
+tr.on td {
+  background: var(--bv-primary-soft);
+}
+
+.quote {
+  display: grid;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-4);
+  border-radius: var(--bv-radius);
+  background: var(--bv-surface-alt);
+
+  .dl,
+  .alert {
+    margin: 0;
+  }
+}

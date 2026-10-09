@@ -1,0 +1,48 @@
+<h1>Réservations</h1>
+
+<form class="card filters" (ngSubmit)="load(true)" role="search">
+  <div class="field">
+    <label for="ab-q">Référence ou téléphone</label>
+    <input id="ab-q" class="input" name="q" placeholder="BV7K3M9QXT ou 01 97 00 00 01" [ngModel]="q()" (ngModelChange)="q.set($event)" />
+  </div>
+  <div class="field">
+    <label for="ab-status">Statut</label>
+    <select id="ab-status" class="select" name="status" [ngModel]="status()" (ngModelChange)="status.set($event)">
+      <option value="">Tous</option>
+      <option value="pending">En attente de paiement</option>
+      <option value="confirmed">Confirmées</option>
+      <option value="cancelled">Annulées</option>
+      <option value="expired">Expirées</option>
+      <option value="refunded">Remboursées</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn--primary">Rechercher</button>
+</form>
+
+<bv-state [loading]="loading()" [error]="error()" [empty]="bookings().length === 0" emptyText="Aucune réservation trouvée." (retry)="load(true)">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Référence</th><th scope="col">Client</th><th scope="col">Départ</th>
+          <th scope="col">Canal</th><th scope="col">Montant</th><th scope="col">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of bookings(); track b.id) {
+          <tr>
+            <td class="nowrap"><a [routerLink]="['/admin/reservations', b.id]" class="strong">{{ b.reference }}</a></td>
+            <td>{{ b.contact_name }}<br /><span class="muted small">{{ b.contact_phone }}</span></td>
+            <td>{{ b.route_name }}<br /><span class="muted small">{{ b.departure_at | date }}</span></td>
+            <td>{{ channels[b.channel] }}</td>
+            <td class="nowrap">{{ b.total_amount | money }}</td>
+            <td><bv-status-badge [status]="b.status" domain="booking" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (hasMore()) {
+    <button type="button" class="btn more" (click)="load()">Afficher plus</button>
+  }
+</bv-state>

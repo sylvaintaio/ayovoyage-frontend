@@ -1,0 +1,22 @@
+@if (loading()) {
+  <div class="state" role="status">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Chargement…</span>
+  </div>
+} @else if (error()) {
+  <div class="alert alert--danger state-error" role="alert">
+    <span>{{ error() }}</span>
+    <button type="button" class="btn btn--sm" (click)="retry.emit()">Réessayer</button>
+  </div>
+} @else if (empty()) {
+  <div class="empty">
+    <span class="empty__icon"><bv-icon [name]="emptyIcon()" /></span>
+    @if (emptyTitle()) {
+      <h3>{{ emptyTitle() }}</h3>
+    }
+    <p>{{ emptyText() }}</p>
+    <ng-content select="[emptyAction]" />
+  </div>
+} @else {
+  <ng-content />
+}

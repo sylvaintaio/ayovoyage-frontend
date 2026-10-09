@@ -1,0 +1,59 @@
+<a routerLink="/admin/reclamations" class="small">← Réclamations</a>
+<h1>Nouvelle réclamation</h1>
+
+<form class="card stack box" [formGroup]="form" (ngSubmit)="save()" novalidate>
+  @if (error()) {
+    <p class="alert alert--danger" role="alert">{{ error() }}</p>
+  }
+  <div class="grid grid-2">
+    <div class="field">
+      <label for="if-kind">Concerne</label>
+      <select id="if-kind" class="select" formControlName="kind">
+        <option value="parcel">Un colis</option>
+        <option value="baggage">Un bagage</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="if-ref">{{ form.controls.kind.value === 'parcel' ? 'Numéro de suivi' : 'Étiquette bagage' }}</label>
+      <input id="if-ref" class="input mono" formControlName="reference" [placeholder]="form.controls.kind.value === 'parcel' ? 'CL…' : 'BG-…'" />
+    </div>
+    <div class="field">
+      <label for="if-cat">Problème</label>
+      <select id="if-cat" class="select" formControlName="category">
+        @for (c of categories; track c[0]) {
+          <option [value]="c[0]">{{ c[1] }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="if-prio">Priorité</label>
+      <select id="if-prio" class="select" formControlName="priority">
+        <option value="">Automatique</option>
+        <option value="low">Basse</option>
+        <option value="normal">Normale</option>
+        <option value="high">Haute</option>
+        <option value="urgent">Urgente</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="if-name">Déclarant</label>
+      <input id="if-name" class="input" formControlName="reporter_name" />
+    </div>
+    <div class="field">
+      <label for="if-phone">Téléphone du déclarant</label>
+      <input id="if-phone" class="input" type="tel" formControlName="reporter_phone" />
+      <span class="field__hint">Reçoit la référence du dossier et les réponses par SMS.</span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="if-desc">Description</label>
+    <textarea id="if-desc" class="textarea" rows="4" formControlName="description" placeholder="Ce qui s’est passé, l’état constaté, ce que demande le client…"></textarea>
+  </div>
+  <div class="field">
+    <span class="label">Photos (3 au plus)</span>
+    <bv-photo-picker [(photos)]="photos" />
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">Ouvrir le dossier</button>
+  </div>
+</form>

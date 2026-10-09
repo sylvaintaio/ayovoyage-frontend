@@ -1,0 +1,47 @@
+@use 'mixins' as *;
+
+.otp {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--bv-space-2);
+
+  @include from($bp-sm) {
+    gap: var(--bv-space-3);
+  }
+
+  &__box {
+    width: 100%;
+    height: 60px;
+    border: 1px solid var(--bv-line-strong);
+    border-radius: var(--bv-radius);
+    background: var(--bv-surface);
+    color: var(--bv-ink);
+    font: inherit;
+    font-size: var(--bv-text-2xl);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    caret-color: var(--bv-primary);
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+
+    &:focus {
+      @include focus-ring;
+
+      border-color: var(--bv-primary);
+    }
+
+    &--filled {
+      border-color: var(--bv-ink-soft);
+      background: var(--bv-primary-tint);
+    }
+
+    &--invalid {
+      border-color: var(--bv-danger);
+      background: var(--bv-danger-soft);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+}

@@ -1,0 +1,16 @@
+<div class="bv-dialog" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+  <h2 id="confirm-title">{{ data.title }}</h2>
+  <p id="confirm-message" class="muted">{{ data.message }}</p>
+  <div class="form-actions">
+    <button type="button" class="btn" (click)="ref.close(false)">Annuler</button>
+    <button
+      type="button"
+      class="btn"
+      [class.btn--danger]="data.danger"
+      [class.btn--primary]="!data.danger"
+      (click)="ref.close(true)"
+    >
+      {{ data.confirmLabel ?? 'Confirmer' }}
+    </button>
+  </div>
+</div>

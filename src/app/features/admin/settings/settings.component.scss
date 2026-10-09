@@ -1,0 +1,12 @@
+.box {
+  max-width: 900px;
+}
+
+.tariffs {
+  margin-top: var(--bv-space-5);
+
+  .input--sm {
+    min-width: 90px;
+    padding: var(--bv-space-1) var(--bv-space-2);
+  }
+}

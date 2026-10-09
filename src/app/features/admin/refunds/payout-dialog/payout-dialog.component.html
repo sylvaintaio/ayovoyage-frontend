@@ -1,0 +1,32 @@
+<div class="bv-dialog stack" role="dialog" aria-labelledby="po-title">
+  <h2 id="po-title">Remboursement versé ?</h2>
+  <p class="muted">Confirmez que {{ refund.amount | money }} ont bien été renvoyés au client (réservation {{ refund.booking_reference }}).</p>
+  <fieldset class="methods">
+    <legend>Mode de versement</legend>
+    @for (m of methods; track m.value) {
+      <label class="method" [class.on]="method() === m.value">
+        <input type="radio" name="method" [value]="m.value" [checked]="method() === m.value" (change)="method.set(m.value)" />
+        <span>
+          <strong>{{ m.label }}</strong>
+          @if (m.hint) {
+            <small>{{ m.hint }}</small>
+          }
+        </span>
+      </label>
+    }
+  </fieldset>
+  @if (method() === 'cash' && needsAgency) {
+    <div class="field">
+      <label for="po-agency">Agence qui a versé les espèces</label>
+      <select id="po-agency" class="select" [ngModel]="agencyId()" (ngModelChange)="agencyId.set($event)">
+        @for (a of agencies(); track a.id) {
+          <option [value]="a.id">{{ a.name }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div class="form-actions">
+    <button type="button" class="btn" (click)="ref.close()">Annuler</button>
+    <button type="button" class="btn btn--primary" (click)="confirm()">Oui, versé</button>
+  </div>
+</div>

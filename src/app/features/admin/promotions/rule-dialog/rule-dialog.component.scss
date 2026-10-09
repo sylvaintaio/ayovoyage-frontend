@@ -1,0 +1,19 @@
+.ex-row {
+  display: flex;
+  gap: var(--bv-space-2);
+}
+
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-2);
+  margin-top: var(--bv-space-2);
+
+  .link {
+    border: 0;
+    background: none;
+    font-size: var(--bv-text-lg);
+    line-height: 1;
+    cursor: pointer;
+  }
+}

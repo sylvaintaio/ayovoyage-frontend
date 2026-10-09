@@ -1,0 +1,28 @@
+<div class="spread top">
+  <p class="small muted">Suivez vos dossiers et échangez avec le service client.</p>
+  <a class="btn btn--primary btn--sm" routerLink="/compte/signaler">Signaler un problème</a>
+</div>
+
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="incidents().length === 0"
+  emptyIcon="check"
+  emptyTitle="Aucune réclamation"
+  emptyText="Un problème avec un voyage, un bagage ou un colis ? Signalez-le depuis la réservation ou le suivi du colis."
+  (retry)="load()"
+>
+  <ul class="list-plain stack-sm">
+    @for (i of incidents(); track i.id) {
+      <li>
+        <a class="card row" [routerLink]="['/compte/reclamations', i.id]">
+          <div>
+            <p class="strong">{{ categories[i.category] }} — {{ subjects[i.subject_type] }}</p>
+            <p class="small muted">{{ i.reference }} · {{ i.tracking_number || i.booking_reference }} · mis à jour le {{ i.updated_at | date: 'd MMM' }}</p>
+          </div>
+          <bv-status-badge [status]="i.status" domain="incident" />
+        </a>
+      </li>
+    }
+  </ul>
+</bv-state>

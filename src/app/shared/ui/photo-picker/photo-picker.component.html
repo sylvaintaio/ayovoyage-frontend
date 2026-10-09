@@ -1,0 +1,18 @@
+<div class="photos">
+  @for (p of photos(); track $index) {
+    <figure class="thumb">
+      <img [src]="p" alt="Photo jointe {{ $index + 1 }}" />
+      <button type="button" class="remove" (click)="remove($index)" [attr.aria-label]="'Retirer la photo ' + ($index + 1)">×</button>
+    </figure>
+  }
+  @if (photos().length < max()) {
+    <label class="add" [class.add--busy]="busy()">
+      <input type="file" accept="image/*" capture="environment" [multiple]="max() > 1" (change)="add($event)" [disabled]="busy()" />
+      <bv-icon name="camera" [size]="22" />
+      <span>{{ busy() ? 'Préparation…' : label() }}</span>
+    </label>
+  }
+</div>
+@if (error()) {
+  <p class="field__error">{{ error() }}</p>
+}

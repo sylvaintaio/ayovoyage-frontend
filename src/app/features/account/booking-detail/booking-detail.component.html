@@ -1,0 +1,227 @@
+<bv-state [loading]="loading()" [error]="error()" (retry)="load(id())">
+  @if (booking(); as b) {
+    <a routerLink="/compte/reservations" class="small">← Mes réservations</a>
+    <header class="head">
+      <div>
+        <h2>{{ b.departure.origin_city }} → {{ b.departure.destination_city }}</h2>
+        <p class="muted small cap">
+          {{ b.departure.departure_at | date: 'EEEE d MMMM yyyy, HH:mm' }} · {{ b.departure.origin_agency_name }} · {{ b.departure.company_name }}
+        </p>
+      </div>
+      <bv-status-badge [status]="b.status" domain="booking" />
+    </header>
+
+    @if (payable()) {
+      @if (b.payment_mode === 'agency') {
+        <div class="alert alert--warning stack-sm">
+          <strong>À payer en agence avant le {{ b.pay_by | date: 'EEEE d MMMM à HH:mm' }}</strong>
+          <span>
+            Présentez la référence <strong>{{ b.reference }}</strong> au guichet de l'une de nos
+            <a routerLink="/agences">agences</a> et réglez {{ b.total_amount | money }} en espèces ou Mobile Money.
+            Sans paiement à temps, les places seront libérées.
+          </span>
+          <a class="btn btn--sm btn--primary pay-online" [routerLink]="['/reservation', b.id, 'paiement']">Payer en ligne maintenant</a>
+        </div>
+      } @else {
+        <div class="alert alert--warning spread">
+          <span>Paiement en attente : vos sièges sont réservés jusqu'à {{ b.expires_at | date: 'HH:mm' }}.</span>
+          <a class="btn btn--sm btn--primary" [routerLink]="['/reservation', b.id, 'paiement']">Payer {{ b.total_amount | money }}</a>
+        </div>
+      }
+    }
+    @if (b.replaced_by; as r) {
+      <div class="alert alert--info spread">
+        <span>Ce voyage a été modifié : ces billets ne sont plus valables.</span>
+        <a class="btn btn--sm btn--primary" [routerLink]="['/compte/reservations', r.id]">Voir la réservation {{ r.reference }}</a>
+      </div>
+    } @else if (b.cancel_reason) {
+      <p class="alert">{{ b.cancel_reason }}</p>
+    }
+    @if (b.changed_from; as o) {
+      <p class="small muted">
+        Issue de la modification de la réservation
+        <a [routerLink]="['/compte/reservations', o.id]">{{ o.reference }}</a>.
+      </p>
+    }
+
+    @if (b.tickets.length) {
+      <section aria-labelledby="titre-billets">
+        <h3 id="titre-billets">Billets</h3>
+        <div class="grid grid-2">
+          @for (t of b.tickets; track t.id) {
+            <article class="card ticket" [class.ticket--off]="t.status !== 'valid'">
+              @if (t.status === 'valid') {
+                <bv-qr-code [value]="t.qr_payload" [size]="180" [label]="'QR code du billet de ' + t.passenger_name" />
+              }
+              <div class="stack-sm">
+                <p class="strong">{{ t.passenger_name }}</p>
+                <p class="small muted">Siège {{ t.seat_label }} · {{ t.ticket_number }}</p>
+                <bv-status-badge [status]="t.status" domain="ticket" />
+                @if (t.boarded_at) {
+                  <p class="small muted">Embarqué à {{ t.boarded_at | date: 'HH:mm' }}</p>
+                }
+                <a class="btn btn--sm" [href]="'/v1/tickets/' + t.id + '/pdf' | apiUrl" download>PDF</a>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (bags().length) {
+      <section class="card stack-sm" aria-labelledby="titre-bagages">
+        <h3 id="titre-bagages" class="card__title">Bagages en soute</h3>
+        <ul class="list-plain bags">
+          @for (bg of bags(); track bg.id) {
+            <li>
+              <span class="mono">{{ bg.tag_number }}</span>
+              <span class="small">{{ bg.passenger_name }} · {{ bg.weight_kg }} kg{{ bg.description ? ' · ' + bg.description : '' }}</span>
+              <bv-status-badge [status]="bg.status" domain="baggage" />
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <section class="card" aria-labelledby="titre-detail">
+      <h3 id="titre-detail" class="card__title">Détail — {{ b.reference }}</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th scope="col">Siège</th><th scope="col">Passager</th><th scope="col">Catégorie</th><th scope="col" class="text-right">Prix</th></tr>
+          </thead>
+          <tbody>
+            @for (s of b.seats; track s.seat_id) {
+              <tr>
+                <td>{{ s.seat_label }}</td>
+                <td>{{ s.passenger_name }}</td>
+                <td>{{ s.category_name }}</td>
+                <td class="text-right">{{ s.total_price | money }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <dl class="dl totals">
+        <dt>Sous-total</dt>
+        <dd>{{ b.subtotal_amount | money }}</dd>
+        @if (b.early_bird_amount) {
+          <dt>Tarif réservez tôt</dt>
+          <dd>− {{ b.early_bird_amount | money }}</dd>
+        }
+        @if (b.discount_amount - b.early_bird_amount > 0) {
+          <dt>Réduction fidélité</dt>
+          <dd>− {{ b.discount_amount - b.early_bird_amount | money }}</dd>
+        }
+        @if (b.promo_amount) {
+          <dt>Code promo {{ b.promo_code }}</dt>
+          <dd>− {{ b.promo_amount | money }}</dd>
+        }
+        @if (b.referral_amount) {
+          <dt>Offre de bienvenue (parrainage)</dt>
+          <dd>− {{ b.referral_amount | money }}</dd>
+        }
+        @if (b.loyalty_points_used) {
+          <dt>{{ b.loyalty_points_used }} points</dt>
+          <dd>− {{ b.loyalty_points_amount | money }}</dd>
+        }
+        @if (creditUsed()) {
+          <dt>Avoir de la réservation {{ b.changed_from?.reference }}</dt>
+          <dd>− {{ creditUsed() | money }}</dd>
+        }
+        @if (b.change_fee_amount) {
+          <dt>Frais de modification</dt>
+          <dd>{{ b.change_fee_amount | money }}</dd>
+        }
+        <dt>{{ b.changed_from ? 'Total payé pour la modification' : 'Total' }}</dt>
+        <dd>{{ b.total_amount | money }}</dd>
+        <dt>Canal</dt>
+        <dd>{{ channels[b.channel] }}</dd>
+        <dt>Bagage inclus</dt>
+        <dd>{{ b.departure.included_baggage_kg }} kg par passager</dd>
+        @if (b.billing_name) {
+          <dt>Facturé à</dt>
+          <dd>{{ b.billing_name }}{{ b.billing_tax_id ? ' (IFU ' + b.billing_tax_id + ')' : '' }}</dd>
+        }
+      </dl>
+    </section>
+
+    @if (invoices().length) {
+      <section class="card stack-sm" aria-labelledby="titre-factures">
+        <h3 id="titre-factures" class="card__title">Factures</h3>
+        <bv-invoice-list [invoices]="invoices()" />
+      </section>
+    }
+
+    @if (showConditions()) {
+      @if (policy(); as p) {
+        <section class="card conditions" aria-labelledby="titre-conditions">
+          <h3 id="titre-conditions" class="card__title">Annulation et modification</h3>
+          <div class="conditions__grid">
+            <div class="cond">
+              <p class="cond__title">Annulation</p>
+              @if (p.cancel.allowed) {
+                @if (b.status === 'pending') {
+                  <p class="small">Possible à tout moment tant que la réservation n’est pas payée.</p>
+                } @else {
+                  <p class="small">Possible jusqu’au <strong>{{ p.cancel.deadline | date: 'd MMMM à HH:mm' }}</strong> ({{ p.cancel.cutoff_hours }} h avant le départ).</p>
+                  <p class="small">
+                    @if (p.cancel.fee_percent) {
+                      Frais de {{ p.cancel.fee_percent }} % : vous seriez remboursé de <strong>{{ p.cancel.refund_amount | money }}</strong>.
+                    } @else {
+                      Sans frais : remboursement intégral de <strong>{{ p.cancel.refund_amount | money }}</strong>.
+                    }
+                  </p>
+                }
+              } @else {
+                <p class="small muted">{{ p.cancel.reason }}</p>
+              }
+              @if (p.cancel.tier_name) {
+                <p class="perk">Avantage {{ p.cancel.tier_name }} appliqué</p>
+              }
+            </div>
+            <div class="cond">
+              <p class="cond__title">Changement de départ</p>
+              @if (p.change.allowed) {
+                <p class="small">Possible jusqu’au <strong>{{ p.change.deadline | date: 'd MMMM à HH:mm' }}</strong>, vers un autre départ du même trajet jusqu’au {{ p.change.window_end | date: 'd MMMM' }}.</p>
+                <p class="small">
+                  @if (p.change.fee_per_passenger) {
+                    Frais de {{ p.change.fee_per_passenger | money }} par passager, plus la différence de tarif si le nouveau départ est plus cher.
+                  } @else {
+                    Sans frais ; seule une éventuelle différence de tarif est à payer.
+                  }
+                  {{ p.change.remaining_changes === 1 ? 'Une seule modification possible.' : p.change.remaining_changes + ' modifications possibles.' }}
+                </p>
+              } @else {
+                <p class="small muted">{{ p.change.reason }}</p>
+              }
+              @if (p.change.free_by_tier) {
+                <p class="perk">Avantage {{ p.change.tier_name }} : modification offerte</p>
+              }
+            </div>
+          </div>
+          <p class="small muted conditions__more"><a routerLink="/conditions">Toutes les conditions de voyage</a></p>
+        </section>
+      }
+    }
+
+    @if (changeable() || cancellable()) {
+      <div class="form-actions">
+        @if (changeable()) {
+          <a class="btn btn--primary" [routerLink]="['/compte/reservations', b.id, 'modifier']">Changer de départ</a>
+        }
+        @if (cancellable()) {
+          <button type="button" class="btn btn--danger" [disabled]="busy()" (click)="cancel()">Annuler la réservation</button>
+        }
+      </div>
+    }
+  }
+  @if (booking(); as b) {
+    @if (b.status === 'confirmed' || b.status === 'changed') {
+      <p class="small report">
+        Un problème pendant le voyage ou avec un bagage ?
+        <a [routerLink]="['/compte/reclamations/nouvelle']" [queryParams]="{ reservation: b.id }">Signaler un problème</a>
+      </p>
+    }
+  }
+</bv-state>

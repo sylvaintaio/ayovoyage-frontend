@@ -1,0 +1,117 @@
+<bv-hero />
+<bv-stats-band />
+
+@if (infoBanner) {
+  <div class="container info"><p class="alert alert--info">{{ infoBanner }}</p></div>
+}
+
+<section class="section section--white" aria-labelledby="t-routes">
+  <div class="container">
+    <div class="section__bar">
+      <div class="section__head">
+        <span class="eyebrow">Lignes</span>
+        <h2 id="t-routes" class="section-title">Les trajets les plus demandés</h2>
+        <p class="lead">Des départs réguliers, à prix connu d’avance.</p>
+      </div>
+      <a class="link-arrow" routerLink="/lignes">Toutes les lignes et tarifs <bv-icon name="arrow" [size]="16" /></a>
+    </div>
+    <bv-popular-routes [limit]="6" />
+  </div>
+</section>
+
+<section class="section section--sand" aria-labelledby="t-classes">
+  <div class="container">
+    <div class="section__head">
+      <span class="eyebrow">Confort</span>
+      <h2 id="t-classes" class="section-title">Choisissez votre façon de voyager</h2>
+      <p class="lead">Du siège Standard au VIP : chaque place est visible sur le plan du bus au moment de réserver.</p>
+    </div>
+    <bv-offers />
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="t-steps">
+  <div class="container">
+    <div class="section__head">
+      <span class="eyebrow">Réserver</span>
+      <h2 id="t-steps" class="section-title">Votre billet en quatre étapes</h2>
+      <p class="lead">Sans file d’attente au guichet, depuis votre téléphone.</p>
+    </div>
+    <bv-card-grid [items]="steps" variant="timeline" />
+    <div class="pay-row"><bv-payment-methods /></div>
+  </div>
+</section>
+
+<section class="section section--sand" aria-labelledby="t-services">
+  <div class="container">
+    <div class="section__head">
+      <span class="eyebrow">Services</span>
+      <h2 id="t-services" class="section-title">Bien plus qu’un billet de bus</h2>
+      <p class="lead">Voyageurs, familles, commerçants et entreprises : une solution pour chacun.</p>
+    </div>
+    <bv-card-grid [items]="services" [columns]="3" />
+  </div>
+</section>
+
+<section class="section section--night" aria-labelledby="t-comfort">
+  <div class="container split">
+    <div>
+      <span class="eyebrow">Sécurité</span>
+      <h2 id="t-comfort" class="section-title">Votre sécurité passe avant tout</h2>
+      <p class="lead">Une flotte entretenue, des équipes formées et des règles strictes à chaque départ.</p>
+      <ul class="check-list commitments">
+        @for (c of about.commitments; track c) {
+          <li>{{ c }}</li>
+        }
+      </ul>
+    </div>
+    <bv-card-grid [items]="comfort" variant="inline" />
+  </div>
+</section>
+
+@if (showcase.tiers().length) {
+  <section class="section section--white" aria-labelledby="t-loyalty">
+    <div class="container">
+      <div class="section__bar">
+        <div class="section__head">
+          <span class="eyebrow">Fidélité</span>
+          <h2 id="t-loyalty" class="section-title">Plus vous voyagez, plus vous êtes récompensé</h2>
+          <p class="lead">Des points à chaque voyage, même pour les billets achetés en agence.</p>
+        </div>
+        <a class="link-arrow" routerLink="/fidelite">Découvrir le programme <bv-icon name="arrow" [size]="16" /></a>
+      </div>
+      <bv-loyalty-tiers />
+    </div>
+  </section>
+}
+
+<bv-reviews />
+
+<section class="section section--sand" aria-labelledby="t-faq">
+  <div class="container faq">
+    <div>
+      <span class="eyebrow">Questions</span>
+      <h2 id="t-faq" class="section-title">Vous avez une question ?</h2>
+      <p class="lead">Les réponses aux questions les plus posées par nos voyageurs.</p>
+      <a class="link-arrow" routerLink="/faq">Toutes les questions <bv-icon name="arrow" [size]="16" /></a>
+
+      <div class="agencies">
+        <h3>Des agences pour vous accueillir</h3>
+        <p class="muted">Achetez vos billets, déposez ou retirez vos colis, patientez au calme avant le départ.</p>
+        <div class="cluster">
+          <a class="btn btn--brand" routerLink="/agences"><bv-icon name="pin" [size]="18" /> Trouver une agence</a>
+          @if (whatsapp) {
+            <a class="btn" [href]="whatsapp" target="_blank" rel="noopener"><bv-icon name="chat" [size]="18" /> WhatsApp</a>
+          }
+        </div>
+      </div>
+    </div>
+    <bv-faq-list [limit]="5" />
+  </div>
+</section>
+
+<bv-cta-band
+  title="Prêt pour votre prochain voyage ?"
+  text="Réservez en ligne en quelques minutes : billet par e-mail et dans votre espace."
+  secondaryLabel="Voyage de groupe ou entreprise"
+/>

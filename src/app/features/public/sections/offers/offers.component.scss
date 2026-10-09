@@ -1,0 +1,77 @@
+@use 'mixins' as *;
+
+.offers {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
+
+.offer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-5);
+  border: 1px solid var(--bv-line-strong);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-surface);
+
+  &--featured {
+    border: 2px solid var(--bv-ink);
+  }
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bv-space-2);
+
+    h3 {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--bv-space-2);
+      margin: 0;
+      font-size: var(--bv-text-xl);
+    }
+  }
+
+  // Même couleur que la légende du plan de sièges.
+  &__swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+
+  &__badge {
+    padding: 3px 8px;
+    border-radius: var(--bv-radius-sm);
+    background: var(--bv-accent);
+    color: var(--bv-on-accent);
+    font-size: var(--bv-text-xs);
+    font-weight: 700;
+  }
+
+  &__desc {
+    margin: 0;
+    color: var(--bv-ink-muted);
+  }
+
+  &__price {
+    margin: 0;
+    padding-block: var(--bv-space-3);
+    border-block: 1px solid var(--bv-line);
+
+    strong {
+      font-size: var(--bv-text-2xl);
+      color: var(--bv-primary);
+    }
+
+    span {
+      margin-left: var(--bv-space-1);
+      color: var(--bv-ink-muted);
+    }
+  }
+}

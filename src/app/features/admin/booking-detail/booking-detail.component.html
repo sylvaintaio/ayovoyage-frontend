@@ -1,0 +1,160 @@
+<bv-state [loading]="loading()" [error]="error()" (retry)="load(id())">
+  @if (booking(); as b) {
+    <a routerLink="/admin/reservations" class="small">← Réservations</a>
+    <header class="head">
+      <div>
+        <h1>{{ b.reference }}</h1>
+        <p class="muted cap">
+          <a [routerLink]="['/admin/departs', b.departure.id]">{{ b.departure.route_name }}</a> —
+          {{ b.departure.departure_at | date: 'EEEE d MMMM, HH:mm' }}
+        </p>
+      </div>
+      <bv-status-badge [status]="b.status" domain="booking" />
+    </header>
+
+    @if (b.status === 'pending' && collectable(b)) {
+      <div class="alert alert--warning spread">
+        <span>
+          @if (b.payment_mode === 'agency') {
+            <strong>À payer en agence</strong> avant le {{ b.pay_by | date: 'EEEE d MMMM à HH:mm' }} : {{ b.total_amount | money }}.
+          } @else {
+            <strong>En attente de paiement</strong> jusqu'à {{ b.expires_at | date: 'HH:mm' }} : {{ b.total_amount | money }}.
+          }
+        </span>
+        @if (canPrint) {
+          <button type="button" class="btn btn--primary btn--sm" (click)="collect(b)">Encaisser</button>
+        }
+      </div>
+    }
+
+    <div class="grid grid-2">
+      <section class="card">
+        <h2 class="card__title">Client</h2>
+        <dl class="dl">
+          <dt>Nom</dt><dd>{{ b.contact_name }}</dd>
+          <dt>Téléphone</dt><dd><a [href]="'tel:' + b.contact_phone">{{ b.contact_phone }}</a></dd>
+          @if (b.contact_email) { <dt>E-mail</dt><dd>{{ b.contact_email }}</dd> }
+          @if (b.billing_name) {
+            <dt>Facturé à</dt><dd>{{ b.billing_name }}{{ b.billing_tax_id ? ' (IFU ' + b.billing_tax_id + ')' : '' }}</dd>
+          }
+          <dt>Canal</dt><dd>{{ channels[b.channel] }}</dd>
+          <dt>Créée le</dt><dd>{{ b.created_at | date }}</dd>
+          @if (b.cancel_reason) { <dt>Motif</dt><dd>{{ b.cancel_reason }}</dd> }
+        </dl>
+      </section>
+      <section class="card">
+        <h2 class="card__title">Montants</h2>
+        <dl class="dl">
+          <dt>Sous-total</dt><dd>{{ b.subtotal_amount | money }}</dd>
+          @if (b.early_bird_amount) {
+            <dt>Réservez tôt</dt><dd>− {{ b.early_bird_amount | money }}</dd>
+          }
+          <dt>Réduction fidélité</dt><dd>{{ b.discount_amount - b.early_bird_amount | money }}</dd>
+          @if (b.promo_amount) {
+            <dt>Code {{ b.promo_code }}</dt><dd>− {{ b.promo_amount | money }}</dd>
+          }
+          @if (b.referral_amount) {
+            <dt>Parrainage</dt><dd>− {{ b.referral_amount | money }}</dd>
+          }
+          <dt>Points utilisés</dt><dd>{{ b.loyalty_points_used }} ({{ b.loyalty_points_amount | money }})</dd>
+          <dt>{{ b.changed_from ? 'Payé pour la modification' : 'Total' }}</dt><dd>{{ b.total_amount | money }}</dd>
+        </dl>
+        <h3 class="payments-title">Paiements</h3>
+        <ul class="list-plain small">
+          @for (p of b.payments; track p.id) {
+            <li class="spread"><span>{{ p.provider }} · {{ p.method }} · {{ p.amount | money }}</span><bv-status-badge [status]="p.status" domain="payment" /></li>
+          } @empty {
+            <li class="muted">Aucun paiement.</li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2 class="card__title">Passagers et billets</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th scope="col">Siège</th><th scope="col">Passager</th><th scope="col">Catégorie</th><th scope="col">Prix</th><th scope="col">Billet</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+          </thead>
+          <tbody>
+            @for (s of b.seats; track s.seat_id; let i = $index) {
+              @let t = b.tickets[i];
+              <tr>
+                <td>{{ s.seat_label }}</td>
+                <td>{{ s.passenger_name }}</td>
+                <td>{{ s.category_name }}</td>
+                <td class="nowrap">{{ s.total_price | money }}</td>
+                <td>
+                  @if (t) {
+                    <bv-status-badge [status]="t.status" domain="ticket" />
+                    <span class="small muted"> {{ t.ticket_number }}</span>
+                  } @else {
+                    <span class="muted small">—</span>
+                  }
+                </td>
+                <td class="text-right">
+                  @if (t && canPrint) {
+                    <a class="btn btn--sm" [href]="'/v1/admin/tickets/' + t.id + '/pdf' | apiUrl" target="_blank" rel="noopener">Imprimer</a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    @if (invoices().length > 0) {
+      <section class="card stack-sm" aria-labelledby="t-invoices">
+        <h2 id="t-invoices" class="card__title">Factures</h2>
+        <bv-invoice-list [invoices]="invoices()" scope="admin" />
+      </section>
+    }
+
+    @if (canBaggage && (b.status === 'confirmed' || b.status === 'changed')) {
+      <bv-booking-baggage [booking]="b" />
+    }
+
+    @if (b.replaced_by; as r) {
+      <p class="alert alert--info">Voyage modifié : remplacée par la réservation <a [routerLink]="['/admin/reservations', r.id]">{{ r.reference }}</a>.</p>
+    }
+    @if (b.changed_from; as o) {
+      <p class="small muted">Issue de la modification de la réservation <a [routerLink]="['/admin/reservations', o.id]">{{ o.reference }}</a>.</p>
+    }
+
+    @if (policy(); as p) {
+      @if (showChange()) {
+        <bv-counter-change [booking]="b" [policy]="p" (changed)="changed($event)" (closed)="showChange.set(false)" />
+      } @else if (p.change.allowed && !showCancel()) {
+        <div class="form-actions">
+          <button type="button" class="btn btn--primary" (click)="showChange.set(true)">Changer de départ</button>
+        </div>
+      }
+    }
+
+    @if (canCancel && (b.status === 'pending' || b.status === 'confirmed') && !showChange()) {
+      @if (showCancel()) {
+        <section class="card stack-sm danger-zone" aria-labelledby="t-cancel">
+          <h2 id="t-cancel" class="card__title">Annuler la réservation</h2>
+          <div class="field">
+            <label for="bd-reason">Motif (obligatoire, journalisé)</label>
+            <input id="bd-reason" class="input" [ngModel]="reason()" (ngModelChange)="reason.set($event)" />
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" [ngModel]="waiveFee()" (ngModelChange)="waiveFee.set($event)" />
+            Rembourser sans frais d'annulation
+          </label>
+          <div class="form-actions">
+            <button type="button" class="btn" (click)="showCancel.set(false)">Retour</button>
+            <button type="button" class="btn btn--danger" [disabled]="busy()" (click)="cancel()">Confirmer l'annulation</button>
+          </div>
+        </section>
+      } @else {
+        <div class="form-actions">
+          <button type="button" class="btn btn--danger" (click)="showCancel.set(true)">Annuler la réservation</button>
+        </div>
+      }
+    }
+  }
+</bv-state>

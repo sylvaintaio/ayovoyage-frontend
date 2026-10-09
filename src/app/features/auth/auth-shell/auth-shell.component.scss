@@ -1,0 +1,189 @@
+@use 'mixins' as *;
+
+.shell {
+  display: grid;
+  min-height: 100vh;
+  background: var(--bv-surface);
+
+  @include from($bp-md) {
+    grid-template-columns: minmax(380px, 5fr) 7fr;
+  }
+}
+
+// ---------------------------------------------------------------- Panneau de marque
+.side {
+  display: none;
+  flex-direction: column;
+  padding: var(--bv-space-6);
+  border-bottom: 6px solid var(--bv-accent);
+  background: var(--bv-night);
+  color: #fff;
+
+  @include from($bp-md) {
+    display: flex;
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--bv-space-6);
+    max-width: 420px;
+    margin: var(--bv-space-6) auto;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: var(--bv-text-3xl);
+    line-height: 1.15;
+  }
+
+  &__pass {
+    margin-inline: var(--bv-space-3);
+  }
+
+  &__points {
+    display: grid;
+    gap: var(--bv-space-3);
+    color: var(--bv-night-ink);
+    font-size: var(--bv-text-sm);
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--bv-space-3);
+    }
+
+    bv-icon {
+      margin-top: 1px;
+      color: var(--bv-accent);
+    }
+  }
+
+  &__tag {
+    align-self: flex-start;
+    padding: 4px 12px;
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: 999px;
+    font-size: var(--bv-text-xs);
+    font-weight: 700;
+    color: var(--bv-night-ink);
+  }
+
+  &__foot {
+    margin: 0;
+    font-size: var(--bv-text-xs);
+    color: rgb(201 221 211 / 60%);
+  }
+}
+
+.shell--staff .side {
+  background:
+    linear-gradient(rgb(255 255 255 / 3%) 1px, transparent 1px) 0 0 / 100% 32px,
+    linear-gradient(90deg, rgb(255 255 255 / 3%) 1px, transparent 1px) 0 0 / 32px 100%,
+    var(--bv-board);
+}
+
+.console {
+  display: grid;
+  gap: var(--bv-space-4);
+  padding: var(--bv-space-5);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--bv-radius-lg);
+  background: rgb(255 255 255 / 4%);
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--bv-text-xs);
+    color: var(--bv-night-ink);
+
+    strong {
+      color: #fff;
+    }
+  }
+
+  &__bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 96px;
+
+    span {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      background: var(--bv-accent);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- Formulaire
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bv-space-2);
+  color: inherit;
+  font-weight: 800;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  &--compact {
+    color: var(--bv-ink);
+
+    @include from($bp-md) {
+      visibility: hidden;
+    }
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  padding: var(--bv-space-5) var(--bv-space-4);
+
+  @include from($bp-md) {
+    padding: var(--bv-space-6) var(--bv-space-7);
+  }
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+    max-width: 420px;
+    margin: var(--bv-space-6) auto;
+
+    @include from($bp-md) {
+      justify-content: center;
+      margin-block: var(--bv-space-7);
+    }
+  }
+
+  &__foot {
+    text-align: center;
+    font-size: var(--bv-text-sm);
+    color: var(--bv-ink-muted);
+  }
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-sm);
+  font-weight: 700;
+
+  &__icon {
+    transform: rotate(180deg);
+  }
+}

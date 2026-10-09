@@ -1,0 +1,107 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  text-size-adjust: 100%;
+}
+
+// Ancres (#reserver, #suivi…) : ne pas passer sous l'en-tête collant.
+[id] {
+  scroll-margin-top: calc(var(--bv-header-h) + var(--bv-space-4));
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--bv-font);
+  font-size: var(--bv-text-md);
+  line-height: 1.5;
+  color: var(--bv-ink);
+  background: var(--bv-bg);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 var(--bv-space-3);
+  font-weight: 750;
+  font-stretch: var(--bv-stretch-display);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+h1 {
+  font-size: var(--bv-text-2xl);
+}
+
+h2 {
+  font-size: var(--bv-text-xl);
+}
+
+h3 {
+  font-size: var(--bv-text-lg);
+}
+
+p {
+  margin: 0 0 var(--bv-space-3);
+}
+
+a {
+  color: var(--bv-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+img {
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--bv-primary);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--bv-accent);
+  color: var(--bv-on-accent);
+}
+
+// Heures, prix, numéros de siège ou de billet : chiffres condensés et alignés,
+// comme sur un tableau des départs.
+.figures {
+  font-stretch: var(--bv-stretch-board);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

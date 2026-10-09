@@ -1,0 +1,20 @@
+@use 'mixins' as *;
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-lg) {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+}
+
+.device-id {
+  padding: var(--bv-space-2);
+  border-radius: var(--bv-radius-sm);
+  background: var(--bv-surface);
+  font-size: var(--bv-text-sm);
+  word-break: break-all;
+  user-select: all;
+}

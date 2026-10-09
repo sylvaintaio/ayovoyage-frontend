@@ -1,0 +1,49 @@
+.bv-dialog {
+  width: min(440px, calc(100vw - 2rem));
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--bv-space-3);
+  border-radius: 50%;
+  background: var(--bv-primary-soft);
+  color: var(--bv-primary);
+}
+
+h2 {
+  margin-bottom: var(--bv-space-2);
+}
+
+.form {
+  display: grid;
+  gap: var(--bv-space-3);
+  margin-top: var(--bv-space-4);
+
+  .alert {
+    margin: 0;
+  }
+}
+
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bv-primary);
+  font: inherit;
+  font-size: var(--bv-text-sm);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

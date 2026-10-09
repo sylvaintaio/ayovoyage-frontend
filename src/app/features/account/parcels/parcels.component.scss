@@ -1,0 +1,30 @@
+.group + .group {
+  margin-top: var(--bv-space-5);
+}
+
+.group__title {
+  margin: 0 0 var(--bv-space-3);
+  font-size: var(--bv-text-md);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+  color: inherit;
+
+  &:hover {
+    border-color: var(--bv-primary);
+    text-decoration: none;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}

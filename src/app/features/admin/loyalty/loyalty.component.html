@@ -1,0 +1,92 @@
+<h1>Programme de fidélité</h1>
+
+@if (stats(); as s) {
+  <div class="grid grid-2 grid-4 kpis">
+    <div class="card kpi"><div class="kpi__label">Membres</div><div class="kpi__value">{{ s.members }}</div></div>
+    <div class="card kpi"><div class="kpi__label">Actifs (90 jours)</div><div class="kpi__value">{{ s.active_members }}</div></div>
+    <div class="card kpi"><div class="kpi__label">Points en circulation</div><div class="kpi__value">{{ s.points_outstanding }}</div></div>
+    <div class="card kpi"><div class="kpi__label">Engagement (valeur)</div><div class="kpi__value">{{ s.liability | money }}</div></div>
+  </div>
+}
+
+<form class="stack" [formGroup]="form" (ngSubmit)="save()">
+  <section class="card stack-sm" formGroupName="program" aria-labelledby="t-bareme">
+    <h2 id="t-bareme" class="card__title">Barème</h2>
+    <label class="checkbox"><input type="checkbox" formControlName="is_enabled" /> Programme actif</label>
+    <div class="grid grid-3">
+      <div class="field"><label for="lp-earn">Points par 100 F CFA payés</label><input id="lp-earn" class="input" type="number" formControlName="points_per_100" /></div>
+      <div class="field"><label for="lp-value">Valeur d'un point (F CFA)</label><input id="lp-value" class="input" type="number" formControlName="point_value" /></div>
+      <div class="field"><label for="lp-max">Part maximale payable en points (%)</label><input id="lp-max" class="input" type="number" formControlName="max_redeem_percent" /></div>
+      <div class="field"><label for="lp-valid">Expiration après inactivité (mois)</label><input id="lp-valid" class="input" type="number" formControlName="points_validity_months" /></div>
+      <div class="field"><label for="lp-bonus">Bonus de bienvenue (points)</label><input id="lp-bonus" class="input" type="number" formControlName="signup_bonus_points" /></div>
+    </div>
+    <p class="field__hint">Les points sont crédités à l'embarquement, jamais à l'achat, et rendus si une réservation expire ou est annulée.</p>
+
+    <h3 class="sub">Parrainage</h3>
+    <div class="grid grid-3">
+      <div class="field">
+        <label for="lp-referee">Remise du filleul, premier voyage (F CFA)</label>
+        <input id="lp-referee" class="input" type="number" step="100" formControlName="referee_reward_amount" />
+      </div>
+      <div class="field">
+        <label for="lp-referrer">Points du parrain</label>
+        <input id="lp-referrer" class="input" type="number" step="10" formControlName="referrer_reward_points" />
+      </div>
+      <div class="field">
+        <label for="lp-cap">Parrainages récompensés par mois</label>
+        <input id="lp-cap" class="input" type="number" formControlName="referrer_monthly_cap" />
+      </div>
+    </div>
+    <p class="field__hint">
+      Le parrain gagne ses points quand le filleul a effectivement voyagé (embarqué). Pas de récompense si le voyage
+      est payé depuis le numéro du parrain. Mettre 0 pour désactiver.
+    </p>
+  </section>
+
+  <section class="card stack-sm" aria-labelledby="t-tiers">
+    <div class="spread">
+      <h2 id="t-tiers" class="card__title">Niveaux (voyages sur 12 mois)</h2>
+      @if (isAdmin) {
+        <button type="button" class="btn btn--sm" (click)="addTier()">Ajouter un niveau</button>
+      }
+    </div>
+    <div class="tiers" formArrayName="tiers">
+      @for (t of tiers.controls; track $index; let i = $index) {
+        <div class="tier" [formGroupName]="i">
+          <div class="field"><label [for]="'tc' + i">Code</label><input [id]="'tc' + i" class="input" formControlName="code" /></div>
+          <div class="field"><label [for]="'tn' + i">Nom</label><input [id]="'tn' + i" class="input" formControlName="name" /></div>
+          <div class="field"><label [for]="'tm' + i">Voyages min.</label><input [id]="'tm' + i" class="input" type="number" formControlName="min_trips" /></div>
+          <div class="field"><label [for]="'td' + i">Réduction %</label><input [id]="'td' + i" class="input" type="number" formControlName="discount_percent" /></div>
+          <div class="field perks"><label [for]="'tp' + i">Avantages (un par ligne)</label><textarea [id]="'tp' + i" class="textarea" formControlName="perks"></textarea></div>
+          <fieldset class="tier__rules">
+            <legend>Appliqués automatiquement (vide = règle de la compagnie)</legend>
+            <div class="field"><label [for]="'tf' + i">Frais d'annulation %</label><input [id]="'tf' + i" class="input" type="number" formControlName="cancellation_fee_percent" placeholder="Règle générale" /></div>
+            <div class="field"><label [for]="'th' + i">Annulation jusqu'à (h avant)</label><input [id]="'th' + i" class="input" type="number" formControlName="cancellation_cutoff_hours" placeholder="Règle générale" /></div>
+            <label class="checkbox"><input type="checkbox" formControlName="free_change" /> <span>Modification de billet gratuite</span></label>
+          </fieldset>
+          @if (isAdmin) {
+            <button type="button" class="btn btn--sm btn--ghost" (click)="removeTier(i)">Retirer</button>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (isAdmin) {
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">Enregistrer le programme</button>
+    </div>
+  }
+</form>
+
+@if (isAdmin) {
+  <form class="card stack-sm adjust" [formGroup]="adjust" (ngSubmit)="submitAdjustment()" aria-labelledby="t-adj">
+    <h2 id="t-adj" class="card__title">Geste commercial / correction</h2>
+    <div class="grid grid-3">
+      <div class="field"><label for="ad-phone">Téléphone du client</label><input id="ad-phone" class="input" type="tel" formControlName="customer_phone" /></div>
+      <div class="field"><label for="ad-pts">Points (négatif pour retirer)</label><input id="ad-pts" class="input" type="number" formControlName="points" /></div>
+      <div class="field"><label for="ad-reason">Motif (journalisé)</label><input id="ad-reason" class="input" formControlName="reason" /></div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn">Appliquer</button></div>
+  </form>
+}

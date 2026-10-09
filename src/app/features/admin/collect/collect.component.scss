@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.head {
+  margin-bottom: var(--bv-space-2);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-2);
+  max-width: 560px;
+  margin: var(--bv-space-4) 0;
+
+  .input {
+    flex: 1 1 14rem;
+  }
+}
+
+.urgent {
+  color: var(--bv-danger);
+  font-weight: 700;
+}

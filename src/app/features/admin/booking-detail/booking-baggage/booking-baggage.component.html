@@ -1,0 +1,50 @@
+<section class="card stack-sm" aria-labelledby="t-bags">
+  <div class="spread">
+    <h2 id="t-bags" class="card__title">Bagages en soute</h2>
+    <span class="small muted">{{ booking().departure.included_baggage_kg }} kg inclus par passager</span>
+  </div>
+
+  @if (bags().length) {
+    <ul class="list-plain bags">
+      @for (b of bags(); track b.id) {
+        <li>
+          <span class="mono">{{ b.tag_number }}</span>
+          <span class="grow small">{{ b.seat_label }} · {{ b.passenger_name }} · {{ b.weight_kg }} kg @if (b.description) { · {{ b.description }} }
+            @if (b.extra_fee) { · excédent {{ b.extra_fee | money }} }</span>
+          <bv-status-badge [status]="b.status" domain="baggage" />
+          <a class="btn btn--sm btn--ghost" [href]="label(b.id)" target="_blank" rel="noopener" [attr.aria-label]="'Imprimer l’étiquette ' + b.tag_number"><bv-icon name="printer" [size]="16" /></a>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="small muted">Aucun bagage enregistré.</p>
+  }
+
+  @if (open()) {
+    <form class="add" (ngSubmit)="add()">
+      <div class="field">
+        <label for="bb-seat">Passager</label>
+        <select id="bb-seat" class="select" name="seat" [ngModel]="seatId()" (ngModelChange)="seatId.set($event)">
+          @for (s of passengers(); track s.booking_seat_id) {
+            <option [value]="s.booking_seat_id">{{ s.seat_label }} — {{ s.passenger_name }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="bb-w">Poids (kg)</label>
+        <input id="bb-w" class="input" type="number" step="0.5" min="0" name="w" [ngModel]="weight()" (ngModelChange)="weight.set($event)" />
+      </div>
+      <div class="field">
+        <label for="bb-d">Description</label>
+        <input id="bb-d" class="input" name="d" placeholder="Valise noire…" [ngModel]="description()" (ngModelChange)="description.set($event)" />
+      </div>
+      <button type="submit" class="btn btn--primary" [disabled]="busy() || !weight()">Enregistrer et imprimer</button>
+    </form>
+    @if (weight() && already() + +weight()! > booking().departure.included_baggage_kg) {
+      <p class="small warn">Excédent : {{ already() + +weight()! - booking().departure.included_baggage_kg }} kg au-delà du poids inclus, facturé à l’enregistrement.</p>
+    }
+    @if (canWaive) {
+      <label class="checkbox small"><input type="checkbox" [ngModel]="waive()" (ngModelChange)="waive.set($event)" /> Offrir l’excédent</label>
+    }
+  }
+</section>

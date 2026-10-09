@@ -1,0 +1,174 @@
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+
+<!-- Barre de service : état du service client, contacts, billets, signalement -->
+<div class="servicebar">
+  <div class="container servicebar__inner">
+    <p class="servicebar__status" [class.servicebar__status--open]="serviceOpen()">
+      <span class="servicebar__dot" aria-hidden="true"></span>
+      <span class="servicebar__label">{{ serviceOpen() ? 'Service client ouvert' : 'Service client fermé' }}</span>
+      <span class="servicebar__hours figures">7 j/7 · {{ serviceHours.open }} h – {{ serviceHours.close }} h</span>
+    </p>
+    <ul class="servicebar__links list-plain">
+      <li>
+        <a [href]="tel" [attr.aria-label]="'Appeler le ' + company.phone">
+          <bv-icon name="phone" [size]="14" /> <span class="long figures">{{ company.phone }}</span><span class="short">Appeler</span>
+        </a>
+      </li>
+      @if (whatsapp) {
+        <li><a [href]="whatsapp" target="_blank" rel="noopener"><bv-icon name="chat" [size]="14" /> WhatsApp</a></li>
+      }
+      <li>
+        <a routerLink="/compte/billets"><bv-icon name="ticket" [size]="14" /> <span class="long">Mes billets</span><span class="short">Billets</span></a>
+      </li>
+      <li>
+        <a routerLink="/compte/signaler" class="servicebar__report">
+          <bv-icon name="alert" [size]="14" /> <span class="long">Signaler un problème</span><span class="short">Signaler</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<header class="header">
+  <div class="container header__inner">
+    <a routerLink="/" class="brand" [attr.aria-label]="company.name + ', accueil'">
+      <bv-brand-mark />
+    </a>
+
+    <nav id="menu-principal" class="nav" [class.nav--open]="menuOpen()" aria-label="Navigation principale">
+      <ul class="nav__list list-plain">
+        @for (g of groups; track g.id) {
+          <li class="nav__group" [class.nav__group--open]="openGroup() === g.id">
+            <button
+              type="button"
+              class="nav__link nav__toggle"
+              [class.active]="groupActive(g)"
+              [attr.aria-expanded]="openGroup() === g.id"
+              [attr.aria-controls]="'menu-' + g.id"
+              (click)="toggleGroup(g.id)"
+            >
+              {{ g.label }} <bv-icon class="nav__chevron" name="chevron" [size]="16" />
+            </button>
+            <ul [id]="'menu-' + g.id" class="nav__menu list-plain">
+              @for (l of g.links; track l.label) {
+                <li><a [routerLink]="l.link" routerLinkActive="active">{{ l.label }}</a></li>
+              }
+            </ul>
+          </li>
+        }
+        @for (item of direct; track item.link) {
+          <li>
+            <a class="nav__link" [routerLink]="item.link" routerLinkActive="active">{{ item.label }}</a>
+          </li>
+        }
+      </ul>
+
+      <!-- Téléphone : compte et contact en bas du menu plein écran -->
+      <div class="nav__mobile-extra">
+        @if (auth.isCustomer()) {
+          <a routerLink="/compte" class="btn btn--block">Mon espace</a>
+        } @else if (auth.isStaff()) {
+          <a routerLink="/admin" class="btn btn--block">Back-office</a>
+        } @else {
+          <a routerLink="/connexion" class="btn btn--block">Se connecter</a>
+        }
+        <a routerLink="/compte/billets" class="btn btn--block"><bv-icon name="ticket" [size]="18" /> Mes billets</a>
+        <div class="nav__contact">
+          <a [href]="tel"><bv-icon name="phone" [size]="18" /> <span class="figures">{{ company.phone }}</span></a>
+          @if (whatsapp) {
+            <a [href]="whatsapp" target="_blank" rel="noopener"><bv-icon name="chat" [size]="18" /> WhatsApp</a>
+          }
+        </div>
+      </div>
+    </nav>
+
+    <div class="actions">
+      <a routerLink="/" fragment="reserver" class="btn btn--primary btn--sm actions__book">Réserver</a>
+      <span class="actions__account">
+        @if (auth.isCustomer()) {
+          <a routerLink="/compte" class="account" aria-label="Mon espace">
+            <span class="account__avatar" aria-hidden="true">{{ initials() }}</span>
+            <span class="account__label">Mon espace</span>
+          </a>
+        } @else if (auth.isStaff()) {
+          <a routerLink="/admin" class="btn btn--sm">Back-office</a>
+        } @else {
+          <a routerLink="/connexion" class="actions__login">Se connecter</a>
+        }
+      </span>
+      <button
+        type="button"
+        class="menu-toggle"
+        [attr.aria-expanded]="menuOpen()"
+        aria-controls="menu-principal"
+        (click)="toggleMenu()"
+      >
+        <span class="sr-only">{{ menuOpen() ? 'Fermer le menu' : 'Ouvrir le menu' }}</span>
+        <span class="burger" [class.burger--open]="menuOpen()" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="contenu" class="main">
+  <router-outlet />
+</main>
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <a routerLink="/" [attr.aria-label]="company.name + ', accueil'"><bv-brand-mark tone="light" /></a>
+      <p>{{ company.shortDescription }}</p>
+      @if (address) {
+        <p>{{ address }}</p>
+      }
+      <div class="socials">
+        @for (s of company.socials; track s.label) {
+          <a [href]="s.url" target="_blank" rel="noopener">{{ s.label }}</a>
+        }
+      </div>
+    </div>
+    <nav aria-labelledby="f-travel">
+      <h2 id="f-travel">Voyager</h2>
+      <a routerLink="/" fragment="reserver">Réserver un billet</a>
+      <a routerLink="/lignes">Lignes et tarifs</a>
+      <a routerLink="/agences">Nos agences</a>
+      <a routerLink="/services">Classes VIP et Premium</a>
+      <a routerLink="/fidelite">Programme de fidélité</a>
+    </nav>
+    <nav aria-labelledby="f-services">
+      <h2 id="f-services">Colis et services</h2>
+      <a routerLink="/colis">Envoyer un colis</a>
+      <a routerLink="/colis" fragment="suivi">Suivre un colis</a>
+      <a routerLink="/contact">Groupes et événements</a>
+      <a routerLink="/contact">Entreprises</a>
+    </nav>
+    <nav aria-labelledby="f-help">
+      <h2 id="f-help">Aide</h2>
+      <a routerLink="/faq">Questions fréquentes</a>
+      <a routerLink="/compte/billets">Mes billets</a>
+      <a routerLink="/compte/signaler">Signaler un problème</a>
+      <a routerLink="/a-propos">Qui sommes-nous</a>
+      <a routerLink="/admin/connexion">Espace professionnel</a>
+    </nav>
+  </div>
+
+  <div class="container footer__legal">
+    <p class="footer__copy">
+      © {{ year }} {{ company.name }}
+      <span class="sep" aria-hidden="true">·</span>
+      <a routerLink="/conditions">Conditions de voyage</a>
+      <span class="sep" aria-hidden="true">·</span>
+      <a routerLink="/confidentialite">Confidentialité</a>
+      <span class="sep" aria-hidden="true">·</span>
+      <a routerLink="/mentions-legales">Mentions légales</a>
+    </p>
+    <p class="footer__pay">Paiement : {{ company.paymentMethods.join(' · ') }}</p>
+  </div>
+</footer>
+
+@if (whatsapp && !menuOpen()) {
+  <a class="wa-float" [href]="whatsapp" target="_blank" rel="noopener" aria-label="Nous écrire sur WhatsApp">
+    <bv-icon name="chat" [size]="26" />
+  </a>
+}

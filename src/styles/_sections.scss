@@ -1,0 +1,189 @@
+@use 'mixins' as *;
+
+// Sections des pages vitrine (accueil, à propos, services…).
+.section {
+  padding-block: var(--bv-space-7);
+
+  @include from($bp-md) {
+    padding-block: 5rem;
+  }
+
+  &--sand {
+    background: var(--bv-sand);
+  }
+
+  &--white {
+    background: var(--bv-surface);
+  }
+
+  &--night {
+    background: var(--bv-night);
+    color: #fff;
+
+    .lead,
+    .muted {
+      color: var(--bv-night-ink);
+    }
+  }
+
+  // En-tête de section : repère (eyebrow), titre, puis introduction dessous,
+  // alignés à gauche comme un panneau. Un filet sépare l'en-tête du contenu.
+  &__head {
+    display: grid;
+    gap: var(--bv-space-2);
+    max-width: 760px;
+    margin-bottom: var(--bv-space-6);
+
+    .section-title,
+    .lead {
+      margin: 0;
+    }
+  }
+
+  // En-tête avec un lien d'action aligné à droite (« Toutes les lignes »).
+  &__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--bv-space-3) var(--bv-space-6);
+    margin-bottom: var(--bv-space-6);
+    padding-bottom: var(--bv-space-4);
+    border-bottom: 2px solid var(--bv-ink);
+
+    .section__head {
+      margin: 0;
+    }
+  }
+}
+
+// Repère de section : carré jaune + libellé condensé en capitales (signalétique).
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bv-space-2);
+  font-size: var(--bv-text-sm);
+  font-weight: 700;
+  font-stretch: var(--bv-stretch-board);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bv-primary);
+
+  &::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: var(--bv-accent);
+  }
+
+  .section--night & {
+    color: var(--bv-accent);
+  }
+}
+
+.section-title {
+  margin-bottom: var(--bv-space-3);
+  font-size: var(--bv-text-2xl);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+
+  @include from($bp-md) {
+    font-size: 2.375rem;
+  }
+}
+
+.lead {
+  font-size: var(--bv-text-lg);
+  color: var(--bv-ink-muted);
+}
+
+// Pictogramme de service : carré net, filet, comme un pictogramme de gare.
+.icon-tile {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--bv-radius-sm);
+  background: var(--bv-primary);
+  color: #fff;
+
+  &--accent {
+    background: var(--bv-accent);
+    color: var(--bv-on-accent);
+  }
+}
+
+.feature-card {
+  display: flex;
+  color: var(--bv-ink); // lisible aussi dans les sections sombres
+  flex-direction: column;
+  gap: var(--bv-space-3);
+  height: 100%;
+  padding: var(--bv-space-5);
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-surface);
+  transition: border-color 0.15s;
+
+  h3 {
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    color: var(--bv-ink-muted);
+    font-size: var(--bv-text-sm);
+  }
+
+  &:hover {
+    border-color: var(--bv-ink);
+  }
+}
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bv-space-1);
+  font-weight: 700;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bv-space-2);
+  padding: var(--bv-space-2) var(--bv-space-3);
+  border: 1px solid var(--bv-line-strong);
+  border-radius: var(--bv-radius-sm);
+  background: var(--bv-surface);
+  font-size: var(--bv-text-sm);
+  font-weight: 600;
+}
+
+.check-list {
+  display: grid;
+  gap: var(--bv-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    padding-left: 1.75rem;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.3em;
+      width: 1rem;
+      height: 1rem;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b4d3a' stroke-width='3' stroke-linecap='square'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 100% no-repeat;
+    }
+
+    .section--night &::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5b700' stroke-width='3' stroke-linecap='square'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+    }
+  }
+}
+

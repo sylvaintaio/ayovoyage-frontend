@@ -1,0 +1,58 @@
+<form class="card stack box" [formGroup]="form" (ngSubmit)="save()">
+  @if (auth.me()?.customer; as c) {
+    <dl class="dl">
+      @if (c.phone) {
+        <dt>Téléphone</dt>
+        <dd>{{ c.phone }}</dd>
+      }
+      <dt>Code de parrainage</dt>
+      <dd>{{ c.referral_code }}</dd>
+    </dl>
+  }
+  <div class="field">
+    <label for="pr-name">Nom complet</label>
+    <input id="pr-name" class="input" formControlName="full_name" autocomplete="name" />
+  </div>
+  <div class="field">
+    <label for="pr-email">E-mail (pour recevoir vos billets)</label>
+    <input id="pr-email" class="input" type="email" formControlName="email" autocomplete="email" />
+  </div>
+  <div class="field">
+    <label for="pr-birth">Date de naissance (offre anniversaire)</label>
+    <input id="pr-birth" class="input" type="date" formControlName="birth_date" />
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">Enregistrer</button>
+  </div>
+</form>
+
+<section class="card stack-sm box danger" aria-labelledby="t-delete">
+  <h2 id="t-delete" class="card__title">Supprimer mon compte</h2>
+  @if (!showDelete()) {
+    <p class="small muted">Vos coordonnées, vos proches et vos messages seront effacés définitivement.</p>
+    <div>
+      <button type="button" class="btn btn--ghost danger__btn" (click)="showDelete.set(true)">Supprimer mon compte…</button>
+    </div>
+  } @else {
+    <ul class="small list">
+      <li>Votre nom, votre e-mail, votre téléphone, vos proches et vos messages sont effacés.</li>
+      <li>Vos points de fidélité sont perdus.</li>
+      <li>Les justificatifs de paiement sont conservés sans vos données personnelles, comme l’exige la loi.</li>
+      <li>Impossible tant qu’un voyage est à venir ou qu’un remboursement est en cours.</li>
+    </ul>
+    <p class="small">Voir notre <a routerLink="/confidentialite">politique de confidentialité</a>.</p>
+    <div class="field">
+      <label for="pr-confirm">Pour confirmer, saisissez <strong>SUPPRIMER</strong></label>
+      <input id="pr-confirm" class="input" autocomplete="off" [value]="confirmText()" (input)="confirmText.set($any($event.target).value)" />
+    </div>
+    @if (deleteError()) {
+      <p class="alert alert--danger" role="alert">{{ deleteError() }}</p>
+    }
+    <div class="form-actions">
+      <button type="button" class="btn" (click)="showDelete.set(false); confirmText.set('')">Annuler</button>
+      <button type="button" class="btn btn--danger" [disabled]="deleting() || confirmText().trim().toUpperCase() !== 'SUPPRIMER'" (click)="deleteAccount()">
+        Supprimer définitivement
+      </button>
+    </div>
+  }
+</section>

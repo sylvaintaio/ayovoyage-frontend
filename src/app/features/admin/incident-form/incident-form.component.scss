@@ -1,0 +1,17 @@
+h1 {
+  margin: var(--bv-space-2) 0 var(--bv-space-4);
+}
+
+.box {
+  max-width: 760px;
+}
+
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  text-transform: uppercase;
+}
+
+.label {
+  font-size: var(--bv-text-sm);
+  font-weight: 600;
+}

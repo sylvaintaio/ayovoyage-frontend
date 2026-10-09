@@ -1,0 +1,23 @@
+<ul class="list-plain timetable">
+  @for (r of routes(); track r.name) {
+    <li>
+      <a class="line" routerLink="/recherche" [queryParams]="{ from: r.origin_slug, to: r.destination_slug, date: tomorrow }">
+        <span class="line__cities">
+          {{ r.origin_city }}<span class="line__arrow" aria-label="vers">→</span>{{ r.destination_city }}
+        </span>
+        <span class="line__meta">
+          <span>{{ duration(r.duration_minutes) }}</span>
+          @if (r.departures_next_7_days) {
+            <span>{{ r.departures_next_7_days }} départs / semaine</span>
+          }
+          <span>{{ r.included_baggage_kg }} kg inclus</span>
+        </span>
+        <span class="line__price">
+          <span class="small muted">dès</span>
+          <strong class="figures">{{ r.from_price | money }}</strong>
+        </span>
+        <bv-icon class="line__go" name="arrow" [size]="18" />
+      </a>
+    </li>
+  }
+</ul>

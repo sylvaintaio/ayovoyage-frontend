@@ -1,0 +1,567 @@
+@use 'mixins' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+
+  &:focus {
+    top: var(--bv-space-2);
+    left: var(--bv-space-4);
+    z-index: 100;
+    padding: var(--bv-space-2) var(--bv-space-3);
+    background: var(--bv-surface);
+  }
+}
+
+// ================================================================ Barre de service
+// Fine bande sombre au-dessus de l'en-tête : état du service client et raccourcis.
+.servicebar {
+  background: var(--bv-board);
+  color: var(--bv-night-ink);
+  font-size: var(--bv-text-xs);
+
+  &__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bv-space-4);
+    min-height: 36px;
+  }
+
+  &__status {
+    display: none;
+    align-items: center;
+    gap: var(--bv-space-2);
+    margin: 0;
+
+    @include from($bp-md) {
+      display: inline-flex;
+    }
+  }
+
+  // Voyant : vert pulsant si ouvert, gris si fermé.
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bv-ink-soft);
+  }
+
+  &__status--open &__dot {
+    background: #3ddc84;
+    box-shadow: 0 0 0 0 rgb(61 220 132 / 60%);
+    animation: pulse 2s infinite;
+  }
+
+  &__label {
+    color: #fff;
+    font-weight: 700;
+    font-stretch: var(--bv-stretch-board);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  &__hours {
+    padding-left: var(--bv-space-2);
+    border-left: 1px solid rgb(255 255 255 / 20%);
+    font-weight: 600;
+  }
+
+  &__links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+
+    @include from($bp-md) {
+      flex: none;
+    }
+
+    li + li {
+      border-left: 1px solid rgb(255 255 255 / 14%);
+    }
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 var(--bv-space-3);
+      color: #fff;
+      font-weight: 600;
+      line-height: 36px;
+
+      &:hover {
+        color: var(--bv-accent);
+        text-decoration: none;
+      }
+    }
+
+    li:last-child a {
+      padding-right: 0;
+    }
+
+    .long {
+      display: none;
+
+      @include from($bp-md) {
+        display: inline;
+      }
+    }
+
+    .short {
+      @include from($bp-md) {
+        display: none;
+      }
+    }
+  }
+
+  &__report {
+    color: var(--bv-accent) !important;
+  }
+}
+
+@keyframes pulse {
+  70% {
+    box-shadow: 0 0 0 6px rgb(61 220 132 / 0%);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgb(61 220 132 / 0%);
+  }
+}
+
+// ================================================================ Barre « quai »
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--bv-line-strong);
+  background: var(--bv-surface);
+
+  &__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--bv-space-5);
+    height: var(--bv-header-h);
+  }
+}
+
+.brand {
+  flex: none;
+  color: var(--bv-ink);
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+// ---------------------------------------------------------------- Navigation
+.nav {
+  display: none;
+
+  @include from($bp-lg) {
+    display: block;
+    flex: 1;
+    height: 100%;
+  }
+
+  &__list {
+    display: flex;
+    align-items: stretch;
+    gap: var(--bv-space-1);
+    height: 100%;
+  }
+
+  &__list > li {
+    position: relative;
+    display: flex;
+  }
+
+  // Onglet : souligné jaune quand actif, comme le site et le back-office.
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 var(--bv-space-3);
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--bv-ink);
+    font: inherit;
+    font-size: var(--bv-text-sm);
+    font-weight: 700;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: none;
+      color: var(--bv-primary);
+    }
+
+    &.active {
+      border-bottom-color: var(--bv-accent);
+    }
+  }
+
+  &__chevron {
+    transition: transform 0.15s;
+  }
+
+  &__group--open &__chevron {
+    transform: rotate(180deg);
+  }
+
+  // Menu déroulant : panneau net, filet épais en tête.
+  &__menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    display: none;
+    min-width: 260px;
+    padding: var(--bv-space-2) 0;
+    border: 1px solid var(--bv-line-strong);
+    border-top: 3px solid var(--bv-ink);
+    background: var(--bv-surface);
+    box-shadow: var(--bv-shadow);
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: var(--bv-space-2);
+      padding: 10px var(--bv-space-4);
+      color: var(--bv-ink);
+      font-size: var(--bv-text-sm);
+      font-weight: 600;
+
+      &:hover,
+      &.active {
+        text-decoration: none;
+        background: var(--bv-surface-alt);
+      }
+
+      &.active {
+        box-shadow: inset 3px 0 0 var(--bv-accent);
+      }
+    }
+  }
+
+  &__group--open &__menu {
+    display: block;
+  }
+
+  &__mobile-extra {
+    display: none;
+  }
+
+  // ---------------------------------------------------------- Menu plein écran (téléphone, tablette)
+  &--open {
+    @include until($bp-lg) {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      z-index: 49;
+      height: calc(100dvh - var(--bv-header-h));
+      display: flex;
+      flex-direction: column;
+      gap: var(--bv-space-5);
+      padding: var(--bv-space-4) var(--bv-space-4) var(--bv-space-7);
+      overflow-y: auto;
+      background: var(--bv-surface);
+
+      .nav__list {
+        flex-direction: column;
+        height: auto;
+      }
+
+      .nav__list > li {
+        flex-direction: column;
+        border-bottom: 1px solid var(--bv-line);
+      }
+
+      .nav__link {
+        justify-content: space-between;
+        width: 100%;
+        min-height: 56px;
+        padding: 0;
+        border: 0;
+        font-size: var(--bv-text-lg);
+
+        &.active {
+          box-shadow: inset 4px 0 0 var(--bv-accent);
+          padding-left: var(--bv-space-3);
+        }
+      }
+
+      .nav__menu {
+        position: static;
+        min-width: 0;
+        padding: 0 0 var(--bv-space-3);
+        border: 0;
+        box-shadow: none;
+
+        a {
+          padding: 10px var(--bv-space-3);
+          font-size: var(--bv-text-md);
+        }
+      }
+
+      .nav__mobile-extra {
+        display: flex;
+        flex-direction: column;
+        gap: var(--bv-space-3);
+      }
+    }
+  }
+
+  &__contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bv-space-3) var(--bv-space-5);
+    padding-top: var(--bv-space-4);
+    border-top: 2px solid var(--bv-ink);
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--bv-space-2);
+      font-weight: 700;
+    }
+  }
+}
+
+// ---------------------------------------------------------------- Actions (droite)
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-4);
+  margin-left: auto;
+
+  &__login {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    color: var(--bv-ink);
+    font-size: var(--bv-text-sm);
+    font-weight: 700;
+
+    @include from($bp-lg) {
+      display: inline-flex;
+    }
+  }
+
+  &__account {
+    display: none;
+
+    @include from($bp-lg) {
+      display: contents;
+    }
+  }
+}
+
+.account {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bv-space-2);
+  height: var(--bv-control-sm);
+  padding: 0 var(--bv-space-3) 0 4px;
+  border: 1px solid var(--bv-line-strong);
+  border-radius: var(--bv-radius);
+  color: var(--bv-ink);
+  font-size: var(--bv-text-sm);
+  font-weight: 700;
+
+  &:hover {
+    text-decoration: none;
+    border-color: var(--bv-ink);
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--bv-radius-sm);
+    background: var(--bv-primary);
+    color: #fff;
+    font-size: 11px;
+    font-stretch: var(--bv-stretch-board);
+  }
+}
+
+.menu-toggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-right: calc(-1 * var(--bv-space-2));
+  border: 0;
+  background: none;
+  cursor: pointer;
+
+  @include from($bp-lg) {
+    display: none;
+  }
+}
+
+.burger,
+.burger::before,
+.burger::after {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--bv-ink);
+  transition: transform 0.2s;
+}
+
+.burger {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+  }
+
+  &::before {
+    top: -7px;
+  }
+
+  &::after {
+    top: 7px;
+  }
+
+  &--open {
+    background: transparent;
+
+    &::before {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    &::after {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+  }
+}
+
+.main {
+  flex: 1;
+}
+
+// ================================================================ Pied de page « guichet »
+.footer {
+  background: var(--bv-night);
+  color: var(--bv-night-ink);
+  font-size: var(--bv-text-sm);
+
+  a {
+    color: #fff;
+  }
+
+  &__grid {
+    display: grid;
+    gap: var(--bv-space-6);
+    padding-block: var(--bv-space-7) var(--bv-space-6);
+
+    @include from($bp-sm) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include from($bp-md) {
+      grid-template-columns: 1.5fr repeat(3, 1fr);
+    }
+
+    nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--bv-space-2);
+    }
+
+    h2 {
+      margin-bottom: var(--bv-space-2);
+      color: var(--bv-accent);
+      font-size: var(--bv-text-sm);
+      font-stretch: var(--bv-stretch-board);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+  }
+
+  &__brand {
+    p {
+      max-width: 340px;
+      margin: var(--bv-space-4) 0 0;
+    }
+  }
+
+  &__legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--bv-space-2) var(--bv-space-5);
+    padding-block: var(--bv-space-4) var(--bv-space-6);
+    border-top: 1px solid rgb(255 255 255 / 14%);
+    font-size: var(--bv-text-xs);
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      color: var(--bv-night-ink);
+    }
+  }
+
+  .sep {
+    margin-inline: var(--bv-space-2);
+  }
+}
+
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-2);
+  margin-top: var(--bv-space-4);
+
+  a {
+    padding: 4px 10px;
+    border: 1px solid rgb(255 255 255 / 25%);
+    border-radius: var(--bv-radius-sm);
+    font-size: var(--bv-text-xs);
+    font-weight: 700;
+
+    &:hover {
+      border-color: var(--bv-accent);
+      text-decoration: none;
+    }
+  }
+}
+
+.wa-float {
+  position: fixed;
+  right: var(--bv-space-4);
+  bottom: var(--bv-space-4);
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #25d366; // couleur officielle WhatsApp
+  color: #fff;
+  box-shadow: var(--bv-shadow-lg);
+
+  @include from($bp-md) {
+    width: 56px;
+    height: 56px;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}

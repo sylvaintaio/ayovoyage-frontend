@@ -1,0 +1,87 @@
+h1 {
+  margin-bottom: var(--bv-space-2);
+  font-size: var(--bv-text-3xl);
+}
+
+.intro {
+  margin-bottom: var(--bv-space-6);
+  color: var(--bv-ink-muted);
+}
+
+.form {
+  display: grid;
+  gap: var(--bv-space-5);
+}
+
+.toggle {
+  padding: 0 var(--bv-space-4);
+  border: 0;
+  border-left: 1px solid var(--bv-line);
+  background: none;
+  color: var(--bv-primary);
+  font: inherit;
+  font-size: var(--bv-text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.caps {
+  color: var(--bv-warning);
+  font-weight: 700;
+}
+
+.security {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-2);
+  margin: var(--bv-space-5) 0 0;
+  color: var(--bv-ink-muted);
+  font-size: var(--bv-text-sm);
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgb(255 255 255 / 40%);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.alt {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--bv-space-2);
+  margin-top: var(--bv-space-4);
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bv-primary);
+  font: inherit;
+  font-size: var(--bv-text-sm);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &--muted {
+    color: var(--bv-ink-muted);
+  }
+}
+
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

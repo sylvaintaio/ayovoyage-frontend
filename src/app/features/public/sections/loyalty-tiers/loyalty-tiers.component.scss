@@ -1,0 +1,79 @@
+@use 'mixins' as *;
+
+// Une seule grille de progression : colonnes séparées par des filets.
+.tiers {
+  display: grid;
+  border: 1px solid var(--bv-line-strong);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-surface);
+  overflow: hidden;
+
+  @include from($bp-sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include from($bp-lg) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.tier {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-1);
+  padding: var(--bv-space-5);
+  border-bottom: 1px solid var(--bv-line);
+
+  @include from($bp-lg) {
+    border-bottom: 0;
+    border-left: 1px solid var(--bv-line);
+
+    &:first-child {
+      border-left: 0;
+    }
+  }
+
+  &__level {
+    display: flex;
+    gap: 3px;
+    margin-bottom: var(--bv-space-3);
+  }
+
+  &__bar {
+    width: 18px;
+    height: 6px;
+    background: var(--bv-line);
+
+    &--on {
+      background: var(--bv-primary);
+    }
+  }
+
+  &__name {
+    font-size: var(--bv-text-xl);
+    font-weight: 750;
+    font-stretch: var(--bv-stretch-display);
+  }
+
+  &__cond {
+    font-size: var(--bv-text-sm);
+    color: var(--bv-ink-muted);
+  }
+
+  &__discount {
+    margin-top: var(--bv-space-4);
+    font-size: var(--bv-text-4xl);
+    line-height: 1;
+    color: var(--bv-primary);
+  }
+
+  &__discount--text {
+    color: var(--bv-ink-soft);
+  }
+
+  &__discount-label {
+    margin-bottom: var(--bv-space-4);
+    font-size: var(--bv-text-sm);
+    color: var(--bv-ink-muted);
+  }
+}

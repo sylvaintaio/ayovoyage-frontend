@@ -1,0 +1,20 @@
+@use 'mixins' as *;
+
+.split {
+  display: grid;
+  gap: var(--bv-space-6);
+  align-items: center;
+
+  @include from($bp-md) {
+    grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+.mission {
+  max-width: 900px;
+  text-align: center;
+
+  .section-title {
+    line-height: 1.35;
+  }
+}

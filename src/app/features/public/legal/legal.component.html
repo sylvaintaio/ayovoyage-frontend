@@ -1,0 +1,145 @@
+@if (page() === 'mentions') {
+  <bv-page-banner title="Mentions légales" lead="Éditeur du site, hébergement et propriété intellectuelle." />
+} @else {
+  <bv-page-banner title="Politique de confidentialité" lead="Quelles données nous collectons, pourquoi, combien de temps, et comment exercer vos droits." />
+}
+
+<section class="section section--white">
+  <article class="container narrow legal">
+    <p class="updated">Dernière mise à jour : {{ legal.updatedAt | date: 'd MMMM y' }}</p>
+
+    @if (page() === 'mentions') {
+      <h2>Éditeur du site</h2>
+      <dl>
+        <dt>Société</dt>
+        <dd>{{ legal.companyName }}, <span [class.todo]="todo(legal.legalForm)">{{ legal.legalForm }}</span></dd>
+        <dt>RCCM</dt>
+        <dd [class.todo]="todo(legal.rccm)">{{ legal.rccm }}</dd>
+        <dt>IFU</dt>
+        <dd [class.todo]="todo(legal.ifu)">{{ legal.ifu }}</dd>
+        <dt>Siège social</dt>
+        <dd [class.todo]="todo(legal.headOffice)">{{ legal.headOffice }}</dd>
+        <dt>Contact</dt>
+        <dd><a [href]="'tel:' + legal.phone">{{ legal.phone }}</a> · <a [href]="'mailto:' + legal.email">{{ legal.email }}</a></dd>
+        <dt>Directeur de la publication</dt>
+        <dd [class.todo]="todo(legal.publicationDirector)">{{ legal.publicationDirector }}</dd>
+      </dl>
+
+      <h2>Hébergement</h2>
+      <dl>
+        <dt>Hébergeur</dt>
+        <dd [class.todo]="todo(legal.host.name)">{{ legal.host.name }}</dd>
+        <dt>Adresse</dt>
+        <dd [class.todo]="todo(legal.host.address)">{{ legal.host.address }}</dd>
+      </dl>
+
+      <h2>Propriété intellectuelle</h2>
+      <p>
+        Les contenus du site (textes, logos, photos, éléments graphiques) sont la propriété de {{ legal.companyName }} ou de ses partenaires. Toute reproduction sans
+        autorisation écrite est interdite.
+      </p>
+
+      <h2>Transport et compagnies</h2>
+      <p>
+        Les voyages vendus sur ce site sont assurés par la compagnie indiquée sur chaque billet, selon nos <a routerLink="/conditions">conditions de voyage</a>.
+      </p>
+
+      <h2>Données personnelles</h2>
+      <p>Le traitement de vos données est décrit dans notre <a routerLink="/confidentialite">politique de confidentialité</a>.</p>
+    } @else {
+      <p class="lead">
+        {{ legal.companyName }} traite vos données personnelles pour vous permettre de réserver, voyager et être informé de vos voyages, dans le respect de la loi
+        n° 2017-20 du 20 avril 2018 portant Code du numérique en République du Bénin (livre V, protection des données à caractère personnel).
+      </p>
+
+      <h2>Responsable du traitement</h2>
+      <p>
+        {{ legal.companyName }}, <span [class.todo]="todo(legal.headOffice)">{{ legal.headOffice }}</span>. Pour toute question sur vos données :
+        <span [class.todo]="todo(legal.privacyEmail)">{{ legal.privacyEmail }}</span>.
+      </p>
+      <p class="small">Formalités auprès de l’APDP : <span [class.todo]="todo(legal.apdpDeclaration)">{{ legal.apdpDeclaration }}</span></p>
+
+      <h2>Les données que nous utilisons</h2>
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Données</th><th scope="col">Pourquoi</th><th scope="col">Combien de temps</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nom, e-mail, téléphone, date de naissance (facultative)</td>
+            <td>Créer et gérer votre compte, vous envoyer vos billets</td>
+            <td>Jusqu’à la suppression de votre compte</td>
+          </tr>
+          <tr>
+            <td>Noms des passagers, réservations, sièges, billets</td>
+            <td>Exécuter le transport, contrôler l’embarquement</td>
+            <td>Durée du compte ; anonymisées à sa suppression</td>
+          </tr>
+          <tr>
+            <td>Paiements (montant, mode, référence, numéro Mobile Money)</td>
+            <td>Encaisser, rembourser, tenir la comptabilité</td>
+            <td>Durée légale de conservation des pièces comptables, sans vos données personnelles après suppression du compte</td>
+          </tr>
+          <tr>
+            <td>Points et niveau de fidélité</td>
+            <td>Vous faire bénéficier du programme de fidélité</td>
+            <td>Jusqu’à la suppression du compte (les points expirent selon le programme)</td>
+          </tr>
+          <tr>
+            <td>E-mails et SMS envoyés (contenu, date)</td>
+            <td>Vous informer (billets, rappels, horaires) et garder l’historique dans votre espace</td>
+            <td>Jusqu’à la suppression du compte</td>
+          </tr>
+          <tr>
+            <td>Codes de connexion</td>
+            <td>Vous connecter sans mot de passe</td>
+            <td>5 minutes, supprimés après 1 jour</td>
+          </tr>
+          <tr>
+            <td>Sessions (adresse IP, navigateur)</td>
+            <td>Sécurité du compte, détection des fraudes</td>
+            <td>30 jours au plus après la fin de la session</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="small muted">Nous ne collectons jamais vos numéros de carte bancaire : le paiement en ligne est traité directement par notre prestataire de paiement.</p>
+
+      <h2>Qui reçoit vos données</h2>
+      <ul>
+        <li>La compagnie qui assure votre voyage, et son personnel en agence et à l’embarquement.</li>
+        <li>Notre prestataire de paiement, pour les paiements par Mobile Money ou par carte.</li>
+        <li>Nos prestataires d’envoi d’e-mails et de SMS, uniquement pour vous envoyer nos messages.</li>
+        <li>
+          Notre hébergeur : <span [class.todo]="todo(legal.host.name)">{{ legal.host.name }}</span> (<span [class.todo]="todo(legal.host.country)">{{ legal.host.country }}</span>).
+        </li>
+      </ul>
+      <p>Vos données ne sont jamais vendues ni utilisées pour de la publicité ciblée.</p>
+
+      <h2>Vos droits</h2>
+      <p>Vous pouvez à tout moment :</p>
+      <ul>
+        <li><strong>consulter et corriger</strong> vos informations dans <a routerLink="/compte/profil">votre profil</a> ;</li>
+        <li><strong>supprimer votre compte</strong> depuis votre profil (rubrique « Supprimer mon compte ») ;</li>
+        <li>vous <strong>opposer</strong> à un traitement ou demander une <strong>copie</strong> de vos données en écrivant à <span [class.todo]="todo(legal.privacyEmail)">{{ legal.privacyEmail }}</span>.</li>
+      </ul>
+      <p>
+        Nous répondons dans un délai d’un mois. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir l’Autorité de Protection des Données à
+        caractère Personnel (APDP) du Bénin.
+      </p>
+
+      <h2>Cookies et stockage local</h2>
+      <p>
+        Le site n’utilise que des cookies strictement nécessaires : maintien de votre connexion et protection contre la falsification de requêtes. Vos billets peuvent
+        être conservés sur votre appareil pour être présentés sans réseau. Aucun cookie publicitaire ni de mesure d’audience tierce n’est utilisé.
+      </p>
+
+      <h2>Sécurité</h2>
+      <p>
+        Connexions chiffrées (HTTPS), billets signés numériquement, accès du personnel protégés par double authentification et journalisés, séparation des données
+        de chaque compagnie.
+      </p>
+    }
+
+    <p class="contact">Une question ? <a routerLink="/contact">Contactez-nous</a>.</p>
+  </article>
+</section>

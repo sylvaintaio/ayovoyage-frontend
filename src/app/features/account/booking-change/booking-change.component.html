@@ -1,0 +1,152 @@
+<bv-state [loading]="loading()" [error]="error()" (retry)="load(id())">
+  @if (booking(); as b) {
+    <div class="page">
+      <a [routerLink]="['/compte/reservations', b.id]" class="small"
+        >← Réservation {{ b.reference }}</a
+      >
+
+      <header class="head">
+        <h2>Changer de départ</h2>
+        <p class="muted cap">
+          Actuellement : {{ b.departure.origin_city }} → {{ b.departure.destination_city }},
+          {{ b.departure.departure_at | date: 'EEEE d MMMM à HH:mm' }} · {{ passengers().length }}
+          {{ passengers().length > 1 ? 'passagers' : 'passager' }}
+        </p>
+      </header>
+
+      @if (policy(); as p) {
+        @if (!p.change.allowed) {
+          <div class="alert alert--warning">{{ p.change.reason }}</div>
+        } @else {
+          <ul class="rules" aria-label="Conditions de modification">
+            <li>
+              Même trajet, mêmes passagers ; sièges attribués automatiquement dans la même
+              catégorie.
+            </li>
+            <li>
+              @if (p.change.fee_total) {
+                Frais : {{ p.change.fee_per_passenger | money }} par passager ({{
+                  p.change.fee_total | money
+                }}).
+              } @else {
+                Modification sans frais{{
+                  p.change.free_by_tier ? ' (avantage ' + p.change.tier_name + ')' : ''
+                }}.
+              }
+            </li>
+            <li>
+              Trajet plus cher : vous payez la différence. Moins cher : la différence n’est pas
+              remboursée.
+            </li>
+            <li>Vos billets actuels restent valables jusqu’au paiement de la modification.</li>
+          </ul>
+
+          <section aria-labelledby="titre-jour">
+            <h3 id="titre-jour" class="step-title">1. Choisissez le jour</h3>
+            <div class="days" role="listbox" aria-labelledby="titre-jour">
+              @for (d of days(); track d.iso) {
+                <button
+                  type="button"
+                  class="day"
+                  role="option"
+                  [class.day--on]="d.iso === day()"
+                  [attr.aria-selected]="d.iso === day()"
+                  (click)="pickDay(d.iso)"
+                >
+                  <span class="day__dow">{{ d.date | date: 'EEE' }}</span>
+                  <span class="day__num">{{ d.date | date: 'd' }}</span>
+                  <span class="day__month">{{ d.date | date: 'MMM' }}</span>
+                </button>
+              }
+            </div>
+          </section>
+
+          <section aria-labelledby="titre-depart">
+            <h3 id="titre-depart" class="step-title">2. Choisissez le départ</h3>
+            @if (searching()) {
+              <p class="muted small">Recherche des départs…</p>
+            } @else if (departures().length === 0) {
+              <p class="empty">
+                Aucun départ disponible ce jour-là pour {{ passengers().length }}
+                {{ passengers().length > 1 ? 'passagers' : 'passager' }}. Essayez un autre jour.
+              </p>
+            } @else {
+              <ul class="list-plain deps">
+                @for (d of departures(); track d.id) {
+                  <li>
+                    <button
+                      type="button"
+                      class="dep"
+                      [class.dep--on]="selected()?.id === d.id"
+                      [attr.aria-pressed]="selected()?.id === d.id"
+                      (click)="select(d)"
+                    >
+                      <span class="dep__time">{{ d.departure_at | date: 'HH:mm' }}</span>
+                      <span class="dep__main">
+                        <span class="dep__route"
+                          >{{ d.origin_agency_name }} → {{ d.destination_agency_name }}</span
+                        >
+                        <span class="dep__meta"
+                          >Arrivée prévue {{ d.arrival_eta | date: 'HH:mm' }} · {{ d.bus_model }} ·
+                          {{ d.available_seats }} places</span
+                        >
+                      </span>
+                      <span class="dep__price">dès {{ d.base_price | money }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+
+          @if (selected(); as s) {
+            <section class="card summary" aria-labelledby="titre-recap" aria-live="polite">
+              <h3 id="titre-recap" class="card__title">3. Récapitulatif</h3>
+              @if (quoting()) {
+                <p class="muted small">Calcul du prix…</p>
+              } @else if (quoteError()) {
+                <p class="alert alert--danger">{{ quoteError() }}</p>
+              } @else if (quote(); as q) {
+                <p class="small cap">
+                  Nouveau départ : {{ s.departure_at | date: 'EEEE d MMMM à HH:mm' }}
+                </p>
+                <dl class="dl">
+                  <dt>Prix du nouveau trajet</dt>
+                  <dd>{{ q.new_fare | money }}</dd>
+                  <dt>Déjà payé (avoir)</dt>
+                  <dd>− {{ (q.credit < q.new_fare ? q.credit : q.new_fare) | money }}</dd>
+                  @if (q.fare_difference) {
+                    <dt>Différence de tarif</dt>
+                    <dd>{{ q.fare_difference | money }}</dd>
+                  }
+                  <dt>Frais de modification</dt>
+                  <dd>{{ q.fee ? (q.fee | money) : 'Offerts' }}</dd>
+                  <dt class="total">À payer</dt>
+                  <dd class="total">{{ q.amount_due | money }}</dd>
+                </dl>
+                @if (q.non_refundable_gap) {
+                  <p class="alert alert--warning">
+                    Ce départ est moins cher : la différence de
+                    {{ q.non_refundable_gap | money }} ne sera pas remboursée.
+                  </p>
+                }
+                <button
+                  type="button"
+                  class="btn btn--primary btn--block"
+                  [disabled]="submitting()"
+                  (click)="confirm()"
+                >
+                  {{
+                    q.amount_due
+                      ? 'Confirmer et payer ' + (q.amount_due | money)
+                      : 'Confirmer le changement'
+                  }}
+                </button>
+              }
+            </section>
+          }
+        }
+      }
+    </div>
+  }
+</bv-state>

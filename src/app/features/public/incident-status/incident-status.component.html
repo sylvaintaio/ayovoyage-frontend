@@ -1,0 +1,43 @@
+<section class="section">
+  <div class="container narrow stack">
+    <header>
+      <p class="eyebrow">Réclamation</p>
+      <h1 class="mono">{{ reference() }}</h1>
+    </header>
+
+    @if (incident(); as i) {
+      <div class="card stack-sm">
+        <div class="spread">
+          <h2 class="card__title">{{ categories[i.category] }}</h2>
+          <bv-status-badge [status]="i.status" domain="incident" />
+        </div>
+        <p class="small muted">
+          Ouverte le {{ i.created_at | date: 'd MMMM y' }}
+          @if (i.tracking_number) {
+            · colis <a [routerLink]="['/colis/suivi', i.tracking_number]">{{ i.tracking_number }}</a>
+          }
+        </p>
+        <p class="desc">{{ i.description }}</p>
+        @if (i.resolution && (i.status === 'resolved' || i.status === 'rejected')) {
+          <p class="alert alert--success"><strong>Solution :</strong> {{ i.resolution }}</p>
+        }
+      </div>
+      <section class="card">
+        <h2 class="card__title">Suivi du dossier</h2>
+        <bv-timeline [items]="events()" />
+      </section>
+    } @else {
+      <form class="card stack-sm" (ngSubmit)="open()">
+        <p>Pour consulter ce dossier, saisissez le numéro de téléphone utilisé lors du signalement.</p>
+        <div class="field">
+          <label for="is-phone">Téléphone</label>
+          <input id="is-phone" class="input" type="tel" name="phone" autocomplete="tel" [ngModel]="phone()" (ngModelChange)="phone.set($event)" />
+        </div>
+        @if (error()) {
+          <p class="alert alert--danger" role="alert">{{ error() }}</p>
+        }
+        <button type="submit" class="btn btn--primary" [disabled]="busy() || phone().replace(' ', '').length < 8">Consulter</button>
+      </form>
+    }
+  </div>
+</section>

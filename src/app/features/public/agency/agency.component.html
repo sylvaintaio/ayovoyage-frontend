@@ -1,0 +1,110 @@
+<div class="container page">
+  <bv-state [loading]="loading()" [error]="error()" (retry)="load(slug())">
+    @if (agency(); as a) {
+      <nav class="small crumbs" aria-label="Fil d'Ariane"><a routerLink="/agences">Agences</a> › {{ a.city_name }}</nav>
+      <header class="head">
+        <div>
+          <p class="muted small">{{ a.company_name }}</p>
+          <h1>{{ a.name }}</h1>
+          <div class="cluster services">
+            @for (s of a.services; track s) {
+              <span class="badge badge--success">{{ serviceLabels[s] ?? s }}</span>
+            }
+          </div>
+        </div>
+        <div class="cluster">
+          @if (a.phone) {
+            <a class="btn btn--primary" [href]="'tel:' + a.phone">Appeler</a>
+          }
+          @if (a.whatsapp && whatsappUrl(a.whatsapp); as wa) {
+            <a class="btn" [href]="wa" target="_blank" rel="noopener">WhatsApp</a>
+          }
+          @if (mapsUrl(a.latitude, a.longitude, a.name); as url) {
+            <a class="btn" [href]="url" target="_blank" rel="noopener">Itinéraire</a>
+          }
+        </div>
+      </header>
+
+      <div class="layout">
+        <section class="stack">
+          <article class="card">
+            <h2 class="card__title">Prochains départs</h2>
+            @if (a.upcoming_departures.length) {
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr><th scope="col">Départ</th><th scope="col">Destination</th><th scope="col">Prix</th><th scope="col">Places</th><th scope="col"><span class="sr-only">Action</span></th></tr>
+                  </thead>
+                  <tbody>
+                    @for (d of a.upcoming_departures; track d.id) {
+                      <tr>
+                        <td class="nowrap">{{ d.departure_at | date: 'EEE d MMM, HH:mm' }}</td>
+                        <td>{{ d.destination_city }}</td>
+                        <td class="nowrap">{{ d.base_price | money }}</td>
+                        <td>{{ d.available_seats }}</td>
+                        <td class="text-right">
+                          @if (d.available_seats > 0) {
+                            <a class="btn btn--sm btn--primary" [routerLink]="['/departs', d.id]">Réserver</a>
+                          } @else {
+                            <span class="badge badge--danger">Complet</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="muted">Aucun départ dans les 3 prochains jours.</p>
+            }
+            @if (a.destinations.length) {
+              <p class="small dests">
+                <span class="muted">Destinations :</span>
+                @for (c of a.destinations; track c.slug; let last = $last) {
+                  <a routerLink="/recherche" [queryParams]="{ from: a.city_slug, to: c.slug, date: today }">{{ c.name }}</a>{{ last ? '' : ', ' }}
+                }
+              </p>
+            }
+          </article>
+
+          @if (a.instructions) {
+            <article class="card">
+              <h2 class="card__title">Consignes aux voyageurs</h2>
+              <p>{{ a.instructions }}</p>
+            </article>
+          }
+        </section>
+
+        <aside class="stack">
+          <article class="card">
+            <h2 class="card__title">Adresse</h2>
+            <p>{{ a.address }}</p>
+            @if (a.landmark) {
+              <p class="muted small">Repère : {{ a.landmark }}</p>
+            }
+            <dl class="dl">
+              @if (a.phone) {
+                <dt>Téléphone</dt>
+                <dd><a [href]="'tel:' + a.phone">{{ a.phone }}</a></dd>
+              }
+              @if (a.email) {
+                <dt>E-mail</dt>
+                <dd><a [href]="'mailto:' + a.email">{{ a.email }}</a></dd>
+              }
+            </dl>
+          </article>
+          <article class="card">
+            <h2 class="card__title">Horaires</h2>
+            <p class="small"><span class="muted">Aujourd'hui :</span> <strong>{{ todayHours(a.opening_hours) }}</strong></p>
+            <dl class="dl">
+              @for (h of a.opening_hours; track h.day) {
+                <dt>{{ dayLabels[h.day] }}</dt>
+                <dd>{{ h.open }} – {{ h.close }}</dd>
+              }
+            </dl>
+          </article>
+        </aside>
+      </div>
+    }
+  </bv-state>
+</div>

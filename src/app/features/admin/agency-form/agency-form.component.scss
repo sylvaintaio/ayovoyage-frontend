@@ -1,0 +1,27 @@
+.add-city {
+  margin-top: var(--bv-space-2);
+  flex-wrap: nowrap;
+}
+
+.services {
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: var(--bv-space-2);
+  }
+}
+
+.hours {
+  display: grid;
+  gap: var(--bv-space-2);
+
+  &__row {
+    display: grid;
+    grid-template-columns: 140px 1fr 1fr;
+    align-items: center;
+    gap: var(--bv-space-3);
+    max-width: 520px;
+  }
+}

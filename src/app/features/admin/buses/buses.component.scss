@@ -1,0 +1,19 @@
+@use 'mixins' as *;
+
+.head {
+  margin-bottom: var(--bv-space-4);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-lg) {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+  }
+}

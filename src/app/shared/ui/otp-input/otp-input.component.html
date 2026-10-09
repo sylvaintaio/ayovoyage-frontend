@@ -1,0 +1,22 @@
+<div class="otp" role="group" [attr.aria-label]="label()">
+  @for (digit of slots(); track $index; let i = $index) {
+    <input
+      #box
+      class="otp__box"
+      [class.otp__box--filled]="digit !== ''"
+      [class.otp__box--invalid]="invalid()"
+      type="text"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      maxlength="6"
+      [attr.autocomplete]="i === 0 ? 'one-time-code' : 'off'"
+      [attr.aria-label]="'Chiffre ' + (i + 1) + ' sur ' + length()"
+      [value]="digit"
+      [disabled]="disabled()"
+      (input)="onInput(i, $event)"
+      (keydown)="onKeydown(i, $event)"
+      (paste)="onPaste(i, $event)"
+      (focus)="select($event)"
+    />
+  }
+</div>

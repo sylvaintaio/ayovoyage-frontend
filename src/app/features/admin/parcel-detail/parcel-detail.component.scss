@@ -1,0 +1,146 @@
+@use 'mixins' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bv-space-4);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+
+  h1,
+  p {
+    margin: 0;
+  }
+}
+
+.mono,
+.code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+
+.code {
+  max-width: 200px;
+  font-size: var(--bv-text-xl);
+  letter-spacing: 0.3em;
+}
+
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+  border-left: 4px solid var(--bv-primary);
+
+  p {
+    margin: 0;
+  }
+}
+
+.delivered {
+  border-left-color: var(--bv-success);
+}
+
+.sig {
+  max-width: 220px;
+  max-height: 90px;
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-sm);
+  background: #fff;
+}
+
+.deliver {
+  border-left: 4px solid var(--bv-success);
+  max-width: 640px;
+
+  p {
+    margin: 0;
+  }
+}
+
+.label {
+  font-size: var(--bv-text-sm);
+  font-weight: 600;
+}
+
+.link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bv-primary);
+  font: inherit;
+  font-size: var(--bv-text-sm);
+  cursor: pointer;
+}
+
+.due {
+  padding: var(--bv-space-3);
+  border-radius: var(--bv-radius);
+  background: var(--bv-warning-soft);
+}
+
+.options {
+  display: grid;
+  gap: var(--bv-space-2);
+}
+
+.option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bv-space-2) var(--bv-space-3);
+  padding: var(--bv-space-3);
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+
+  input {
+    accent-color: var(--bv-primary);
+  }
+
+  &--on {
+    border-color: var(--bv-primary);
+    background: var(--bv-primary-soft);
+  }
+}
+
+.option__time {
+  min-width: 110px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.option__route {
+  flex: 1;
+}
+
+.grid-info {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include from($bp-lg) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.photo {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: var(--bv-radius-sm);
+}

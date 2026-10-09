@@ -1,0 +1,61 @@
+<div class="spread head">
+  <h1>À encaisser</h1>
+</div>
+<p class="muted small">
+  Réservations faites en ligne et à payer en agence avant leur date limite. Pour toute autre réservation en attente,
+  cherchez sa référence ou le téléphone du client.
+</p>
+
+<form class="search" role="search" (ngSubmit)="load()">
+  <label for="co-q" class="sr-only">Référence ou téléphone</label>
+  <input id="co-q" name="q" class="input" type="search" maxlength="30" placeholder="Référence (BV…) ou téléphone"
+    [ngModel]="q()" (ngModelChange)="q.set($event)" />
+  <button type="submit" class="btn">Rechercher</button>
+  @if (searched()) {
+    <button type="button" class="btn btn--ghost" (click)="q.set(''); load()">Voir la file</button>
+  }
+</form>
+
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="bookings().length === 0"
+  [emptyText]="searched() ? 'Aucune réservation en attente pour « ' + searched() + ' ».' : 'Aucune réservation à encaisser pour le moment.'"
+  (retry)="load()"
+>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Référence</th>
+          <th scope="col">Client</th>
+          <th scope="col">Départ</th>
+          <th scope="col">À payer avant</th>
+          <th scope="col" class="text-right">Montant</th>
+          <th scope="col"><span class="sr-only">Action</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of bookings(); track b.id) {
+          <tr>
+            <td class="nowrap">
+              <a class="strong mono" [routerLink]="['/admin/reservations', b.id]">{{ b.reference }}</a>
+              @if (b.payment_mode === 'agency') {
+                <br /><span class="badge">Payer en agence</span>
+              }
+            </td>
+            <td class="small">{{ b.contact_name }}<br /><span class="muted">{{ b.contact_phone }}</span></td>
+            <td class="small">{{ b.route_name }}<br /><span class="muted">{{ b.departure_at | date: 'EEE d MMM HH:mm' }}</span></td>
+            <td class="small nowrap">
+              <span [class.urgent]="urgent(b)">{{ b.expires_at | date: 'EEE d MMM HH:mm' }}</span>
+            </td>
+            <td class="text-right strong figures nowrap">{{ b.total_amount | money }}</td>
+            <td class="text-right">
+              <button type="button" class="btn btn--primary btn--sm" (click)="collect(b)">Encaisser</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</bv-state>
