@@ -1,0 +1,83 @@
+@if (data(); as d) {
+  <section class="card stack-sm" aria-labelledby="t-onboard">
+    <div class="spread">
+      <h2 id="t-onboard" class="card__title">Vente à bord</h2>
+      <strong>{{ d.cash | money }}</strong>
+    </div>
+
+    <div class="quota small">
+      <span>
+        Places réservées au contrôleur :
+        <strong>{{ d.quota_seats.length ? d.quota_seats.map(seatLabel).join(', ') : 'aucune' }}</strong>
+      </span>
+      @if (canPlan && open()) {
+        <span class="quota__edit">
+          <input class="input" type="number" min="0" max="20" aria-label="Nombre de places réservées" [ngModel]="quota()" (ngModelChange)="quota.set(+$event)" />
+          <button type="button" class="btn btn--sm" [disabled]="busy() || quota() === d.quota_seats.length" (click)="saveQuota()">Appliquer</button>
+        </span>
+      }
+    </div>
+
+    @if (d.sales.length) {
+      <ul class="list-plain sales">
+        @for (s of d.sales; track s.booking_id) {
+          <li class="sale">
+            <span class="small muted">{{ s.sold_at | date: 'HH:mm' }}</span>
+            <span>
+              <strong>{{ s.reference }}</strong> · {{ s.seat_labels }} · {{ stopName(s.boarding_seq) }} → {{ stopName(s.alighting_seq) }}
+              @if (s.sold_offline) { <span class="badge">sans réseau</span> }
+              <br /><span class="small muted">{{ s.contact_name }}@if (s.contact_phone) { · {{ s.contact_phone }} }</span>
+            </span>
+            <strong>{{ s.cash | money }}</strong>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="small muted">Aucune vente à bord pour l'instant.</p>
+    }
+
+    @for (i of d.issues; track i.id) {
+      <div class="alert" [class.alert--success]="i.resolved_at">
+        <strong>{{ i.resolved_at ? 'Anomalie close' : 'Anomalie à régulariser' }}</strong> — {{ i.reason }}
+        ({{ i.amount | money }} encaissés par {{ i.staff_name }} à {{ i.sold_at | date: 'HH:mm' }})
+        @if (i.resolved_at) {
+          <div class="small">{{ i.resolution }}</div>
+        } @else if (canPlan) {
+          <div class="issue-fix">
+            <input class="input" placeholder="Ce qui a été fait (remboursé, billet émis…)" [value]="resolution()[i.id] ?? ''"
+              (input)="setResolution(i.id, $any($event.target).value)" />
+            <button type="button" class="btn btn--sm" [disabled]="busy()" (click)="resolve(i.id)">Clore</button>
+          </div>
+        }
+      </div>
+    }
+
+    @if (d.handover; as h) {
+      <p class="alert" [class.alert--success]="h.difference === 0">
+        Caisse remise à {{ h.agency_name }} le {{ h.received_at | date: 'dd/MM à HH:mm' }} ({{ h.received_by_name }}) :
+        {{ h.counted_cash | money }} comptés pour {{ h.expected_cash | money }} attendus
+        @if (h.difference !== 0) { · <strong>écart {{ h.difference | money }}</strong> — {{ h.note }} }
+      </p>
+    } @else if (canReceive && d.sales_count > 0) {
+      <form class="handover stack-sm" (ngSubmit)="handOver()">
+        <h3 class="small strong">Recevoir la caisse du contrôleur</h3>
+        @if (needsAgency) {
+          <select class="select" aria-label="Agence qui reçoit" [value]="agencyId()" (change)="agencyId.set($any($event.target).value)">
+            @for (a of agencies(); track a.id) {
+              <option [value]="a.id">{{ a.name }}</option>
+            }
+          </select>
+        }
+        <div class="handover__row">
+          <input class="input" type="number" min="0" step="50" name="counted" placeholder="Montant compté" aria-label="Montant compté"
+            [ngModel]="counted()" (ngModelChange)="counted.set($event === null || $event === '' ? null : +$event)" />
+          <button type="submit" class="btn btn--primary" [disabled]="busy()">Valider</button>
+        </div>
+        @if (counted() !== null && gap() !== 0) {
+          <input class="input" name="note" placeholder="Explication de l'écart" aria-label="Explication de l'écart" [ngModel]="note()" (ngModelChange)="note.set($event)" />
+          <span class="small" [class.danger]="gap() < 0">Écart : {{ gap() | money }}</span>
+        }
+      </form>
+    }
+  </section>
+}

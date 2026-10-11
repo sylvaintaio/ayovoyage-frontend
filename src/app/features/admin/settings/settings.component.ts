@@ -46,6 +46,7 @@ export class SettingsComponent implements OnInit {
     change_max_count: [1, [Validators.required, Validators.min(0), Validators.max(5)]],
     change_window_days: [30, [Validators.required, Validators.min(1), Validators.max(365)]],
     baggage_extra_per_kg: [200, [Validators.required, Validators.min(0), Validators.max(100000)]],
+    onboard_quota_seats: [4, [Validators.required, Validators.min(0), Validators.max(20)]],
     pay_later: this.fb.group({
       enabled: [false],
       hold_hours: [24, [Validators.required, Validators.min(1), Validators.max(168)]],

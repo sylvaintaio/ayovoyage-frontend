@@ -31,6 +31,13 @@
         <strong class="kpi__value">{{ s.cash_out ? '−' : '' }}{{ s.cash_out | money }}</strong>
         <span class="kpi__sub">{{ s.refunds_count }} remboursement{{ s.refunds_count > 1 ? 's' : '' }}</span>
       </div>
+      @if (s.handovers_count) {
+        <div class="card kpi">
+          <span class="kpi__label">Caisses de bord reçues</span>
+          <strong class="kpi__value">{{ s.onboard_in | money }}</strong>
+          <span class="kpi__sub">{{ s.handovers_count }} contrôleur{{ s.handovers_count > 1 ? 's' : '' }}</span>
+        </div>
+      }
       <div class="card kpi kpi--main">
         <span class="kpi__label">Attendu en caisse</span>
         <strong class="kpi__value">{{ s.expected_cash | money }}</strong>

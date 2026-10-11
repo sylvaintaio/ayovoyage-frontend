@@ -22,7 +22,17 @@ export interface CashSummary {
    * Présent si la journée est déjà clôturée
    */
   closure?: CashClosure;
+
+  /**
+   * cash_in + onboard_in - cash_out
+   */
   expected_cash: number;
+  handovers_count: number;
+
+  /**
+   * Caisses de bord remises par les contrôleurs (montant compté)
+   */
+  onboard_in: number;
   refunds_count: number;
   sales_count: number;
 }

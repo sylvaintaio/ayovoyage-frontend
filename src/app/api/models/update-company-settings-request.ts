@@ -21,6 +21,11 @@ export interface UpdateCompanySettingsRequest {
   name: string;
 
   /**
+   * Absent : inchangé
+   */
+  onboard_quota_seats?: number;
+
+  /**
    * Absent : règles inchangées
    */
   pay_later?: PayLaterSettings;

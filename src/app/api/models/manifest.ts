@@ -3,6 +3,7 @@
 
 import { DepartureStop } from '../models/departure-stop';
 import { ManifestEntry } from '../models/manifest-entry';
+import { OnboardKit } from '../models/onboard-kit';
 import { StopVisit } from '../models/stop-visit';
 export interface Manifest {
   boarded: number;
@@ -10,6 +11,11 @@ export interface Manifest {
   expected: number;
   generated_at: string;
   missing: number;
+
+  /**
+   * Contrôleur : places et prix pour vendre à bord, même sans réseau
+   */
+  onboard?: OnboardKit;
   passengers: Array<ManifestEntry>;
 
   /**

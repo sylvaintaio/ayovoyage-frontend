@@ -71,6 +71,11 @@ export interface CompanySettings {
   name: string;
 
   /**
+   * Places réservées au contrôleur sur chaque nouveau départ (vente à bord sans réseau)
+   */
+  onboard_quota_seats: number;
+
+  /**
    * Réservation sans paiement immédiat (payer en agence)
    */
   pay_later: PayLaterSettings;

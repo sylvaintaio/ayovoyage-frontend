@@ -20,6 +20,7 @@ import { ToastService } from '../../../core/notify/toast.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { SeatMapComponent } from '../../../shared/ui/seat-map/seat-map.component';
 import { DepartureCargoComponent } from '../departure-cargo/departure-cargo.component';
+import { DepartureOnboardComponent } from '../departure-onboard/departure-onboard.component';
 import { StateComponent } from '../../../shared/ui/state/state.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { DepartureFormComponent } from '../departure-form/departure-form.component';
@@ -108,7 +109,8 @@ const ACTION_LABELS: Record<Target, string> = {
 /** Exploitation d'un départ : plan nominatif, sièges bloqués, statut, manifeste. */
 @Component({
   selector: 'bv-departure-detail',
-  imports: [StateComponent, StatusBadgeComponent, SeatMapComponent, DepartureCargoComponent, FormsModule, RouterLink, DatePipe, MoneyPipe],
+  imports: [StateComponent, StatusBadgeComponent, SeatMapComponent, DepartureCargoComponent,
+    DepartureOnboardComponent, FormsModule, RouterLink, DatePipe, MoneyPipe],
   templateUrl: './departure-detail.component.html',
   styleUrl: './departure-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

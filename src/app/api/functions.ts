@@ -137,6 +137,14 @@ export type { BlockDepartureSeat$Params as BlockDepartureSeat$Params } from './f
 export { blockDepartureSeat as blockDepartureSeat } from './fn/admin-departs/block-departure-seat';
 export type { UnblockDepartureSeat$Params as UnblockDepartureSeat$Params } from './fn/admin-departs/unblock-departure-seat';
 export { unblockDepartureSeat as unblockDepartureSeat } from './fn/admin-departs/unblock-departure-seat';
+export type { GetDepartureOnboard$Params as GetDepartureOnboard$Params } from './fn/admin-departs/get-departure-onboard';
+export { getDepartureOnboard as getDepartureOnboard } from './fn/admin-departs/get-departure-onboard';
+export type { SetOnboardQuota$Params as SetOnboardQuota$Params } from './fn/admin-departs/set-onboard-quota';
+export { setOnboardQuota as setOnboardQuota } from './fn/admin-departs/set-onboard-quota';
+export type { HandOverOnboardCash$Params as HandOverOnboardCash$Params } from './fn/admin-departs/hand-over-onboard-cash';
+export { handOverOnboardCash as handOverOnboardCash } from './fn/admin-departs/hand-over-onboard-cash';
+export type { ResolveOnboardIssue$Params as ResolveOnboardIssue$Params } from './fn/admin-departs/resolve-onboard-issue';
+export { resolveOnboardIssue as resolveOnboardIssue } from './fn/admin-departs/resolve-onboard-issue';
 export type { ChangeDepartureStatus$Params as ChangeDepartureStatus$Params } from './fn/admin-departs/change-departure-status';
 export { changeDepartureStatus as changeDepartureStatus } from './fn/admin-departs/change-departure-status';
 export type { ListDepartureParcels$Params as ListDepartureParcels$Params } from './fn/colis/list-departure-parcels';
@@ -249,6 +257,10 @@ export type { ListAgentDepartures$Params as ListAgentDepartures$Params } from '.
 export { listAgentDepartures as listAgentDepartures } from './fn/agent-embarquement/list-agent-departures';
 export type { GetDepartureManifest$Params as GetDepartureManifest$Params } from './fn/agent-embarquement/get-departure-manifest';
 export { getDepartureManifest as getDepartureManifest } from './fn/agent-embarquement/get-departure-manifest';
+export type { GetAgentOnboard$Params as GetAgentOnboard$Params } from './fn/agent-embarquement/get-agent-onboard';
+export { getAgentOnboard as getAgentOnboard } from './fn/agent-embarquement/get-agent-onboard';
+export type { RecordOnboardSales$Params as RecordOnboardSales$Params } from './fn/agent-embarquement/record-onboard-sales';
+export { recordOnboardSales as recordOnboardSales } from './fn/agent-embarquement/record-onboard-sales';
 export type { ScanTicket$Params as ScanTicket$Params } from './fn/agent-embarquement/scan-ticket';
 export { scanTicket as scanTicket } from './fn/agent-embarquement/scan-ticket';
 export type { AgentChangeDepartureStatus$Params as AgentChangeDepartureStatus$Params } from './fn/agent-embarquement/agent-change-departure-status';

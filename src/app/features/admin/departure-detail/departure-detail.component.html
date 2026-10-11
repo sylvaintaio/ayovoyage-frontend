@@ -127,6 +127,7 @@
           </section>
         }
         <bv-departure-cargo [departureId]="data.departure.id" [departureStatus]="data.departure.status" />
+        <bv-departure-onboard [departureId]="data.departure.id" [departureStatus]="data.departure.status" [stops]="data.departure.stops ?? []" />
       </aside>
     </div>
   }
