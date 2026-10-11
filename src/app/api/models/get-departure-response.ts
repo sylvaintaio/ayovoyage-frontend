@@ -5,7 +5,18 @@ import { AdminDeparture } from '../models/admin-departure';
 import { CategoryPrice } from '../models/category-price';
 import { SeatMap } from '../models/seat-map';
 export interface GetDepartureResponse {
+  alighting_seq: number;
+
+  /**
+   * Tronçon du plan
+   */
+  boarding_seq: number;
   categories: Array<CategoryPrice>;
   departure: AdminDeparture;
   seat_map: SeatMap;
+
+  /**
+   * Prix de base du tronçon (avant catégorie de siège)
+   */
+  unit_price: number;
 }

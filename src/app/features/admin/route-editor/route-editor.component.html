@@ -1,0 +1,154 @@
+<a routerLink="/admin/lignes" class="back">← Lignes</a>
+<h1>{{ isNew() ? 'Nouvelle ligne' : name() }}</h1>
+
+<bv-state [loading]="loading()" [error]="error()">
+  <div class="stack">
+    <section class="card stack-sm" aria-labelledby="t-general">
+      <h2 id="t-general" class="card__title">Ligne</h2>
+      <div class="grid grid-3">
+        <div class="field">
+          <label for="re-name">Nom</label>
+          <input id="re-name" class="input" [ngModel]="name()" (ngModelChange)="name.set($event)" placeholder="Cotonou → Parakou" />
+        </div>
+        <div class="field">
+          <label for="re-price">Prix complet, Standard (F CFA)</label>
+          <input id="re-price" class="input" type="number" step="100" min="1" [ngModel]="basePrice()" (ngModelChange)="basePrice.set(+$event)" />
+        </div>
+        <div class="field">
+          <label for="re-bag">Bagage inclus (kg)</label>
+          <input id="re-bag" class="input" type="number" min="0" [ngModel]="baggage()" (ngModelChange)="baggage.set(+$event)" />
+        </div>
+        <div class="field">
+          <label for="re-km">Distance (km)</label>
+          <input id="re-km" class="input" type="number" min="1" [ngModel]="distance()" (ngModelChange)="distance.set($event ? +$event : null)" />
+        </div>
+      </div>
+      <label class="checkbox"><input type="checkbox" [ngModel]="active()" (ngModelChange)="active.set($event)" /> Ligne active (proposée à la programmation des départs)</label>
+    </section>
+
+    <section class="card stack-sm" aria-labelledby="t-stops">
+      <div class="spread">
+        <h2 id="t-stops" class="card__title">Arrêts</h2>
+        <div class="field inline">
+          <label for="re-dep">Pour un départ à</label>
+          <input id="re-dep" class="input time" type="time" [ngModel]="departureTime()" (ngModelChange)="setDepartureTime($event)" />
+        </div>
+      </div>
+      <p class="muted small">
+        Dans l'ordre de passage. On <strong>monte</strong> sur réservation dans une agence ; on <strong>descend</strong> à n'importe quel point d'arrêt.
+        Les points d'arrêt se gèrent dans <a routerLink="/admin/points-arret">Points d'arrêt</a>.
+      </p>
+      <div class="table-wrap">
+        <table class="table stops">
+          <thead>
+            <tr>
+              <th scope="col">#</th><th scope="col">Point d'arrêt</th><th scope="col">Heure de passage</th><th scope="col">Pause (min)</th>
+              <th scope="col">Montée</th><th scope="col">Descente</th><th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of stops(); track $index; let i = $index; let first = $first; let last = $last) {
+              <tr>
+                <td class="muted">{{ i + 1 }}</td>
+                <td>
+                  <label class="sr-only" [for]="'re-p' + i">Point d'arrêt {{ i + 1 }}</label>
+                  <select class="select" [id]="'re-p' + i" [ngModel]="s.stop_point_id" (ngModelChange)="choosePoint(i, $event)">
+                    <option value="" disabled>Choisir</option>
+                    @for (g of pointGroups(); track g.city) {
+                      <optgroup [label]="g.city">
+                        @for (p of g.points; track p.id) { <option [value]="p.id">{{ p.name }}{{ p.agency_id ? ' (agence)' : '' }}</option> }
+                      </optgroup>
+                    }
+                  </select>
+                </td>
+                <td>
+                  <label class="sr-only" [for]="'re-t' + i">Heure de passage {{ i + 1 }}</label>
+                  <input class="input time" type="time" [id]="'re-t' + i" [ngModel]="s.time" (ngModelChange)="update(i, { time: $event })" [disabled]="first" />
+                  @if (!first) { <span class="muted small offset">+{{ duration(offsets()[i]) }}</span> }
+                </td>
+                <td>
+                  <label class="sr-only" [for]="'re-pa' + i">Pause {{ i + 1 }}</label>
+                  <input class="input pause" type="number" min="0" max="180" step="5" [id]="'re-pa' + i" [ngModel]="s.pause_minutes"
+                    (ngModelChange)="update(i, { pause_minutes: +$event || 0 })" [disabled]="first || last" />
+                </td>
+                <td class="center">
+                  <input type="checkbox" [attr.aria-label]="'Montée à l’arrêt ' + (i + 1)" [ngModel]="s.can_board" (ngModelChange)="update(i, { can_board: $event })"
+                    [disabled]="first || last || !isAgency(s.stop_point_id)" />
+                </td>
+                <td class="center">
+                  <input type="checkbox" [attr.aria-label]="'Descente à l’arrêt ' + (i + 1)" [ngModel]="s.can_alight" (ngModelChange)="update(i, { can_alight: $event })"
+                    [disabled]="first || last" />
+                </td>
+                <td class="actions">
+                  <button type="button" class="btn btn--sm btn--ghost" [disabled]="first" (click)="move(i, -1)" aria-label="Monter">↑</button>
+                  <button type="button" class="btn btn--sm btn--ghost" [disabled]="last" (click)="move(i, 1)" aria-label="Descendre">↓</button>
+                  <button type="button" class="btn btn--sm btn--ghost" [disabled]="stops().length <= 2" (click)="remove(i)" aria-label="Retirer">✕</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="spread">
+        <button type="button" class="btn" (click)="add()">Ajouter un arrêt</button>
+        <span class="muted">Durée totale : <strong>{{ duration(totalMinutes()) }}</strong></span>
+      </div>
+      @for (p of problems(); track p) { <p class="alert alert--warning small">{{ p }}</p> }
+    </section>
+
+    <section class="card stack-sm" aria-labelledby="t-price">
+      <h2 id="t-price" class="card__title">Prix selon la descente</h2>
+      <div class="choices" role="radiogroup" aria-label="Mode de prix">
+        <label class="choice" [class.choice--on]="mode() === 'flat'">
+          <input type="radio" name="mode" value="flat" [checked]="mode() === 'flat'" (change)="mode.set('flat')" />
+          <span><strong>Prix unique</strong><br /><span class="muted small">{{ basePrice() | money }} quelle que soit la ville de descente.</span></span>
+        </label>
+        <label class="choice" [class.choice--on]="mode() === 'grid'">
+          <input type="radio" name="mode" value="grid" [checked]="mode() === 'grid'" (change)="mode.set('grid')" />
+          <span><strong>Grille</strong><br /><span class="muted small">Un prix par trajet de ville à ville. Case vide : prix complet.</span></span>
+        </label>
+      </div>
+      @if (mode() === 'grid') {
+        @let g = grid();
+        @if (g.boards.length && g.alights.length) {
+          <div class="table-wrap">
+            <table class="table fares">
+              <thead>
+                <tr><th scope="col">Montée ↓ / Descente →</th>@for (a of g.alights; track a.id) { <th scope="col">{{ a.name }}</th> }</tr>
+              </thead>
+              <tbody>
+                @for (b of g.boards; track b.id) {
+                  <tr>
+                    <th scope="row">{{ b.name }}</th>
+                    @for (a of g.alights; track a.id) {
+                      <td>
+                        @if (a.index > b.index && a.id !== b.id) {
+                          <input class="input fare" type="number" step="100" min="1" [max]="basePrice()" [placeholder]="basePrice()"
+                            [attr.aria-label]="b.name + ' → ' + a.name" [value]="fare(b.id, a.id) ?? ''"
+                            (change)="setFare(b.id, a.id, $any($event.target).value)" />
+                        } @else {
+                          <span class="muted" aria-hidden="true">—</span>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="field__hint">Un trajet ne peut pas coûter plus que le prix complet. Prix spécial d'un départ : la grille suit en proportion (arrondi à 100 F).</p>
+        } @else {
+          <p class="muted">Ajoutez des arrêts avec montée et descente pour remplir la grille.</p>
+        }
+      }
+    </section>
+
+    <div class="form-actions sticky">
+      <a class="btn" routerLink="/admin/lignes">Annuler</a>
+      <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">{{ saving() ? 'Enregistrement…' : 'Enregistrer la ligne' }}</button>
+    </div>
+    @if (!isNew()) {
+      <p class="muted small">Les départs déjà programmés gardent leurs arrêts et leurs prix : les changements valent pour les départs programmés ensuite.</p>
+    }
+  </div>
+</bv-state>

@@ -8,11 +8,11 @@ import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
 import { Route } from '../../models/route';
-import { UpdateRouteRequest } from '../../models/update-route-request';
+import { RouteInput } from '../../models/route-input';
 
 export interface UpdateRoute$Params {
   id: string;
-      body: UpdateRouteRequest
+      body: RouteInput
 }
 
 export function updateRoute(http: HttpClient, rootUrl: string, params: UpdateRoute$Params, context?: HttpContext): Observable<StrictHttpResponse<Route>> {

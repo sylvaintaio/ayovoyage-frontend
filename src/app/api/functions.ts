@@ -13,6 +13,12 @@ export type { GetCompanySettings$Params as GetCompanySettings$Params } from './f
 export { getCompanySettings as getCompanySettings } from './fn/admin-compagnie-et-agences/get-company-settings';
 export type { UpdateCompanySettings$Params as UpdateCompanySettings$Params } from './fn/admin-compagnie-et-agences/update-company-settings';
 export { updateCompanySettings as updateCompanySettings } from './fn/admin-compagnie-et-agences/update-company-settings';
+export type { ListStopPoints$Params as ListStopPoints$Params } from './fn/admin-compagnie-et-agences/list-stop-points';
+export { listStopPoints as listStopPoints } from './fn/admin-compagnie-et-agences/list-stop-points';
+export type { CreateStopPoint$Params as CreateStopPoint$Params } from './fn/admin-compagnie-et-agences/create-stop-point';
+export { createStopPoint as createStopPoint } from './fn/admin-compagnie-et-agences/create-stop-point';
+export type { UpdateStopPoint$Params as UpdateStopPoint$Params } from './fn/admin-compagnie-et-agences/update-stop-point';
+export { updateStopPoint as updateStopPoint } from './fn/admin-compagnie-et-agences/update-stop-point';
 export type { GetAttachment$Params as GetAttachment$Params } from './fn/reclamations/get-attachment';
 export { getAttachment as getAttachment } from './fn/reclamations/get-attachment';
 export type { ListIncidents$Params as ListIncidents$Params } from './fn/reclamations/list-incidents';
@@ -247,8 +253,12 @@ export type { ScanTicket$Params as ScanTicket$Params } from './fn/agent-embarque
 export { scanTicket as scanTicket } from './fn/agent-embarquement/scan-ticket';
 export type { AgentChangeDepartureStatus$Params as AgentChangeDepartureStatus$Params } from './fn/agent-embarquement/agent-change-departure-status';
 export { agentChangeDepartureStatus as agentChangeDepartureStatus } from './fn/agent-embarquement/agent-change-departure-status';
+export type { RecordStopEvents$Params as RecordStopEvents$Params } from './fn/agent-embarquement/record-stop-events';
+export { recordStopEvents as recordStopEvents } from './fn/agent-embarquement/record-stop-events';
 export type { SyncOfflineScans$Params as SyncOfflineScans$Params } from './fn/agent-embarquement/sync-offline-scans';
 export { syncOfflineScans as syncOfflineScans } from './fn/agent-embarquement/sync-offline-scans';
+export type { GetMyDevice$Params as GetMyDevice$Params } from './fn/agent-embarquement/get-my-device';
+export { getMyDevice as getMyDevice } from './fn/agent-embarquement/get-my-device';
 export type { GetTicketKeys$Params as GetTicketKeys$Params } from './fn/agent-embarquement/get-ticket-keys';
 export { getTicketKeys as getTicketKeys } from './fn/agent-embarquement/get-ticket-keys';
 export type { Logout$Params as Logout$Params } from './fn/authentification/logout';

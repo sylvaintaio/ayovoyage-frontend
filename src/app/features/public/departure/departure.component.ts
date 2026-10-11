@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Api } from '../../../api/api';
 import { checkPromoCode, createBooking, getPublicDeparture, listMyLoyalty } from '../../../api/functions';
@@ -26,6 +26,12 @@ interface Draft {
 
 const MAX_PASSENGERS = 10;
 
+/** Indice d'arrêt lu dans l'adresse ; absent ou invalide : trajet par défaut. */
+export function seqParam(v: string | undefined): number | undefined {
+  const n = Number(v);
+  return v !== undefined && v !== '' && Number.isInteger(n) && n >= 0 ? n : undefined;
+}
+
 /** Choix des sièges, des passagers et création de la réservation. */
 @Component({
   selector: 'bv-departure',
@@ -37,10 +43,14 @@ const MAX_PASSENGERS = 10;
 export class DepartureComponent {
   private readonly api = inject(Api);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
   protected readonly auth = inject(AuthStore);
 
   readonly id = input.required<string>();
+  /** Trajet choisi à la recherche (?montee=&descente=) : indices des arrêts. */
+  readonly montee = input<string>();
+  readonly descente = input<string>();
 
   protected readonly departure = signal<DepartureDetail | null>(null);
   protected readonly loading = signal(true);
@@ -70,6 +80,16 @@ export class DepartureComponent {
   });
   /** Facture au nom d'une entreprise (raison sociale et IFU imprimés sur la facture). */
   protected readonly withCompany = signal(false);
+
+  /** Arrêts proposés pour monter et descendre (ligne à arrêts intermédiaires). */
+  protected readonly boardingStops = computed(() => {
+    const stops = this.departure()?.stops ?? [];
+    return stops.filter((s) => s.can_board && s.seq < stops.length - 1);
+  });
+  protected readonly alightingStops = computed(() => {
+    const d = this.departure();
+    return (d?.stops ?? []).filter((s) => s.can_alight && s.seq > (d?.boarding_seq ?? 0));
+  });
 
   protected readonly cells = computed(() => {
     const map = new Map((this.departure()?.seat_map.cells ?? []).map((c) => [c.id, c]));
@@ -156,7 +176,7 @@ export class DepartureComponent {
         this.promo.set({ ...p, valid: false, message: 'Places modifiées : cliquez à nouveau sur « Appliquer ».', discount: 0 });
       }
     });
-    effect(() => void this.load(this.id()));
+    effect(() => void this.load(this.id(), false, seqParam(this.montee()), seqParam(this.descente())));
     // Un champ « nom » par passager, conservé si le nombre change.
     effect(() => {
       const n = this.passengerCount();
@@ -176,7 +196,20 @@ export class DepartureComponent {
   }
 
   protected async reload(): Promise<void> {
-    await this.load(this.id());
+    await this.load(this.id(), false, seqParam(this.montee()), seqParam(this.descente()));
+  }
+
+  /** Autre montée ou descente : plan, places et prix rechargés pour ce trajet ; les sièges choisis sont conservés s'ils restent libres. */
+  protected async setTrip(boarding: number, alighting: number): Promise<void> {
+    const d = this.departure();
+    if (!d) {
+      return;
+    }
+    if (alighting <= boarding) {
+      alighting = d.stops.find((s) => s.can_alight && s.seq > boarding)?.seq ?? -1;
+    }
+    this.promo.set(null);
+    await this.router.navigate([], { relativeTo: this.route, queryParams: { montee: boarding, descente: alighting }, replaceUrl: true });
   }
 
   protected async submit(): Promise<void> {
@@ -186,7 +219,9 @@ export class DepartureComponent {
     }
     if (!this.auth.isCustomer()) {
       this.saveDraft();
-      await this.router.navigate(['/connexion'], { queryParams: { retour: `/departs/${d.id}` } });
+      await this.router.navigate(['/connexion'], {
+        queryParams: { retour: `/departs/${d.id}?montee=${d.boarding_seq}&descente=${d.alighting_seq}` },
+      });
       return;
     }
     if (this.passengerCount() === 0) {
@@ -215,6 +250,8 @@ export class DepartureComponent {
       const booking = await this.api.invoke(createBooking, {
         body: {
           departure_id: d.id,
+          boarding_seq: d.boarding_seq,
+          alighting_seq: d.alighting_seq,
           passengers,
           preferences:
             this.mode() === 'auto'
@@ -243,21 +280,22 @@ export class DepartureComponent {
       this.toast.error(apiErrorMessage(err));
       if (apiErrorStatus(err) === 409) {
         // Un siège vient d'être pris : on recharge le plan et on retire les sièges devenus indisponibles.
-        await this.load(d.id, true);
+        await this.load(d.id, true, d.boarding_seq, d.alighting_seq);
       }
     } finally {
       this.submitting.set(false);
     }
   }
 
-  private async load(id: string, keepSelection = false): Promise<void> {
-    this.loading.set(!keepSelection);
+  private async load(id: string, keepSelection = false, boarding?: number, alighting?: number): Promise<void> {
+    const changingTrip = !keepSelection && this.departure()?.id === id;
+    this.loading.set(!keepSelection && !changingTrip);
     this.error.set(null);
     try {
-      const d = await this.api.invoke(getPublicDeparture, { id });
+      const d = await this.api.invoke(getPublicDeparture, { id, boarding, alighting });
       this.departure.set(d);
       const free = new Set((d.seat_map.cells).filter((c) => c.state === 'available').map((c) => c.id));
-      if (keepSelection) {
+      if (keepSelection || changingTrip) {
         this.selectedSeats.update((ids) => ids.filter((s) => free.has(s)));
       } else {
         this.restoreDraft(free);

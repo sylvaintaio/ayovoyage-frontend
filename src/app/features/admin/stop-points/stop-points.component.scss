@@ -1,0 +1,65 @@
+@use 'mixins' as *;
+
+.head {
+  margin-bottom: var(--bv-space-4);
+  gap: var(--bv-space-3);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.layout {
+  display: grid;
+  gap: var(--bv-space-4);
+
+  @include from($bp-lg) {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+  }
+}
+
+.search {
+  margin-bottom: var(--bv-space-3);
+}
+
+.city + .city {
+  margin-top: var(--bv-space-4);
+}
+
+.city__name {
+  margin: 0 0 var(--bv-space-2);
+  font-size: var(--bv-text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--bv-ink-muted);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius);
+  background: var(--bv-surface);
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-3) var(--bv-space-4);
+
+  & + & {
+    border-top: 1px solid var(--bv-line);
+  }
+
+  .badge {
+    margin-left: var(--bv-space-2);
+  }
+}
+
+.item--off {
+  opacity: 0.6;
+}

@@ -60,7 +60,7 @@
             <td>{{ d.route_name }}</td>
             <td class="nowrap">{{ d.plate_number }}</td>
             <td class="nowrap">{{ d.base_price | money }}</td>
-            <td>{{ d.sold_seats }} / {{ d.seat_count }}</td>
+            <td [title]="d.sold_seats + ' passager(s) sur le trajet'">{{ d.peak_seats }} / {{ d.seat_count }}</td>
             <td>{{ d.boarded_seats }}</td>
             <td><bv-status-badge [status]="d.status" domain="departure" /></td>
           </tr>

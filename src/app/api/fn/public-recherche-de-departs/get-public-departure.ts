@@ -11,12 +11,24 @@ import { DepartureDetail } from '../../models/departure-detail';
 
 export interface GetPublicDeparture$Params {
   id: string;
+
+/**
+ * Indice de l'arrêt de montée (boarding_seq de la recherche)
+ */
+  boarding?: number;
+
+/**
+ * Indice de l'arrêt de descente
+ */
+  alighting?: number;
 }
 
 export function getPublicDeparture(http: HttpClient, rootUrl: string, params: GetPublicDeparture$Params, context?: HttpContext): Observable<StrictHttpResponse<DepartureDetail>> {
   const rb = new RequestBuilder(rootUrl, getPublicDeparture.PATH, 'get');
   if (params) {
     rb.path('id', params.id, {});
+    rb.query('boarding', params.boarding, {"explode":false});
+    rb.query('alighting', params.alighting, {"explode":false});
   }
 
   return http.request(

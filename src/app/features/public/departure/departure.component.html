@@ -10,7 +10,27 @@
             <strong>{{ d.departure_at | date: 'EEEE d MMMM, HH:mm' }}</strong>
             <span class="muted"> · arrivée prévue {{ d.arrival_eta | date: 'HH:mm' }} ({{ duration(d.duration_minutes) }})</span>
           </p>
-          <p class="muted small">Départ : {{ d.origin_agency_name }} — {{ d.origin_agency_address }}</p>
+          <p class="muted small">Montée : {{ d.origin_agency_name }}@if (d.origin_agency_address) { — {{ d.origin_agency_address }} } · descente : {{ d.destination_agency_name }}</p>
+          @if (d.stops.length > 2) {
+            <div class="stops-pick">
+              <div class="field">
+                <label for="dep-board">Je monte à</label>
+                <select id="dep-board" class="select" (change)="setTrip(+$any($event.target).value, d.alighting_seq)">
+                  @for (s of boardingStops(); track s.seq) {
+                    <option [value]="s.seq" [selected]="s.seq === d.boarding_seq">{{ s.stop_name }} ({{ s.city_name }}) — {{ s.scheduled_at | date: 'HH:mm' }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="dep-alight">Je descends à</label>
+                <select id="dep-alight" class="select" (change)="setTrip(d.boarding_seq, +$any($event.target).value)">
+                  @for (s of alightingStops(); track s.seq) {
+                    <option [value]="s.seq" [selected]="s.seq === d.alighting_seq">{{ s.stop_name }} ({{ s.city_name }}) — {{ s.scheduled_at | date: 'HH:mm' }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          }
         </div>
         <div class="summary__side small">
           <span>{{ d.bus_model }}</span>

@@ -40,6 +40,9 @@
             <div class="ticket__company">
               <span class="strong">{{ r.company_name }}</span>
               <span class="muted small">{{ r.bus_model }}</span>
+              @if (r.bus_departure_at !== r.departure_at) {
+                <span class="muted small">Car {{ r.route_name }}, au départ à {{ r.bus_departure_at | date: 'HH:mm' }}</span>
+              }
             </div>
             <div class="trip">
               <div class="trip__end">
@@ -75,7 +78,9 @@
               {{ r.available_seats }} {{ r.available_seats > 1 ? 'places libres' : 'place libre' }}
             </span>
             @if (r.available_seats > 0) {
-              <a class="btn btn--primary btn--block" [routerLink]="['/departs', r.id]">Choisir mes sièges</a>
+              <a class="btn btn--primary btn--block" [routerLink]="['/departs', r.id]" [queryParams]="{ montee: r.boarding_seq, descente: r.alighting_seq }">
+                Choisir mes sièges
+              </a>
             } @else {
               <span class="badge badge--danger">Complet</span>
             }

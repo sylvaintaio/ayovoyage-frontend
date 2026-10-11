@@ -11,7 +11,10 @@
     </header>
 
     <div class="grid grid-4 kpis">
-      <div class="card kpi"><div class="kpi__label">Places vendues</div><div class="kpi__value">{{ d.sold_seats }} / {{ d.seat_count }}</div></div>
+      <div class="card kpi">
+        <div class="kpi__label">Passagers</div><div class="kpi__value">{{ d.sold_seats }}</div>
+        <div class="small muted">Charge max. {{ d.peak_seats ?? d.sold_seats }} / {{ d.seat_count }} places</div>
+      </div>
       <div class="card kpi"><div class="kpi__label">Embarqués</div><div class="kpi__value">{{ d.boarded_seats }}</div></div>
       <div class="card kpi"><div class="kpi__label">Tarif de base</div><div class="kpi__value">{{ d.base_price | money }}</div></div>
       <div class="card actions">
@@ -27,6 +30,52 @@
     @if (d.notes) {
       <p class="alert">{{ d.notes }}</p>
     }
+
+    <section class="card voyage" aria-labelledby="t-voyage">
+      <div class="spread">
+        <h2 id="t-voyage" class="card__title">Voyage</h2>
+        @if (d.crew?.length) {
+          <p class="small crew">
+            @for (c of d.crew; track c.staff_id) {
+              <span>{{ crewRoles[c.role] }} : <strong>{{ c.full_name }}</strong></span>
+            }
+          </p>
+        }
+      </div>
+      <ol class="timeline">
+        @for (t of timeline(); track $index) {
+          <li class="timeline__item" [class.timeline__item--unplanned]="t.kind === 'unplanned'" [class.timeline__item--done]="t.arrivedAt">
+            <span class="timeline__dot" aria-hidden="true"></span>
+            <div class="timeline__body">
+              <div class="spread">
+                <span class="strong">{{ t.kind === 'unplanned' ? '⚠ Arrêt imprévu : ' + t.name : t.name }}</span>
+                @if (t.delay !== undefined) {
+                  <span class="badge" [class.badge--success]="t.delay <= 5" [class.badge--warning]="t.delay > 5 && t.delay <= 30" [class.badge--danger]="t.delay > 30">
+                    {{ t.delay > 0 ? '+' + t.delay + ' min' : t.delay < 0 ? t.delay + ' min' : "à l'heure" }}
+                  </span>
+                }
+              </div>
+              <div class="small muted">
+                @if (t.scheduledAt) { Prévu {{ t.scheduledAt | date: 'HH:mm' }}@if (t.pauseMinutes) { · pause {{ t.pauseMinutes }} min } }
+                @if (t.arrivedAt) { · arrivé {{ t.arrivedAt | date: 'HH:mm' }} }
+                @if (t.departedAt) { · reparti {{ t.departedAt | date: 'HH:mm' }} }
+                @if (t.stayMinutes !== undefined) { · arrêt {{ t.stayMinutes }} min }
+              </div>
+              @if (t.note) { <div class="small">« {{ t.note }} »</div> }
+              @if (t.position) {
+                <div class="small muted">
+                  Position {{ t.position }}
+                  @if (t.mocked) { <span class="badge badge--danger">position simulée</span> }
+                </div>
+              }
+            </div>
+          </li>
+        }
+      </ol>
+      @if (!d.visits?.length) {
+        <p class="small muted">Le contrôleur n'a encore déclaré aucun arrêt (application Agent).</p>
+      }
+    </section>
 
     <div class="layout">
       <section class="card" aria-labelledby="t-plan">
@@ -68,7 +117,7 @@
               @for (p of m.passengers; track p.ticket_id) {
                 <li [class.done]="p.ticket_status === 'used'" [class.off]="p.ticket_status === 'cancelled'">
                   <span class="seat-label">{{ p.seat_label }}</span>
-                  <span>{{ p.passenger_name }}</span>
+                  <span>{{ p.passenger_name }}@if (trip(p.boarding_seq, p.alighting_seq); as tr) { <span class="small muted"> · {{ tr }}</span> }</span>
                   <span class="small muted">{{ p.ticket_status === 'used' ? 'à bord ' + (p.boarded_at | date: 'HH:mm') : p.ticket_status === 'cancelled' ? 'annulé' : 'attendu' }}</span>
                 </li>
               } @empty {

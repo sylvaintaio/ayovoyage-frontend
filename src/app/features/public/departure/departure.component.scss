@@ -118,3 +118,10 @@
   border-left: 6px solid var(--bv-accent);
   background: var(--bv-accent-soft);
 }
+
+.stops-pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--bv-space-3);
+  margin-top: var(--bv-space-3);
+}

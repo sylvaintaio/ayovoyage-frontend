@@ -1,62 +1,38 @@
 <div class="spread head">
-  <h1>Lignes</h1>
-  <button type="button" class="btn btn--primary" (click)="edit('new')">Nouvelle ligne</button>
+  <div>
+    <h1>Lignes</h1>
+    <p class="muted">Arrêts dans l'ordre de passage, prix unique ou grille selon la ville de descente.</p>
+  </div>
+  <div class="head__actions">
+    <a class="btn" routerLink="/admin/points-arret">Points d'arrêt</a>
+    <a class="btn btn--primary" routerLink="/admin/lignes/nouvelle">Nouvelle ligne</a>
+  </div>
 </div>
 
-<div class="layout">
-  <bv-state [loading]="loading()" [error]="error()" [empty]="routes().length === 0" emptyText="Aucune ligne." (retry)="load()">
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr><th scope="col">Ligne</th><th scope="col">Départ</th><th scope="col">Arrivée</th><th scope="col">Tarif</th><th scope="col">Durée</th><th scope="col">Statut</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
-        </thead>
-        <tbody>
-          @for (r of routes(); track r.id) {
-            <tr>
-              <td class="strong">{{ r.name }}</td>
-              <td>{{ r.origin_agency_name }}</td>
-              <td>{{ r.destination_agency_name }}</td>
-              <td class="nowrap">{{ r.base_price | money }}</td>
-              <td class="nowrap">{{ duration(r.duration_minutes) }}</td>
-              <td><span class="badge" [class.badge--success]="r.is_active">{{ r.is_active ? 'Active' : 'Inactive' }}</span></td>
-              <td class="text-right"><button type="button" class="btn btn--sm" (click)="edit(r)">Modifier</button></td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </bv-state>
-
-  @if (editing(); as current) {
-    <form class="card stack-sm" [formGroup]="form" (ngSubmit)="save()" aria-labelledby="t-form">
-      <h2 id="t-form" class="card__title">{{ current === 'new' ? 'Nouvelle ligne' : 'Modifier la ligne' }}</h2>
-      <div class="field">
-        <label for="rt-from">Agence de départ</label>
-        <select id="rt-from" class="select" formControlName="origin_agency_id" (change)="suggestName()">
-          <option value="" disabled>Choisir</option>
-          @for (a of agencies(); track a.id) { <option [value]="a.id">{{ a.name }}</option> }
-        </select>
-      </div>
-      <div class="field">
-        <label for="rt-to">Agence d'arrivée</label>
-        <select id="rt-to" class="select" formControlName="destination_agency_id" (change)="suggestName()">
-          <option value="" disabled>Choisir</option>
-          @for (a of agencies(); track a.id) { <option [value]="a.id">{{ a.name }}</option> }
-        </select>
-      </div>
-      <div class="field"><label for="rt-name">Nom</label><input id="rt-name" class="input" formControlName="name" /></div>
-      <div class="grid grid-2">
-        <div class="field"><label for="rt-price">Tarif Standard (F CFA)</label><input id="rt-price" class="input" type="number" step="100" formControlName="base_price" /></div>
-        <div class="field"><label for="rt-dur">Durée (minutes)</label><input id="rt-dur" class="input" type="number" formControlName="duration_minutes" /></div>
-        <div class="field"><label for="rt-km">Distance (km)</label><input id="rt-km" class="input" type="number" formControlName="distance_km" /></div>
-        <div class="field"><label for="rt-bag">Bagage inclus (kg)</label><input id="rt-bag" class="input" type="number" formControlName="included_baggage_kg" /></div>
-      </div>
-      <label class="checkbox"><input type="checkbox" formControlName="is_active" /> Ligne active</label>
-      <p class="field__hint">Un nouveau tarif s'applique aux départs programmés ensuite.</p>
-      <div class="form-actions">
-        <button type="button" class="btn" (click)="editing.set(null)">Annuler</button>
-        <button type="submit" class="btn btn--primary" [disabled]="saving()">Enregistrer</button>
-      </div>
-    </form>
-  }
-</div>
+<bv-state [loading]="loading()" [error]="error()" [empty]="routes().length === 0" emptyText="Aucune ligne." (retry)="load()">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th scope="col">Ligne</th><th scope="col">Arrêts</th><th scope="col">Prix</th><th scope="col">Durée</th><th scope="col">Statut</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        @for (r of routes(); track r.id) {
+          <tr>
+            <td class="strong">{{ r.name }}</td>
+            <td>
+              {{ cities(r) }}
+              <div class="muted small">{{ r.stops.length }} arrêts{{ r.destination_agency_id ? '' : ' · terminus hors agence' }}</div>
+            </td>
+            <td class="nowrap">
+              {{ r.base_price | money }}
+              <div class="muted small">{{ r.pricing_mode === 'grid' ? 'Grille (' + r.fares.length + ' trajets)' : 'Prix unique' }}</div>
+            </td>
+            <td class="nowrap">{{ duration(r.duration_minutes) }}</td>
+            <td><span class="badge" [class.badge--success]="r.is_active">{{ r.is_active ? 'Active' : 'Inactive' }}</span></td>
+            <td class="text-right"><a class="btn btn--sm" [routerLink]="['/admin/lignes', r.id]">Modifier</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</bv-state>

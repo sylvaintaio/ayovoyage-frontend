@@ -5,7 +5,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Api } from '../../../api/api';
 import { createDeparture, createRecurringDepartures, listBuses, listRoutes, listStaff, updateDeparture } from '../../../api/functions';
-import { AdminDeparture, Bus, RecurringResult, Route, Staff } from '../../../api/models';
+import { AdminDeparture, Bus, CrewMemberInput, RecurringResult, Route, Staff } from '../../../api/models';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { localDate, toLocalInput, toRfc3339 } from '../../../shared/dates';
@@ -42,6 +42,24 @@ export class DepartureFormComponent implements OnInit {
   protected readonly buses = signal<Bus[]>([]);
   protected readonly drivers = signal<Staff[]>([]);
   protected readonly agents = signal<Staff[]>([]);
+  /** Personnel de terrain pour les autres membres d'équipage (second chauffeur, aide). */
+  protected readonly fieldStaff = computed(() => [...this.drivers(), ...this.agents()]);
+  /** Autres membres d'équipage ; null = inchangés (modification sans y toucher). */
+  protected readonly crew = signal<CrewMemberInput[] | null>(null);
+  private readonly routeId = signal('');
+  private readonly departureAt = signal('');
+  /** Arrêts de la ligne choisie, avec l'heure de passage pour l'horaire saisi. */
+  protected readonly routeStops = computed(() => {
+    const route = this.routes().find((r) => r.id === this.routeId());
+    const at = this.repeat() ? this.recurring.controls.time.value : this.departureAt().slice(11, 16);
+    if (!route || !/^\d{2}:\d{2}$/.test(at)) return [];
+    const [h, m] = at.split(':').map(Number);
+    // API pas encore à jour (sans arrêts) : pas d'aperçu.
+    return (route.stops ?? []).map((s) => {
+      const t = (h * 60 + m + s.offset_minutes) % 1440;
+      return { ...s, time: `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}` };
+    });
+  });
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -68,6 +86,9 @@ export class DepartureFormComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
+    this.form.controls.route_id.valueChanges.subscribe((v) => this.routeId.set(v));
+    this.form.controls.departure_at.valueChanges.subscribe((v) => this.departureAt.set(v));
+    this.departureAt.set(this.form.controls.departure_at.value);
     const d = this.editing;
     if (d) {
       this.form.patchValue({
@@ -81,6 +102,12 @@ export class DepartureFormComponent implements OnInit {
       });
       this.form.controls.route_id.disable();
       this.form.controls.bus_id.disable();
+      this.routeId.set(d.route_id);
+      // Fiche du départ : autres membres connus (le contrôleur et le chauffeur sont dans le formulaire).
+      if (d.crew) {
+        this.crew.set(d.crew.filter((c) => c.staff_id !== d.agent_id && c.staff_id !== d.driver_id)
+          .map((c) => ({ staff_id: c.staff_id, role: c.role === 'driver' ? 'driver' : 'assistant' })));
+      }
     }
     try {
       const canListStaff = this.auth.hasRole('company_admin', 'agency_manager');
@@ -96,6 +123,24 @@ export class DepartureFormComponent implements OnInit {
     } catch (err) {
       this.error.set(apiErrorMessage(err));
     }
+  }
+
+  protected addCrew(): void {
+    this.crew.update((c) => [...(c ?? []), { staff_id: '', role: 'assistant' }]);
+  }
+
+  protected updateCrew(i: number, patch: Partial<CrewMemberInput>): void {
+    this.crew.update((c) => (c ?? []).map((m, k) => (k === i ? { ...m, ...patch } : m)));
+  }
+
+  protected removeCrew(i: number): void {
+    this.crew.update((c) => (c ?? []).filter((_, k) => k !== i));
+  }
+
+  /** Autres membres complets, ou undefined pour ne pas y toucher. */
+  private crewBody(): CrewMemberInput[] | undefined {
+    const c = this.crew();
+    return c === null ? undefined : c.filter((m) => m.staff_id);
   }
 
   protected toggleDay(n: number): void {
@@ -143,6 +188,7 @@ export class DepartureFormComponent implements OnInit {
           base_price: v.base_price || undefined,
           driver_id: v.driver_id || undefined,
           agent_id: v.agent_id || undefined,
+          crew: this.crewBody(),
           notes: v.notes,
           dry_run: dryRun,
         },
@@ -176,6 +222,7 @@ export class DepartureFormComponent implements OnInit {
         departure_at: toRfc3339(v.departure_at),
         driver_id: v.driver_id || undefined,
         agent_id: v.agent_id || undefined,
+        crew: this.crewBody(),
         notes: v.notes,
       };
       const result = this.editing

@@ -11,6 +11,11 @@ export interface CreateCounterBookingRequest {
   agency_id?: string;
 
   /**
+   * Arrêt de descente. Absent : dernier arrêt
+   */
+  alighting_seq?: number;
+
+  /**
    * Facture au nom d'une entreprise : raison sociale
    */
   billing_name?: string;
@@ -19,6 +24,11 @@ export interface CreateCounterBookingRequest {
    * IFU de l'entreprise
    */
   billing_tax_id?: string;
+
+  /**
+   * Arrêt de montée (boarding_seq de la recherche). Absent : premier arrêt, ou l'agence du guichet
+   */
+  boarding_seq?: number;
   contact_email?: string;
   contact_name: string;
   contact_phone: string;

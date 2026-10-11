@@ -11,12 +11,20 @@ import { GetDepartureResponse } from '../../models/get-departure-response';
 
 export interface GetDeparture$Params {
   id: string;
+
+/**
+ * Plan et prix sur ce tronçon (guichet) ; absent : tout le trajet
+ */
+  boarding?: number;
+  alighting?: number;
 }
 
 export function getDeparture(http: HttpClient, rootUrl: string, params: GetDeparture$Params, context?: HttpContext): Observable<StrictHttpResponse<GetDepartureResponse>> {
   const rb = new RequestBuilder(rootUrl, getDeparture.PATH, 'get');
   if (params) {
     rb.path('id', params.id, {});
+    rb.query('boarding', params.boarding, {"explode":false});
+    rb.query('alighting', params.alighting, {"explode":false});
   }
 
   return http.request(

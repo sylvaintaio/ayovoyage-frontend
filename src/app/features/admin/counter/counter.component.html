@@ -13,7 +13,9 @@
             <button type="button" class="dep" [class.dep--active]="current()?.departure?.id === d.id" (click)="choose(d.id)">
               <span class="strong">{{ d.departure_at | date: 'HH:mm' }}</span>
               <span>{{ d.route_name }}</span>
-              <span class="small muted">{{ d.seat_count - d.sold_seats }} libre(s) · {{ d.plate_number }}</span>
+              <span class="small muted">
+                {{ d.seat_count - d.peak_seats }} libre(s) · {{ d.plate_number }}@if (d.status === 'departed') { · en route }
+              </span>
             </button>
           </li>
         }
@@ -24,6 +26,27 @@
   @if (current(); as cur) {
     <section class="card" aria-labelledby="t-plan">
       <h2 id="t-plan" class="card__title">{{ cur.departure.route_name }} — {{ cur.departure.departure_at | date: 'HH:mm' }}</h2>
+      @if (stops().length > 2) {
+        <div class="trip">
+          <div class="field">
+            <label for="ct-board">Montée</label>
+            <select id="ct-board" class="select" [value]="boarding()" (change)="setTrip(+$any($event.target).value, alighting())">
+              @for (s of boardingStops(); track s.seq) {
+                <option [value]="s.seq" [selected]="s.seq === boarding()">{{ s.stop_name }} — {{ s.scheduled_at | date: 'HH:mm' }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="ct-alight">Descente</label>
+            <select id="ct-alight" class="select" [value]="alighting()" (change)="setTrip(boarding(), +$any($event.target).value)">
+              @for (s of alightingStops(); track s.seq) {
+                <option [value]="s.seq" [selected]="s.seq === alighting()">{{ s.stop_name }} — {{ s.scheduled_at | date: 'HH:mm' }}</option>
+              }
+            </select>
+          </div>
+          <p class="small muted trip__price">Tarif du trajet : <strong>{{ cur.unit_price | money }}</strong> (hors supplément de siège)</p>
+        </div>
+      }
       <bv-seat-map [seatMap]="cur.seat_map" [categories]="cur.categories" [(selected)]="selected" />
     </section>
 

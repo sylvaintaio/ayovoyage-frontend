@@ -95,6 +95,20 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./routes/routes.component').then((m) => m.RoutesComponent),
   },
   {
+    path: 'lignes/:id',
+    title: 'Ligne',
+    canActivate: [staffGuard],
+    data: { roles: ADMIN },
+    loadComponent: () => import('./route-editor/route-editor.component').then((m) => m.RouteEditorComponent),
+  },
+  {
+    path: 'points-arret',
+    title: "Points d'arrêt",
+    canActivate: [staffGuard],
+    data: { roles: ADMIN },
+    loadComponent: () => import('./stop-points/stop-points.component').then((m) => m.StopPointsComponent),
+  },
+  {
     path: 'bus',
     title: 'Bus',
     canActivate: [staffGuard],

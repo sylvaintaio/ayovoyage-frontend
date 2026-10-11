@@ -16,7 +16,7 @@ export interface ScanTicket$Params {
 /**
  * Identifiant du terminal enregistré
  */
-  'X-Device-ID'?: string;
+  'X-Device-ID': string;
       body: ScanTicketRequest
 }
 

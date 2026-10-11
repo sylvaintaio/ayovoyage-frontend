@@ -59,15 +59,44 @@
       </select>
     </div>
     <div class="field">
-      <label for="df-agent">Convoyeur / agent</label>
+      <label for="df-agent">Contrôleur à bord</label>
       <select id="df-agent" class="select" formControlName="agent_id">
         <option value="">—</option>
         @for (s of agents(); track s.id) {
           <option [value]="s.id">{{ s.full_name }}</option>
         }
       </select>
+      <span class="field__hint">Suit le car : scanne les billets, tient le journal des arrêts.</span>
     </div>
   </div>
+  <fieldset class="crew">
+    <legend>Autres membres d'équipage</legend>
+    @for (m of crew() ?? []; track $index; let i = $index) {
+      <div class="crew__row">
+        <label class="sr-only" [for]="'df-cs' + i">Membre {{ i + 1 }}</label>
+        <select class="select" [id]="'df-cs' + i" [value]="m.staff_id" (change)="updateCrew(i, { staff_id: $any($event.target).value })">
+          <option value="">Choisir</option>
+          @for (s of fieldStaff(); track s.id) { <option [value]="s.id" [selected]="s.id === m.staff_id">{{ s.full_name }}</option> }
+        </select>
+        <label class="sr-only" [for]="'df-cr' + i">Rôle {{ i + 1 }}</label>
+        <select class="select" [id]="'df-cr' + i" (change)="updateCrew(i, { role: $any($event.target).value })">
+          <option value="driver" [selected]="m.role === 'driver'">Second chauffeur</option>
+          <option value="assistant" [selected]="m.role === 'assistant'">Aide / convoyeur</option>
+        </select>
+        <button type="button" class="btn btn--sm btn--ghost" (click)="removeCrew(i)" aria-label="Retirer">✕</button>
+      </div>
+    }
+    <button type="button" class="btn btn--sm" (click)="addCrew()">Ajouter un membre</button>
+    <p class="field__hint">Une même personne ne peut pas être sur deux départs qui se chevauchent.</p>
+  </fieldset>
+  @if (routeStops().length > 2) {
+    <div class="stops-preview">
+      <span class="muted small">Arrêts :</span>
+      @for (s of routeStops(); track s.seq) {
+        <span class="stop-chip">{{ s.time }} {{ s.city_name }}@if (s.pause_minutes) { <span class="muted"> (pause {{ s.pause_minutes }} min)</span> }</span>
+      }
+    </div>
+  }
   @if (repeat()) {
     <fieldset class="repeat" [formGroup]="recurring">
       <legend>Répétition</legend>

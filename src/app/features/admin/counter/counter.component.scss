@@ -70,3 +70,15 @@
     flex-basis: 100%;
   }
 }
+
+.trip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--bv-space-3);
+  margin-bottom: var(--bv-space-3);
+}
+
+.trip__price {
+  grid-column: 1 / -1;
+  margin: 0;
+}

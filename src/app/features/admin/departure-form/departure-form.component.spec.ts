@@ -44,7 +44,7 @@ describe('DepartureFormComponent', () => {
     const fixture = TestBed.createComponent(DepartureFormComponent);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('/api/v1/admin/routes').flush([{ id: 'r1', name: 'Cotonou → Parakou', base_price: 7500, is_active: true }]);
+    http.expectOne('/api/v1/admin/routes').flush([{ id: 'r1', name: 'Cotonou → Parakou', base_price: 7500, is_active: true, stops: [] }]);
     http.expectOne('/api/v1/admin/buses').flush([
       { id: 'b1', plate_number: 'AB 1', status: 'active', layout_id: 'l', amenities: [], internal_code: '', model: 'Yutong', notes: '', seat_count: 48 },
     ]);

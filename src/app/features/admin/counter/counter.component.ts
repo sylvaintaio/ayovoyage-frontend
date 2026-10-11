@@ -21,6 +21,7 @@ import {
 import {
   AdminDeparture,
   Agency,
+  DepartureStop,
   BookingDetail,
   GetDepartureResponse,
   Invoice,
@@ -36,8 +37,17 @@ import { StateComponent } from '../../../shared/ui/state/state.component';
 import { ApiUrlPipe } from '../../../shared/pipes/api-url.pipe';
 
 /**
- * Vente au guichet : choix du départ, des sièges et encaissement en espèces.
- * Le siège vendu disparaît immédiatement de l'application et du site.
+ * Montée par défaut au guichet : l'arrêt de l'agence du vendeur, sinon le premier arrêt de montée.
+ * Un arrêt que le car a déjà quitté n'est plus proposé.
+ */
+export function defaultBoarding(stops: DepartureStop[], agencyId: string | undefined, departed: Set<number>): number {
+  const open = stops.filter((s) => s.can_board && s.seq < stops.length - 1 && !departed.has(s.seq));
+  return (open.find((s) => agencyId && s.agency_id === agencyId) ?? open[0])?.seq ?? 0;
+}
+
+/**
+ * Vente au guichet : choix du départ, du trajet (montée → descente), des sièges et encaissement en espèces.
+ * Le siège vendu disparaît immédiatement de l'application et du site, sur les tronçons du trajet.
  */
 @Component({
   selector: 'bv-counter',
@@ -65,6 +75,9 @@ export class CounterComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
 
   protected readonly current = signal<GetDepartureResponse | null>(null);
+  /** Trajet vendu : indices des arrêts de montée et de descente. */
+  protected readonly boarding = signal(0);
+  protected readonly alighting = signal(1);
   protected readonly selected = signal<string[]>([]);
   protected readonly names = signal<string[]>([]);
   protected readonly selling = signal(false);
@@ -84,6 +97,19 @@ export class CounterComponent implements OnInit {
     billing_name: ['', Validators.maxLength(160)],
     billing_tax_id: ['', Validators.maxLength(30)],
   });
+
+  protected readonly stops = computed(() => this.current()?.departure.stops ?? []);
+  /** Arrêts déjà quittés par le car (journal du contrôleur) : plus de montée possible. */
+  private readonly departed = computed(
+    () => new Set((this.current()?.departure.visits ?? []).filter((v) => v.seq != null && v.departed_at).map((v) => v.seq!)),
+  );
+  protected readonly boardingStops = computed(() => {
+    const stops = this.stops();
+    return stops.filter((s) => s.can_board && s.seq < stops.length - 1 && !this.departed().has(s.seq));
+  });
+  protected readonly alightingStops = computed(() =>
+    this.stops().filter((s) => s.can_alight && s.seq > this.boarding()),
+  );
 
   protected readonly cells = computed(() => {
     const byId = new Map((this.current()?.seat_map.cells ?? []).map((c) => [c.id, c]));
@@ -129,7 +155,8 @@ export class CounterComponent implements OnInit {
       // Réponse d'une date abandonnée entre-temps : ignorée.
       if (date === this.date()) {
         this.departures.set(
-          list.filter((d) => d.status === 'scheduled' || d.status === 'boarding'),
+          // Car en route : la vente reste possible pour monter aux arrêts suivants.
+          list.filter((d) => d.status === 'scheduled' || d.status === 'boarding' || d.status === 'departed'),
         );
       }
     } catch (err) {
@@ -148,7 +175,39 @@ export class CounterComponent implements OnInit {
     this.soldInvoice.set(null);
     this.selected.set([]);
     try {
-      this.current.set(await this.api.invoke(getDeparture, { id }));
+      const full = await this.api.invoke(getDeparture, { id });
+      const stops = full.departure.stops ?? [];
+      const departed = new Set((full.departure.visits ?? []).filter((v) => v.seq != null && v.departed_at).map((v) => v.seq!));
+      const boarding = defaultBoarding(stops, this.auth.me()?.staff?.agency_id, departed);
+      const alighting = Math.max(stops.length - 1, 1);
+      // Plan et prix du tronçon vendu (sans arrêt intermédiaire : tout le trajet, déjà chargé).
+      this.current.set(
+        boarding === full.boarding_seq && alighting === full.alighting_seq
+          ? full
+          : await this.api.invoke(getDeparture, { id, boarding, alighting }),
+      );
+      this.boarding.set(this.current()!.boarding_seq);
+      this.alighting.set(this.current()!.alighting_seq);
+    } catch (err) {
+      this.toast.error(apiErrorMessage(err));
+    }
+  }
+
+  /** Changement de montée ou de descente : plan et prix rechargés pour ce tronçon. */
+  protected async setTrip(boarding: number, alighting: number): Promise<void> {
+    const id = this.current()?.departure.id;
+    if (!id) {
+      return;
+    }
+    if (alighting <= boarding) {
+      alighting = this.stops().find((s) => s.can_alight && s.seq > boarding)?.seq ?? this.stops().length - 1;
+    }
+    this.selected.set([]);
+    try {
+      const cur = await this.api.invoke(getDeparture, { id, boarding, alighting });
+      this.current.set(cur);
+      this.boarding.set(cur.boarding_seq);
+      this.alighting.set(cur.alighting_seq);
     } catch (err) {
       this.toast.error(apiErrorMessage(err));
     }
@@ -185,6 +244,8 @@ export class CounterComponent implements OnInit {
       const booking = await this.api.invoke(createCounterBooking, {
         body: {
           departure_id: dep.id,
+          boarding_seq: this.boarding(),
+          alighting_seq: this.alighting(),
           passengers: this.selected().map((seatId, i) => ({ name: names[i], seat_id: seatId })),
           agency_id: this.needsAgency ? this.agencyId() || undefined : undefined,
           contact_name: c.name,

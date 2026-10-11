@@ -6,7 +6,8 @@ import { provideRouter } from '@angular/router';
 import { settle } from '../../../../testing/settle';
 import { provideApiConfiguration } from '../../../api/api-configuration';
 import { AuthStore } from '../../../core/auth/auth.store';
-import { DepartureDetailComponent } from './departure-detail.component';
+import { AdminDeparture } from '../../../api/models';
+import { DepartureDetailComponent, buildTimeline } from './departure-detail.component';
 
 describe('DepartureDetailComponent', () => {
   it('affiche les actions de statut et le manifeste pour un chef d’agence', async () => {
@@ -38,5 +39,27 @@ describe('DepartureDetailComponent', () => {
     expect(text).toContain("Ouvrir l'embarquement");
     expect(text).toContain('Annuler le départ');
     expect(text).toContain('Awa');
+  });
+});
+
+describe('buildTimeline', () => {
+  const stop = (seq: number, name: string, at: string) => ({ seq, stop_name: name, scheduled_at: at, pause_minutes: 0, can_board: true,
+    can_alight: true, city_id: 'c', city_name: name, stop_point_id: 's' + seq });
+  const dep = {
+    stops: [stop(0, 'Cotonou', '2026-10-12T06:00:00Z'), stop(1, 'Bohicon', '2026-10-12T07:40:00Z'), stop(2, 'Parakou', '2026-10-12T11:00:00Z')],
+    visits: [
+      { id: 'v0', seq: 0, reason: 'planned', arrived_at: '2026-10-12T05:50:00Z', departed_at: '2026-10-12T06:10:00Z' },
+      { id: 'v1', reason: 'police', note: 'Contrôle', arrived_at: '2026-10-12T07:00:00Z', departed_at: '2026-10-12T07:12:00Z', latitude: 7.1, longitude: 2.2, mocked: true },
+      { id: 'v2', seq: 1, reason: 'planned', arrived_at: '2026-10-12T08:00:00Z' },
+    ],
+  } as unknown as AdminDeparture;
+
+  it('intercale les arrêts imprévus et calcule retards et durées', () => {
+    const t = buildTimeline(dep);
+    expect(t.map((i) => i.name)).toEqual(['Cotonou', 'Contrôle de police', 'Bohicon', 'Parakou']);
+    expect(t[0].delay).toBe(10); // départ du premier arrêt : comparé à l'heure prévue
+    expect(t[1]).toMatchObject({ kind: 'unplanned', stayMinutes: 12, mocked: true, position: '7.10000, 2.20000' });
+    expect(t[2]).toMatchObject({ delay: 20, stayMinutes: undefined });
+    expect(t[3].arrivedAt).toBeUndefined();
   });
 });

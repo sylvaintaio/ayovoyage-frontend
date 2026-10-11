@@ -3,4 +3,9 @@
 
 export interface ScanTicketRequest {
   qr_payload: string;
+
+  /**
+   * Arrêt où a lieu le contrôle : signale une montée hors de l'arrêt réservé
+   */
+  stop_seq?: number;
 }

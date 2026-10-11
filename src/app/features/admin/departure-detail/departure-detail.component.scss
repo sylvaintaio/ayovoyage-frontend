@@ -63,3 +63,60 @@
   text-align: center;
   line-height: 1.8;
 }
+
+.voyage {
+  margin-bottom: var(--bv-space-4);
+}
+
+.crew {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-3);
+  margin: 0;
+}
+
+.timeline {
+  margin: var(--bv-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: var(--bv-space-2);
+  padding-bottom: var(--bv-space-3);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 0;
+    left: 6px;
+    width: 2px;
+    background: var(--bv-line);
+  }
+
+  &:last-child::before {
+    display: none;
+  }
+}
+
+.timeline__dot {
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  border: 2px solid var(--bv-primary);
+  border-radius: 50%;
+  background: var(--bv-surface);
+}
+
+.timeline__item--done .timeline__dot {
+  background: var(--bv-primary);
+}
+
+.timeline__item--unplanned .timeline__dot {
+  border-color: var(--bv-warning);
+  background: var(--bv-warning);
+}

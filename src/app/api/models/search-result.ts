@@ -3,21 +3,60 @@
 
 import { EarlyBirdOffer } from '../models/early-bird-offer';
 export interface SearchResult {
+
+  /**
+   * Indice de l'arrêt de descente
+   */
+  alighting_seq: number;
+
+  /**
+   * Heure prévue à l'arrêt de descente
+   */
   arrival_eta: string;
   available_seats: number;
 
   /**
-   * Tarif Standard (XOF)
+   * Prix Standard de ce trajet (XOF)
    */
   base_price: number;
+
+  /**
+   * Indice de l'arrêt de montée (à renvoyer à la réservation)
+   */
+  boarding_seq: number;
   bus_amenities: Array<string>;
+
+  /**
+   * Heure de départ du car (premier arrêt)
+   */
+  bus_departure_at: string;
   bus_model: string;
   company_id: string;
   company_name: string;
+
+  /**
+   * Heure prévue à l'arrêt de montée
+   */
   departure_at: string;
-  destination_agency_id: string;
+
+  /**
+   * Agence de descente, si l'arrêt en est une
+   */
+  destination_agency_id?: string;
+
+  /**
+   * Arrêt de descente
+   */
   destination_agency_name: string;
+
+  /**
+   * Ville de descente
+   */
   destination_city: string;
+
+  /**
+   * Durée du trajet du voyageur
+   */
   duration_minutes: number;
 
   /**
@@ -26,8 +65,16 @@ export interface SearchResult {
   early_bird?: EarlyBirdOffer;
   id: string;
   included_baggage_kg: number;
+
+  /**
+   * Agence de montée
+   */
   origin_agency_id: string;
   origin_agency_name: string;
+
+  /**
+   * Ville de montée
+   */
   origin_city: string;
   route_name: string;
   seat_count: number;

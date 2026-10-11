@@ -5,4 +5,5 @@ export interface Item {
   client_scan_id: string;
   qr_payload: string;
   scanned_at: string;
+  stop_seq?: number;
 }

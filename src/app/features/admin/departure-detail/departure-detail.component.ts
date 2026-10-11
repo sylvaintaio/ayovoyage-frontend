@@ -32,6 +32,72 @@ const NEXT: Record<string, Target[]> = {
   departed: ['arrived'],
 };
 
+const REASONS: Record<string, string> = {
+  police: 'Contrôle de police',
+  breakdown: 'Panne',
+  puncture: 'Crevaison',
+  pause: 'Pause non prévue',
+  traffic: 'Embouteillage',
+  other: 'Autre',
+};
+
+/** Ligne de la frise du voyage : arrêt prévu (avec ses heures réelles) ou arrêt imprévu. */
+export interface TimelineItem {
+  kind: 'planned' | 'unplanned';
+  name: string;
+  scheduledAt?: string;
+  arrivedAt?: string;
+  departedAt?: string;
+  pauseMinutes?: number;
+  /** Écart en minutes avec l'heure prévue (arrivée réelle − prévue). */
+  delay?: number;
+  /** Durée réelle de l'arrêt en minutes. */
+  stayMinutes?: number;
+  reason?: string;
+  note?: string;
+  position?: string;
+  mocked?: boolean;
+}
+
+const minutes = (a: string, b: string) => Math.round((new Date(a).getTime() - new Date(b).getTime()) / 60000);
+
+/** Frise du voyage : arrêts prévus et imprévus dans l'ordre réel, avec retards et durées. */
+export function buildTimeline(d: AdminDeparture): TimelineItem[] {
+  const visits = d.visits ?? [];
+  const items: (TimelineItem & { key: number })[] = [];
+  for (const s of d.stops ?? []) {
+    const v = visits.find((x) => x.seq === s.seq);
+    const item: TimelineItem & { key: number } = {
+      kind: 'planned', name: s.stop_name, scheduledAt: s.scheduled_at, pauseMinutes: s.pause_minutes,
+      key: new Date(v?.arrived_at ?? s.scheduled_at).getTime(),
+    };
+    if (v) {
+      item.arrivedAt = v.arrived_at;
+      item.departedAt = v.departed_at;
+      item.delay = minutes(s.seq === 0 && v.departed_at ? v.departed_at : v.arrived_at, s.scheduled_at);
+      item.stayMinutes = v.departed_at ? minutes(v.departed_at, v.arrived_at) : undefined;
+      item.mocked = v.mocked;
+      if (v.latitude != null && v.longitude != null) item.position = `${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}`;
+    }
+    items.push(item);
+  }
+  for (const v of visits.filter((x) => x.seq == null)) {
+    items.push({
+      kind: 'unplanned', name: REASONS[v.reason] ?? v.reason, reason: v.reason, note: v.note, arrivedAt: v.arrived_at,
+      departedAt: v.departed_at, stayMinutes: v.departed_at ? minutes(v.departed_at, v.arrived_at) : undefined, mocked: v.mocked,
+      position: v.latitude != null && v.longitude != null ? `${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}` : undefined,
+      key: new Date(v.arrived_at).getTime(),
+    });
+  }
+  return items
+    .sort((a, b) => a.key - b.key)
+    .map((item) => {
+      const { key, ...rest } = item;
+      void key;
+      return rest;
+    });
+}
+
 const ACTION_LABELS: Record<Target, string> = {
   boarding: "Ouvrir l'embarquement",
   departed: 'Déclarer le départ',
@@ -66,6 +132,20 @@ export class DepartureDetailComponent {
   protected readonly isManager = this.auth.hasRole('company_admin', 'agency_manager');
   protected readonly isField = this.auth.hasRole('company_admin', 'agency_manager', 'boarding_agent', 'driver');
   protected readonly actionLabels = ACTION_LABELS;
+
+  protected readonly timeline = computed(() => {
+    const d = this.data()?.departure;
+    return d ? buildTimeline(d) : [];
+  });
+
+  /** « Bohicon → Parakou » pour un passager du manifeste. */
+  protected trip(boarding: number, alighting: number): string {
+    const stops = this.manifest()?.stops ?? [];
+    const name = (seq: number) => stops.find((s) => s.seq === seq)?.city_name ?? '';
+    return stops.length > 2 ? `${name(boarding)} → ${name(alighting)}` : '';
+  }
+
+  protected readonly crewRoles: Record<string, string> = { controller: 'Contrôleur', driver: 'Chauffeur', assistant: 'Aide' };
 
   protected readonly actions = computed(() => {
     const status = this.data()?.departure.status ?? '';

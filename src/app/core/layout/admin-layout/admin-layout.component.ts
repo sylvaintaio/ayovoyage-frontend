@@ -52,6 +52,7 @@ const NAV: NavGroup[] = [
     items: [
       { label: 'Agences', link: '/admin/agences', roles: MANAGERS },
       { label: 'Lignes', link: '/admin/lignes', roles: ADMIN },
+      { label: "Points d'arrêt", link: '/admin/points-arret', roles: ADMIN },
       { label: 'Bus', link: '/admin/bus', roles: ADMIN },
       { label: 'Plans de sièges', link: '/admin/plans', roles: ADMIN },
       { label: 'Catégories de sièges', link: '/admin/categories', roles: ADMIN },
