@@ -1,20 +1,187 @@
 @use 'mixins' as *;
 
 .head {
-  margin-bottom: var(--bv-space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bv-space-3);
+  margin-bottom: var(--bv-space-3);
 
   h1 {
     margin: 0;
   }
 }
 
-.filters {
-  display: grid;
-  gap: var(--bv-space-3);
+/* Période et filtres sur une ligne, sans cadre */
+.when {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bv-space-2) var(--bv-space-3);
+  align-items: center;
   margin-bottom: var(--bv-space-4);
+}
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-sm);
+  background: var(--bv-surface);
+
+  button {
+    min-height: 34px;
+    padding: 0 var(--bv-space-3);
+    border: 0;
+    border-radius: calc(var(--bv-radius-sm) - 2px);
+    background: transparent;
+    color: var(--bv-ink);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+
+    &[aria-checked='true'] {
+      background: var(--bv-primary);
+      color: #fff;
+    }
+  }
+}
+
+.nav {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bv-space-1);
+}
+
+.input-day {
+  width: auto;
+  min-height: 34px;
+  padding-block: 0;
+}
+
+.more {
+  summary {
+    color: var(--bv-primary);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  &__body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bv-space-2);
+    margin-top: var(--bv-space-2);
+
+    .select {
+      width: auto;
+      min-height: 34px;
+      padding-block: 0;
+    }
+  }
+}
+
+.day {
+  margin-bottom: var(--bv-space-5);
+
+  &__title {
+    margin: 0 0 var(--bv-space-2);
+    font-size: 1rem;
+  }
+}
+
+.deps {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--bv-line);
+  border-radius: var(--bv-radius-lg);
+  background: var(--bv-surface);
+  overflow: hidden;
+
+  li + li {
+    border-top: 1px solid var(--bv-line);
+  }
+}
+
+/* Une ligne par départ : heure, trajet, remplissage, statut. Sur téléphone, le remplissage passe dessous. */
+.dep {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'time main status'
+    'time fill fill';
+  gap: var(--bv-space-1) var(--bv-space-3);
+  align-items: center;
+  padding: var(--bv-space-3);
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--bv-primary-soft);
+  }
 
   @include from($bp-md) {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
-    align-items: end;
+    grid-template-columns: 4.5rem minmax(0, 1fr) 11rem 8.5rem;
+    grid-template-areas: 'time main fill status';
+  }
+
+  &--off {
+    opacity: 0.6;
+  }
+
+  &__time {
+    grid-area: time;
+    font-stretch: var(--bv-stretch-display);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  &__main {
+    grid-area: main;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__route {
+    overflow: hidden;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    color: var(--bv-muted);
+    font-size: 0.875rem;
+  }
+
+  &__fill {
+    grid-area: fill;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__seats {
+    font-size: 0.875rem;
+  }
+
+  &__status {
+    grid-area: status;
+    justify-self: end;
+  }
+}
+
+.bar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bv-line);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--bv-primary);
   }
 }

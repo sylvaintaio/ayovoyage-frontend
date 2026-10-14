@@ -1,71 +1,81 @@
-<div class="spread head">
+<div class="head">
   <h1>Départs</h1>
   @if (canPlan) {
-    <button type="button" class="btn btn--primary" (click)="create()">Programmer un départ</button>
+    <button type="button" class="btn btn--primary" (click)="create()">+ Programmer</button>
   }
 </div>
 
-<form class="card filters" (ngSubmit)="load()" aria-label="Filtres">
-  <div class="field">
-    <label for="dp-from">Du</label>
-    <input id="dp-from" class="input" type="date" name="from" [ngModel]="from()" (ngModelChange)="from.set($event)" />
+<!-- Quand : un appui suffit (pas de bouton « Filtrer ») -->
+<div class="when" role="toolbar" aria-label="Période">
+  <div class="seg" role="radiogroup" aria-label="Période">
+    <button type="button" role="radio" [attr.aria-checked]="period() === 'today'" (click)="setPeriod('today')">Aujourd'hui</button>
+    <button type="button" role="radio" [attr.aria-checked]="period() === 'tomorrow'" (click)="setPeriod('tomorrow')">Demain</button>
+    <button type="button" role="radio" [attr.aria-checked]="period() === 'week'" (click)="setPeriod('week')">7 jours</button>
   </div>
-  <div class="field">
-    <label for="dp-to">Au</label>
-    <input id="dp-to" class="input" type="date" name="to" [ngModel]="to()" (ngModelChange)="to.set($event)" />
-  </div>
-  @if (routes().length) {
-    <div class="field">
-      <label for="dp-route">Ligne</label>
-      <select id="dp-route" class="select" name="route" [ngModel]="routeId()" (ngModelChange)="routeId.set($event)">
-        <option value="">Toutes</option>
-        @for (r of routes(); track r.id) {
-          <option [value]="r.id">{{ r.name }}</option>
-        }
-      </select>
+  @if (period() !== 'week') {
+    <div class="nav">
+      <button type="button" class="btn btn--sm btn--ghost" aria-label="Jour précédent" (click)="shift(-1)">‹</button>
+      <input class="input input-day" type="date" aria-label="Choisir un jour" [ngModel]="day()" (ngModelChange)="$event && setPeriod('day', $event)" />
+      <button type="button" class="btn btn--sm btn--ghost" aria-label="Jour suivant" (click)="shift(1)">›</button>
     </div>
   }
-  <div class="field">
-    <label for="dp-status">Statut</label>
-    <select id="dp-status" class="select" name="status" [ngModel]="status()" (ngModelChange)="status.set($event)">
-      <option value="">Tous</option>
-      <option value="scheduled">Programmé</option>
-      <option value="boarding">Embarquement</option>
-      <option value="departed">Parti</option>
-      <option value="arrived">Arrivé</option>
-      <option value="cancelled">Annulé</option>
-    </select>
-  </div>
-  <button type="submit" class="btn btn--primary">Filtrer</button>
-</form>
+  <details class="more" [open]="filtered()">
+    <summary>Filtres{{ filtered() ? ' (actifs)' : '' }}</summary>
+    <div class="more__body">
+      @if (routes().length) {
+        <select class="select" aria-label="Ligne" [ngModel]="routeId()" (ngModelChange)="routeId.set($event); load()">
+          <option value="">Toutes les lignes</option>
+          @for (r of routes(); track r.id) {
+            <option [value]="r.id">{{ r.name }}</option>
+          }
+        </select>
+      }
+      <select class="select" aria-label="Statut" [ngModel]="status()" (ngModelChange)="status.set($event); load()">
+        <option value="">Tous les statuts</option>
+        <option value="scheduled">Programmés</option>
+        <option value="boarding">En embarquement</option>
+        <option value="departed">Partis</option>
+        <option value="arrived">Arrivés</option>
+        <option value="cancelled">Annulés</option>
+      </select>
+      @if (filtered()) {
+        <button type="button" class="btn btn--sm btn--ghost" (click)="resetFilters()">Effacer</button>
+      }
+    </div>
+  </details>
+</div>
 
 <bv-state [loading]="loading()" [error]="error()" [empty]="departures().length === 0" emptyText="Aucun départ sur cette période." (retry)="load()">
-  <div class="table-wrap">
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Départ</th>
-          <th scope="col">Ligne</th>
-          <th scope="col">Bus</th>
-          <th scope="col">Tarif</th>
-          <th scope="col">Vendus</th>
-          <th scope="col">Embarqués</th>
-          <th scope="col">Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (d of departures(); track d.id) {
-          <tr>
-            <td class="nowrap"><a [routerLink]="['/admin/departs', d.id]">{{ d.departure_at | date: 'EEE dd/MM HH:mm' }}</a></td>
-            <td>{{ d.route_name }}</td>
-            <td class="nowrap">{{ d.plate_number }}</td>
-            <td class="nowrap">{{ d.base_price | money }}</td>
-            <td [title]="d.sold_seats + ' passager(s) sur le trajet'">{{ d.peak_seats }} / {{ d.seat_count }}</td>
-            <td>{{ d.boarded_seats }}</td>
-            <td><bv-status-badge [status]="d.status" domain="departure" /></td>
-          </tr>
+  @for (g of days(); track g.date) {
+    <section class="day" [attr.aria-label]="g.label">
+      <h2 class="day__title">{{ g.label }} <span class="muted">· {{ g.departures.length }} départ{{ g.departures.length > 1 ? 's' : '' }}</span></h2>
+      <ul class="list-plain deps">
+        @for (d of g.departures; track d.id) {
+          <li>
+            <a class="dep" [routerLink]="['/admin/departs', d.id]" [class.dep--off]="d.status === 'cancelled' || d.status === 'arrived'">
+              <span class="dep__time">{{ d.departure_at | date: 'HH:mm' : '+0100' }}</span>
+              <span class="dep__main">
+                <span class="dep__route">{{ d.route_name }}</span>
+                <span class="dep__meta">{{ d.plate_number }} · {{ d.base_price | money }}</span>
+              </span>
+              <span class="dep__fill" [title]="d.sold_seats + ' passager(s) sur le trajet'">
+                <span class="dep__seats"><strong>{{ d.peak_seats }}</strong>/{{ d.seat_count }} places</span>
+                <span class="bar" aria-hidden="true"><span [style.width.%]="fill(d)"></span></span>
+                @if (d.status === 'boarding' || d.status === 'departed') {
+                  <span class="dep__meta">{{ d.boarded_seats }} à bord</span>
+                }
+              </span>
+              <span class="dep__status">
+                @if (late(d)) {
+                  <span class="badge badge--warning" title="Heure passée : départ en retard ou statut à mettre à jour">Heure passée</span>
+                } @else {
+                  <bv-status-badge [status]="d.status" domain="departure" />
+                }
+              </span>
+            </a>
+          </li>
         }
-      </tbody>
-    </table>
-  </div>
+      </ul>
+    </section>
+  }
 </bv-state>
