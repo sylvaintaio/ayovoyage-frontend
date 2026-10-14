@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   OnInit,
   computed,
   effect,
@@ -13,7 +14,11 @@ import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { Api } from '../../../api/api';
 import {
   createCounterBooking,
+  createStaffPayment,
+  getBooking,
   getDeparture,
+  getStaffPayment,
+  listPaymentProviders,
   listAgencies,
   listBookingInvoices,
   listDepartures,
@@ -25,7 +30,10 @@ import {
   BookingDetail,
   GetDepartureResponse,
   Invoice,
+  ProviderInfo,
 } from '../../../api/models';
+
+type PayMode = 'cash' | 'mobile_money' | 'online' | 'later';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { apiErrorMessage, apiErrorStatus } from '../../../core/http/api-error';
 import { ToastService } from '../../../core/notify/toast.service';
@@ -64,7 +72,7 @@ export function defaultBoarding(stops: DepartureStop[], agencyId: string | undef
   styleUrl: './counter.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CounterComponent implements OnInit {
+export class CounterComponent implements OnInit, OnDestroy {
   private readonly api = inject(Api);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthStore);
@@ -85,6 +93,33 @@ export class CounterComponent implements OnInit {
   protected readonly soldInvoice = signal<Invoice | null>(null);
   protected readonly withCompany = signal(false);
 
+  /** Mode de paiement : espèces, Mobile Money reçu, Mobile Money du voyageur (en ligne), ou réservation à payer. */
+  protected readonly payMode = signal<PayMode>('cash');
+  protected readonly payRef = signal('');
+  /** Paiement en ligne lancé : en attente de la confirmation du voyageur sur son téléphone. */
+  protected readonly waiting = signal<{ booking: BookingDetail; departureId: string; paymentId: string; url: string } | null>(null);
+  /** Réservation prise sans paiement (appel) : à encaisser avant l'heure limite. */
+  protected readonly reserved = signal<BookingDetail | null>(null);
+  private providers: ProviderInfo[] = [];
+
+  protected readonly payModes: { code: PayMode; label: string; hint: string }[] = [
+    { code: 'cash', label: 'Espèces', hint: 'Le voyageur paie au guichet.' },
+    { code: 'online', label: 'Mobile Money du voyageur', hint: 'Il valide sur son téléphone, même un téléphone simple.' },
+    { code: 'mobile_money', label: 'Mobile Money déjà reçu', hint: 'Transfert reçu sur le numéro de l’agence (référence).' },
+    { code: 'later', label: 'Réserver, paiement plus tard', hint: 'Appel : places gardées 2 h, au plus tard 1 h avant le départ.' },
+  ];
+
+  protected readonly submitLabel = computed(
+    () =>
+      ({
+        cash: 'Encaisser en espèces',
+        online: 'Demander le paiement',
+        mobile_money: 'Valider le paiement reçu',
+        later: 'Réserver',
+      })[this.payMode()],
+  );
+  private poll?: ReturnType<typeof setInterval>;
+
   /** Personnel du siège (sans agence) : choisit l'agence où l'encaissement est enregistré. */
   protected readonly needsAgency = !this.auth.me()?.staff?.agency_id;
   protected readonly agencies = signal<Agency[]>([]);
@@ -92,7 +127,7 @@ export class CounterComponent implements OnInit {
 
   protected readonly contact = inject(FormBuilder).nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
-    phone: ['', [Validators.required, Validators.minLength(8)]],
+    phone: ['', [Validators.minLength(8)]],
     email: ['', Validators.email],
     billing_name: ['', Validators.maxLength(160)],
     billing_tax_id: ['', Validators.maxLength(30)],
@@ -126,7 +161,16 @@ export class CounterComponent implements OnInit {
     });
   }
 
+  /** Fournisseur en ligne : le vrai (FedaPay) s'il existe, sinon le paiement simulé (recette). */
+  private onlineProvider(): string | undefined {
+    return (this.providers.find((p) => p.code !== 'mock') ?? this.providers[0])?.code;
+  }
+
   async ngOnInit(): Promise<void> {
+    this.api.invoke(listPaymentProviders).then(
+      (list) => (this.providers = list),
+      () => undefined,
+    );
     if (this.needsAgency) {
       this.api.invoke(listAgencies).then(
         (list) => {
@@ -213,6 +257,87 @@ export class CounterComponent implements OnInit {
     }
   }
 
+  private resetForm(): void {
+    this.contact.reset();
+    this.withCompany.set(false);
+    this.selected.set([]);
+    this.payRef.set('');
+  }
+
+  /** Paiement Mobile Money du voyageur : page du fournisseur ouverte sur l'écran de l'agent, le voyageur confirme sur son téléphone. */
+  private async startOnlinePayment(booking: BookingDetail, departureId: string): Promise<void> {
+    const provider = this.onlineProvider();
+    if (!provider) {
+      this.toast.error('Aucun paiement en ligne n’est activé : encaissez en espèces ou réservez.');
+      return;
+    }
+    const payment = await this.api.invoke(createStaffPayment, {
+      id: booking.id,
+      'Idempotency-Key': crypto.randomUUID(),
+      body: { provider, method: 'mobile_money', payer_phone: booking.contact_phone },
+    });
+    const url = payment.checkout_url ?? '';
+    this.waiting.set({ booking, departureId, paymentId: payment.id, url });
+    this.openCheckout();
+    this.stopPolling();
+    const started = Date.now();
+    this.poll = setInterval(() => {
+      if (Date.now() - started > 15 * 60_000) {
+        this.stopPolling();
+        return;
+      }
+      void this.checkPayment();
+    }, 4000);
+  }
+
+  protected openCheckout(): void {
+    const url = this.waiting()?.url;
+    if (url) {
+      window.open(url, 'paiement', 'popup,width=480,height=760');
+    }
+  }
+
+  /** Statut vérifié auprès du fournisseur ; confirmé → billets à imprimer. */
+  protected async checkPayment(): Promise<void> {
+    const w = this.waiting();
+    if (!w) {
+      return;
+    }
+    try {
+      const p = await this.api.invoke(getStaffPayment, { id: w.paymentId });
+      if (p.booking_status === 'confirmed') {
+        this.stopPolling();
+        this.waiting.set(null);
+        const detail = await this.api.invoke(getBooking, { id: w.booking.id });
+        this.resetForm();
+        await Promise.all([this.choose(w.departureId), this.loadDepartures()]);
+        this.sold.set(detail);
+        this.toast.success(`Paiement reçu : vente ${detail.reference} confirmée.`);
+      } else if (p.status === 'failed' || p.status === 'cancelled') {
+        this.stopPolling();
+        this.toast.error('Paiement refusé ou annulé par le voyageur.');
+      }
+    } catch {
+      // réseau : nouvel essai au prochain passage
+    }
+  }
+
+  protected cancelWaiting(): void {
+    this.stopPolling();
+    this.waiting.set(null);
+  }
+
+  private stopPolling(): void {
+    if (this.poll) {
+      clearInterval(this.poll);
+      this.poll = undefined;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
   protected invoicePdf(inv: Invoice, format: 'a4' | 'ticket'): string {
     return invoicePdfUrl(inv.id, 'admin', format);
   }
@@ -235,6 +360,16 @@ export class CounterComponent implements OnInit {
       return;
     }
     const c = this.contact.getRawValue();
+    const mode = this.payMode();
+    if (mode !== 'cash' && c.phone.replace(/\D/g, '').length < 8) {
+      this.contact.controls.phone.markAsTouched();
+      this.toast.error('Le téléphone du voyageur est obligatoire pour ce mode de paiement.');
+      return;
+    }
+    if (mode === 'mobile_money' && this.payRef().trim().length < 4) {
+      this.toast.error('Saisissez la référence de la transaction Mobile Money reçue.');
+      return;
+    }
     if (this.withCompany() && c.billing_name.trim().length < 2) {
       this.toast.error("Indiquez la raison sociale de l'entreprise à facturer.");
       return;
@@ -249,12 +384,26 @@ export class CounterComponent implements OnInit {
           passengers: this.selected().map((seatId, i) => ({ name: names[i], seat_id: seatId })),
           agency_id: this.needsAgency ? this.agencyId() || undefined : undefined,
           contact_name: c.name,
-          contact_phone: c.phone,
+          contact_phone: c.phone || undefined,
+          payment: mode,
+          payment_reference: mode === 'mobile_money' ? this.payRef().trim() : undefined,
           contact_email: c.email || undefined,
           billing_name: (this.withCompany() && c.billing_name.trim()) || undefined,
           billing_tax_id: (this.withCompany() && c.billing_tax_id.trim()) || undefined,
         },
       });
+      if (mode === 'later') {
+        this.reserved.set(booking);
+        this.toast.success(`Réservation ${booking.reference} : places gardées, SMS envoyé au voyageur.`);
+        this.resetForm();
+        await Promise.all([this.choose(dep.id), this.loadDepartures()]);
+        this.reserved.set(booking);
+        return;
+      }
+      if (mode === 'online') {
+        await this.startOnlinePayment(booking, dep.id);
+        return;
+      }
       this.sold.set(booking);
       this.toast.success(
         `Vente ${booking.reference} enregistrée : ${booking.total_amount} F CFA encaissés.`,

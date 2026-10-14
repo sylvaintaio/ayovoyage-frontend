@@ -31,9 +31,19 @@ export interface CreateCounterBookingRequest {
   boarding_seq?: number;
   contact_email?: string;
   contact_name: string;
-  contact_phone: string;
+
+  /**
+   * Obligatoire, sauf vente en espèces au guichet et vente à bord
+   */
+  contact_phone?: string;
   departure_id: string;
   passengers: Array<PassengerInput>;
+  payment?: 'cash' | 'mobile_money' | 'online' | 'later';
+
+  /**
+   * Mobile Money reçu : référence de la transaction
+   */
+  payment_reference?: string;
   preferences?: SeatPreferences;
 
   /**

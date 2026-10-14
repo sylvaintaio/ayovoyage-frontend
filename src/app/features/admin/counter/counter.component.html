@@ -52,6 +52,29 @@
 
     <aside class="card stack-sm" aria-labelledby="t-vente">
       <h2 id="t-vente" class="card__title">Encaissement</h2>
+      @if (waiting(); as w) {
+        <div class="alert stack-sm" role="status">
+          <strong>En attente du paiement — {{ w.booking.total_amount | money }}</strong>
+          <span class="small">
+            Sur la page de paiement, saisissez le numéro Mobile Money du voyageur ({{ w.booking.contact_phone }}).
+            Il reçoit une demande sur son téléphone et la valide avec son code secret. La vente se confirme ici toute seule.
+          </span>
+          <div class="invoice-actions">
+            <button type="button" class="btn btn--sm" (click)="openCheckout()">Rouvrir la page de paiement</button>
+            <button type="button" class="btn btn--sm btn--ghost" (click)="checkPayment()">Vérifier maintenant</button>
+            <button type="button" class="btn btn--sm btn--ghost" (click)="cancelWaiting()">Abandonner</button>
+          </div>
+        </div>
+      }
+      @if (reserved(); as rv) {
+        <div class="alert stack-sm" role="status">
+          <strong>Réservation {{ rv.reference }} — {{ rv.total_amount | money }}</strong>
+          <span class="small">
+            Places gardées jusqu'au {{ rv.pay_by | date: 'dd/MM à HH:mm' }}. Le voyageur a reçu un SMS. À encaisser avant cette heure
+            (menu « Encaisser », dans n'importe quelle agence), sinon les places sont libérées.
+          </span>
+        </div>
+      }
       @if (sold(); as s) {
         <div class="alert alert--success stack-sm">
           <strong>Vente {{ s.reference }} — {{ s.total_amount | money }}</strong>
@@ -81,9 +104,11 @@
           </div>
         }
         <div class="field">
-          <label for="ct-phone">Téléphone du client</label>
+          <label for="ct-phone">Téléphone du voyageur{{ payMode() === 'cash' ? ' (facultatif)' : '' }}</label>
           <input id="ct-phone" class="input" type="tel" formControlName="phone" />
-          <span class="field__hint">Identifie le client : ses voyages comptent pour la fidélité.</span>
+          <span class="field__hint">
+            {{ payMode() === 'cash' ? 'Sans téléphone : billet papier seulement. Avec : billet par SMS et points de fidélité.' : 'Billet et confirmations par SMS à ce numéro.' }}
+          </span>
         </div>
         <div class="field">
           <label for="ct-name">Nom du client</label>
@@ -113,12 +138,31 @@
             <input [id]="'ct-p' + $index" class="input" [value]="n" placeholder="Par défaut : nom du client" (input)="setName($index, $any($event.target).value)" />
           </div>
         }
+        <fieldset class="pay">
+          <legend>Paiement</legend>
+          @for (m of payModes; track m.code) {
+            <label class="pay__opt" [class.pay__opt--on]="payMode() === m.code">
+              <input type="radio" name="pay" [value]="m.code" [checked]="payMode() === m.code" (change)="payMode.set(m.code)" />
+              <span>
+                <strong>{{ m.label }}</strong>
+                <span class="small muted">{{ m.hint }}</span>
+              </span>
+            </label>
+          }
+        </fieldset>
+        @if (payMode() === 'mobile_money') {
+          <div class="field">
+            <label for="ct-ref">Référence de la transaction</label>
+            <input id="ct-ref" class="input" [value]="payRef()" (input)="payRef.set($any($event.target).value)" placeholder="Ex. : MP241014.1532.C12345" />
+            <span class="field__hint">Lue sur le SMS de confirmation reçu sur le numéro de l'agence. Une référence ne sert qu'une fois.</span>
+          </div>
+        }
         <div class="total">
-          <span>À encaisser</span>
+          <span>{{ payMode() === 'later' ? 'À payer' : 'À encaisser' }}</span>
           <strong>{{ total() | money }}</strong>
         </div>
-        <button type="submit" class="btn btn--primary btn--block" [disabled]="selling() || selected().length === 0">
-          {{ selling() ? 'Enregistrement…' : 'Encaisser en espèces' }}
+        <button type="submit" class="btn btn--primary btn--block" [disabled]="selling() || selected().length === 0 || !!waiting()">
+          {{ selling() ? 'Enregistrement…' : submitLabel() }}
         </button>
       </form>
     </aside>
