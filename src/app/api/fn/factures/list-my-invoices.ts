@@ -10,11 +10,23 @@ import { RequestBuilder } from '../../request-builder';
 import { Invoice } from '../../models/invoice';
 
 export interface ListMyInvoices$Params {
+
+/**
+ * Nombre d'éléments (max 100)
+ */
+  limit?: number;
+
+/**
+ * Décalage pour la pagination
+ */
+  offset?: number;
 }
 
 export function listMyInvoices(http: HttpClient, rootUrl: string, params?: ListMyInvoices$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<Invoice>>> {
   const rb = new RequestBuilder(rootUrl, listMyInvoices.PATH, 'get');
   if (params) {
+    rb.query('limit', params.limit, {"explode":false});
+    rb.query('offset', params.offset, {"explode":false});
   }
 
   return http.request(

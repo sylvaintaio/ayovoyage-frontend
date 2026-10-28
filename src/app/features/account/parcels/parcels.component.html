@@ -7,7 +7,13 @@
   emptyText="Les colis que vous envoyez ou recevez en agence apparaissent ici, s’ils sont enregistrés avec votre numéro ou votre e-mail."
   (retry)="load()"
 >
-  @for (group of [{ title: 'Colis à recevoir et reçus', items: received() }, { title: 'Colis envoyés', items: sent() }]; track group.title) {
+  @for (
+    group of [
+      { title: 'Colis à recevoir et reçus', items: received() },
+      { title: 'Colis envoyés', items: sent() },
+    ];
+    track group.title
+  ) {
     @if (group.items.length) {
       <section class="group">
         <h2 class="group__title">{{ group.title }}</h2>
@@ -19,7 +25,10 @@
                   <p class="strong">{{ p.origin_city }} → {{ p.destination_city }}</p>
                   <p class="small muted">
                     <span class="mono">{{ p.tracking_number }}</span> ·
-                    {{ p.direction === 'sent' ? 'pour ' + p.recipient_name : 'de ' + p.sender_name }} ·
+                    {{
+                      p.direction === 'sent' ? 'pour ' + p.recipient_name : 'de ' + p.sender_name
+                    }}
+                    ·
                     {{ p.created_at | date: 'd MMM y' }}
                   </p>
                 </div>
@@ -31,4 +40,10 @@
       </section>
     }
   }
+  <bv-load-more
+    [hasMore]="pager.hasMore()"
+    [loading]="pager.loadingMore()"
+    (more)="more()"
+    label="Colis plus anciens"
+  />
 </bv-state>

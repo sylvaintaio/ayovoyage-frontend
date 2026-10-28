@@ -11,6 +11,6 @@ export interface OnboardSaleResult {
    * Montant encaissé - prix calculé par le serveur
    */
   price_gap?: number;
-  result: 'recorded' | 'duplicate' | 'issue';
+  result: 'recorded' | 'duplicate' | 'issue' | 'awaiting_payment';
   seat_changed?: boolean;
 }

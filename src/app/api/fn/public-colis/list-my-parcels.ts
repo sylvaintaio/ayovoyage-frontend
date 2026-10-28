@@ -10,11 +10,23 @@ import { RequestBuilder } from '../../request-builder';
 import { CustomerParcel } from '../../models/customer-parcel';
 
 export interface ListMyParcels$Params {
+
+/**
+ * Nombre d'éléments (max 100)
+ */
+  limit?: number;
+
+/**
+ * Décalage pour la pagination
+ */
+  offset?: number;
 }
 
 export function listMyParcels(http: HttpClient, rootUrl: string, params?: ListMyParcels$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<CustomerParcel>>> {
   const rb = new RequestBuilder(rootUrl, listMyParcels.PATH, 'get');
   if (params) {
+    rb.query('limit', params.limit, {"explode":false});
+    rb.query('offset', params.offset, {"explode":false});
   }
 
   return http.request(

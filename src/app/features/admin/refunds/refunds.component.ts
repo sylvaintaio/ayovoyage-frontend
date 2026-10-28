@@ -10,7 +10,9 @@ import { AuthStore } from '../../../core/auth/auth.store';
 import { DialogService } from '../../../core/dialog/dialog.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { ToastService } from '../../../core/notify/toast.service';
+import { Pager } from '../../../shared/pager';
 import { formatMoney, MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { LoadMoreComponent } from '../../../shared/ui/load-more/load-more.component';
 import { StateComponent } from '../../../shared/ui/state/state.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { Payout, PayoutDialogComponent } from './payout-dialog/payout-dialog.component';
@@ -20,7 +22,15 @@ type Status = 'requested' | 'approved' | 'rejected' | 'processed' | '';
 /** File des remboursements : décision (quatre yeux au-delà du seuil) puis versement. */
 @Component({
   selector: 'bv-refunds',
-  imports: [StateComponent, StatusBadgeComponent, FormsModule, RouterLink, DatePipe, MoneyPipe],
+  imports: [
+    StateComponent,
+    LoadMoreComponent,
+    StatusBadgeComponent,
+    FormsModule,
+    RouterLink,
+    DatePipe,
+    MoneyPipe,
+  ],
   templateUrl: './refunds.component.html',
   styleUrl: './refunds.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,6 +46,9 @@ export class RefundsComponent implements OnInit {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly canPay = this.auth.hasRole('company_admin', 'finance');
+  protected readonly pager = new Pager(this.refunds, (page) =>
+    this.api.invoke(listRefunds, { status: this.status() || undefined, ...page }),
+  );
 
   async ngOnInit(): Promise<void> {
     await this.load();
@@ -45,11 +58,19 @@ export class RefundsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      this.refunds.set(await this.api.invoke(listRefunds, { status: this.status() || undefined, limit: 100 }));
+      await this.pager.first();
     } catch (err) {
       this.error.set(apiErrorMessage(err));
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  protected async more(): Promise<void> {
+    try {
+      await this.pager.next();
+    } catch (err) {
+      this.toast.error(apiErrorMessage(err));
     }
   }
 
@@ -63,7 +84,10 @@ export class RefundsComponent implements OnInit {
     if (!ok) {
       return;
     }
-    await this.run(() => this.api.invoke(decideRefund, { id: r.id, body: { approve } }), approve ? 'Remboursement approuvé.' : 'Remboursement refusé.');
+    await this.run(
+      () => this.api.invoke(decideRefund, { id: r.id, body: { approve } }),
+      approve ? 'Remboursement approuvé.' : 'Remboursement refusé.',
+    );
   }
 
   protected async markPaid(r: Refund): Promise<void> {
@@ -71,7 +95,9 @@ export class RefundsComponent implements OnInit {
     if (payout) {
       await this.run(
         () => this.api.invoke(markRefundProcessed, { id: r.id, body: payout }),
-        payout.method === 'cash' ? 'Versement enregistré (déduit de la caisse de l’agence).' : 'Versement enregistré.',
+        payout.method === 'cash'
+          ? 'Versement enregistré (déduit de la caisse de l’agence).'
+          : 'Versement enregistré.',
       );
     }
   }

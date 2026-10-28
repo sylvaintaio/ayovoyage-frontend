@@ -10,11 +10,23 @@ import { RequestBuilder } from '../../request-builder';
 import { IncidentSummary } from '../../models/incident-summary';
 
 export interface ListMyIncidents$Params {
+
+/**
+ * Nombre d'éléments (max 100)
+ */
+  limit?: number;
+
+/**
+ * Décalage pour la pagination
+ */
+  offset?: number;
 }
 
 export function listMyIncidents(http: HttpClient, rootUrl: string, params?: ListMyIncidents$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<IncidentSummary>>> {
   const rb = new RequestBuilder(rootUrl, listMyIncidents.PATH, 'get');
   if (params) {
+    rb.query('limit', params.limit, {"explode":false});
+    rb.query('offset', params.offset, {"explode":false});
   }
 
   return http.request(

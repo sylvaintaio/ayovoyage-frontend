@@ -1,0 +1,5 @@
+@if (hasMore()) {
+  <button type="button" class="btn more" [disabled]="loading()" [attr.aria-busy]="loading()" (click)="more.emit()">
+    {{ loading() ? 'Chargement…' : label() }}
+  </button>
+}

@@ -8,6 +8,7 @@ import { listReviews, moderateReview } from '../../../api/functions';
 import { Review, ReviewList } from '../../../api/models';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { ToastService } from '../../../core/notify/toast.service';
+import { LoadMoreComponent } from '../../../shared/ui/load-more/load-more.component';
 import { StateComponent } from '../../../shared/ui/state/state.component';
 
 type Filter = 'all' | 'pending' | 'negative';
@@ -15,7 +16,7 @@ type Filter = 'all' | 'pending' | 'negative';
 /** Avis des voyageurs : indicateurs, modération (publier, masquer) et réponse publique. */
 @Component({
   selector: 'bv-admin-reviews',
-  imports: [StateComponent, FormsModule, RouterLink, DatePipe, DecimalPipe],
+  imports: [StateComponent, LoadMoreComponent, FormsModule, RouterLink, DatePipe, DecimalPipe],
   templateUrl: './reviews.component.html',
   styleUrl: './reviews.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,9 +30,14 @@ export class AdminReviewsComponent implements OnInit {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   /** Avis en cours d'édition (réponse ou motif de masquage). */
-  protected readonly editing = signal<{ id: string; mode: 'reply' | 'hide'; text: string } | null>(null);
+  protected readonly editing = signal<{ id: string; mode: 'reply' | 'hide'; text: string } | null>(
+    null,
+  );
   protected readonly busy = signal<string | null>(null);
   protected readonly stars = [1, 2, 3, 4, 5];
+  protected readonly hasMore = signal(false);
+  protected readonly loadingMore = signal(false);
+  private static readonly PAGE = 50;
 
   async ngOnInit(): Promise<void> {
     await this.load();
@@ -41,14 +47,9 @@ export class AdminReviewsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const f = this.filter();
-      this.data.set(
-        await this.api.invoke(listReviews, {
-          status: f === 'pending' ? 'pending' : undefined,
-          max_rating: f === 'negative' ? 2 : undefined,
-          limit: 100,
-        }),
-      );
+      const list = await this.fetch(0);
+      this.data.set(list);
+      this.hasMore.set(list.reviews.length === AdminReviewsComponent.PAGE);
     } catch (err) {
       this.error.set(apiErrorMessage(err));
     } finally {
@@ -65,7 +66,11 @@ export class AdminReviewsComponent implements OnInit {
     this.editing.set({ id: r.id, mode, text: mode === 'reply' ? (r.reply ?? '') : '' });
   }
 
-  protected async apply(r: Review, status: 'published' | 'hidden' | 'pending', extra: { reply?: string; reason?: string } = {}): Promise<void> {
+  protected async apply(
+    r: Review,
+    status: 'published' | 'hidden' | 'pending',
+    extra: { reply?: string; reason?: string } = {},
+  ): Promise<void> {
     this.busy.set(r.id);
     try {
       await this.api.invoke(moderateReview, {
@@ -73,7 +78,13 @@ export class AdminReviewsComponent implements OnInit {
         body: { status, reply: extra.reply ?? r.reply ?? '', hidden_reason: extra.reason },
       });
       this.editing.set(null);
-      this.toast.success(status === 'published' ? 'Avis publié.' : status === 'hidden' ? 'Avis masqué.' : 'Réponse enregistrée.');
+      this.toast.success(
+        status === 'published'
+          ? 'Avis publié.'
+          : status === 'hidden'
+            ? 'Avis masqué.'
+            : 'Réponse enregistrée.',
+      );
       await this.load();
     } catch (err) {
       this.toast.error(apiErrorMessage(err));
@@ -91,6 +102,34 @@ export class AdminReviewsComponent implements OnInit {
       void this.apply(r, 'hidden', { reason: e.text.trim() });
     } else {
       void this.apply(r, r.status, { reply: e.text.trim() });
+    }
+  }
+
+  private fetch(offset: number): Promise<ReviewList> {
+    const f = this.filter();
+    return this.api.invoke(listReviews, {
+      status: f === 'pending' ? 'pending' : undefined,
+      max_rating: f === 'negative' ? 2 : undefined,
+      limit: AdminReviewsComponent.PAGE,
+      offset,
+    });
+  }
+
+  /** Avis plus anciens, ajoutés sous les autres (statistiques inchangées). */
+  protected async more(): Promise<void> {
+    const d = this.data();
+    if (!d || this.loadingMore()) {
+      return;
+    }
+    this.loadingMore.set(true);
+    try {
+      const page = await this.fetch(d.reviews.length);
+      this.data.set({ ...d, reviews: [...d.reviews, ...page.reviews] });
+      this.hasMore.set(page.reviews.length === AdminReviewsComponent.PAGE);
+    } catch (err) {
+      this.toast.error(apiErrorMessage(err));
+    } finally {
+      this.loadingMore.set(false);
     }
   }
 }

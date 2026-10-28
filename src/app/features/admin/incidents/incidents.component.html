@@ -6,7 +6,12 @@
 <div class="card filters">
   <div class="field">
     <label for="in-status">Statut</label>
-    <select id="in-status" class="select" [ngModel]="status()" (ngModelChange)="status.set($event); load()">
+    <select
+      id="in-status"
+      class="select"
+      [ngModel]="status()"
+      (ngModelChange)="status.set($event); load()"
+    >
       <option value="open">Ouvertes</option>
       <option value="in_progress">En cours</option>
       <option value="resolved">Résolues</option>
@@ -16,7 +21,12 @@
   </div>
   <div class="field">
     <label for="in-subject">Objet</label>
-    <select id="in-subject" class="select" [ngModel]="subject()" (ngModelChange)="subject.set($event); load()">
+    <select
+      id="in-subject"
+      class="select"
+      [ngModel]="subject()"
+      (ngModelChange)="subject.set($event); load()"
+    >
       <option value="">Tous</option>
       <option value="parcel">Colis</option>
       <option value="baggage">Bagages</option>
@@ -25,17 +35,40 @@
   </div>
 </div>
 
-<bv-state [loading]="loading()" [error]="error()" [empty]="incidents().length === 0" emptyIcon="check" emptyTitle="Aucune réclamation" emptyText="Rien à traiter pour ce filtre." (retry)="load()">
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="incidents().length === 0"
+  emptyIcon="check"
+  emptyTitle="Aucune réclamation"
+  emptyText="Rien à traiter pour ce filtre."
+  (retry)="load()"
+>
   <div class="table-wrap">
     <table class="table">
       <thead>
-        <tr><th scope="col">Dossier</th><th scope="col">Objet</th><th scope="col">Problème</th><th scope="col">Déclarant</th><th scope="col">Priorité</th><th scope="col">Statut</th><th scope="col">Responsable</th></tr>
+        <tr>
+          <th scope="col">Dossier</th>
+          <th scope="col">Objet</th>
+          <th scope="col">Problème</th>
+          <th scope="col">Déclarant</th>
+          <th scope="col">Priorité</th>
+          <th scope="col">Statut</th>
+          <th scope="col">Responsable</th>
+        </tr>
       </thead>
       <tbody>
         @for (i of incidents(); track i.id) {
           <tr>
-            <td class="nowrap"><a class="strong" [routerLink]="['/admin/reclamations', i.id]">{{ i.reference }}</a><br /><span class="muted small">{{ i.created_at | date: 'd MMM, HH:mm' }}</span></td>
-            <td class="small">{{ subjects[i.subject_type] }}<br /><span class="muted">{{ i.tracking_number || i.baggage_tag || i.booking_reference }}</span></td>
+            <td class="nowrap">
+              <a class="strong" [routerLink]="['/admin/reclamations', i.id]">{{ i.reference }}</a
+              ><br /><span class="muted small">{{ i.created_at | date: 'd MMM, HH:mm' }}</span>
+            </td>
+            <td class="small">
+              {{ subjects[i.subject_type] }}<br /><span class="muted">{{
+                i.tracking_number || i.baggage_tag || i.booking_reference
+              }}</span>
+            </td>
             <td>{{ categories[i.category] }}</td>
             <td class="small">{{ i.reporter_name }}</td>
             <td><bv-status-badge [status]="i.priority" domain="priority" /></td>
@@ -45,5 +78,6 @@
         }
       </tbody>
     </table>
+    <bv-load-more [hasMore]="pager.hasMore()" [loading]="pager.loadingMore()" (more)="more()" />
   </div>
 </bv-state>

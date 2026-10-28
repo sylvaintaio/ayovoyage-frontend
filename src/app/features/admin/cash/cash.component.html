@@ -4,7 +4,12 @@
     @if (chooseAgency) {
       <div class="field">
         <label for="ca-agency">Agence</label>
-        <select id="ca-agency" class="select" [ngModel]="agencyId()" (ngModelChange)="agencyId.set($event); load()">
+        <select
+          id="ca-agency"
+          class="select"
+          [ngModel]="agencyId()"
+          (ngModelChange)="agencyId.set($event); load()"
+        >
           @for (a of agencies(); track a.id) {
             <option [value]="a.id">{{ a.name }}</option>
           }
@@ -13,7 +18,14 @@
     }
     <div class="field">
       <label for="ca-date">Journée</label>
-      <input id="ca-date" class="input" type="date" [max]="today" [ngModel]="date()" (ngModelChange)="date.set($event); load()" />
+      <input
+        id="ca-date"
+        class="input"
+        type="date"
+        [max]="today"
+        [ngModel]="date()"
+        (ngModelChange)="date.set($event); load()"
+      />
     </div>
   </div>
 </div>
@@ -24,18 +36,24 @@
       <div class="card kpi">
         <span class="kpi__label">Encaissé en espèces</span>
         <strong class="kpi__value">{{ s.cash_in | money }}</strong>
-        <span class="kpi__sub">{{ s.sales_count }} encaissement{{ s.sales_count > 1 ? 's' : '' }}</span>
+        <span class="kpi__sub"
+          >{{ s.sales_count }} encaissement{{ s.sales_count > 1 ? 's' : '' }}</span
+        >
       </div>
       <div class="card kpi">
         <span class="kpi__label">Remboursé en espèces</span>
         <strong class="kpi__value">{{ s.cash_out ? '−' : '' }}{{ s.cash_out | money }}</strong>
-        <span class="kpi__sub">{{ s.refunds_count }} remboursement{{ s.refunds_count > 1 ? 's' : '' }}</span>
+        <span class="kpi__sub"
+          >{{ s.refunds_count }} remboursement{{ s.refunds_count > 1 ? 's' : '' }}</span
+        >
       </div>
       @if (s.handovers_count) {
         <div class="card kpi">
           <span class="kpi__label">Caisses de bord reçues</span>
           <strong class="kpi__value">{{ s.onboard_in | money }}</strong>
-          <span class="kpi__sub">{{ s.handovers_count }} contrôleur{{ s.handovers_count > 1 ? 's' : '' }}</span>
+          <span class="kpi__sub"
+            >{{ s.handovers_count }} contrôleur{{ s.handovers_count > 1 ? 's' : '' }}</span
+          >
         </div>
       }
       <div class="card kpi kpi--main">
@@ -51,11 +69,19 @@
         @if (s.by_cashier.length) {
           <table class="table">
             <thead>
-              <tr><th scope="col">Caissier</th><th scope="col" class="text-right">Encaissements</th><th scope="col" class="text-right">Montant</th></tr>
+              <tr>
+                <th scope="col">Caissier</th>
+                <th scope="col" class="text-right">Encaissements</th>
+                <th scope="col" class="text-right">Montant</th>
+              </tr>
             </thead>
             <tbody>
               @for (c of s.by_cashier; track c.staff_id) {
-                <tr><td>{{ c.full_name }}</td><td class="text-right">{{ c.sales_count }}</td><td class="text-right strong">{{ c.amount | money }}</td></tr>
+                <tr>
+                  <td>{{ c.full_name }}</td>
+                  <td class="text-right">{{ c.sales_count }}</td>
+                  <td class="text-right strong">{{ c.amount | money }}</td>
+                </tr>
               }
             </tbody>
           </table>
@@ -68,7 +94,11 @@
         <section class="card stack-sm closed" aria-labelledby="t-closure">
           <div class="spread">
             <h2 id="t-closure" class="card__title">Caisse clôturée</h2>
-            <span class="badge" [class.badge--success]="c.difference === 0" [class.badge--warning]="c.difference !== 0">
+            <span
+              class="badge"
+              [class.badge--success]="c.difference === 0"
+              [class.badge--warning]="c.difference !== 0"
+            >
               {{ c.difference === 0 ? 'Sans écart' : 'Écart' }}
             </span>
           </div>
@@ -78,7 +108,10 @@
             <dt>Attendu</dt>
             <dd>{{ c.expected_cash | money }}</dd>
             <dt>Écart</dt>
-            <dd [class.neg]="c.difference < 0" [class.pos]="c.difference > 0">{{ c.difference > 0 ? '+' : c.difference < 0 ? '−' : '' }}{{ (c.difference < 0 ? -c.difference : c.difference) | money }}</dd>
+            <dd [class.neg]="c.difference < 0" [class.pos]="c.difference > 0">
+              {{ c.difference > 0 ? '+' : c.difference < 0 ? '−' : ''
+              }}{{ (c.difference < 0 ? -c.difference : c.difference) | money }}
+            </dd>
             @if (c.note) {
               <dt>Commentaire</dt>
               <dd>{{ c.note }}</dd>
@@ -90,10 +123,22 @@
       } @else if (canClose) {
         <form class="card stack-sm" (ngSubmit)="close()" aria-labelledby="t-close" novalidate>
           <h2 id="t-close" class="card__title">Clôturer la journée</h2>
-          <p class="small muted">Comptez les espèces de la caisse (sans le fonds de caisse) et saisissez le total.</p>
+          <p class="small muted">
+            Comptez les espèces de la caisse (sans le fonds de caisse) et saisissez le total.
+          </p>
           <div class="field">
             <label for="ca-counted">Espèces comptées (F CFA)</label>
-            <input id="ca-counted" class="input input--lg" type="number" min="0" step="25" inputmode="numeric" [ngModel]="counted()" (ngModelChange)="counted.set($event === '' || $event === null ? null : +$event)" name="counted" />
+            <input
+              id="ca-counted"
+              class="input input--lg"
+              type="number"
+              min="0"
+              step="25"
+              inputmode="numeric"
+              [ngModel]="counted()"
+              (ngModelChange)="counted.set($event === '' || $event === null ? null : +$event)"
+              name="counted"
+            />
           </div>
           @if (difference(); as d) {
             <p class="diff" [class.neg]="d < 0" [class.pos]="d > 0">
@@ -103,11 +148,29 @@
             <p class="diff ok">Aucun écart</p>
           }
           <div class="field">
-            <label for="ca-note">Commentaire {{ difference() ? '(obligatoire en cas d’écart)' : '(facultatif)' }}</label>
-            <textarea id="ca-note" class="textarea" rows="2" [ngModel]="note()" (ngModelChange)="note.set($event)" name="note"></textarea>
+            <label for="ca-note"
+              >Commentaire
+              {{ difference() ? '(obligatoire en cas d’écart)' : '(facultatif)' }}</label
+            >
+            <textarea
+              id="ca-note"
+              class="textarea"
+              rows="2"
+              [ngModel]="note()"
+              (ngModelChange)="note.set($event)"
+              name="note"
+            ></textarea>
           </div>
-          <button type="submit" class="btn btn--primary" [disabled]="saving() || counted() === null">Clôturer la caisse</button>
-          <p class="small muted">Une seule clôture par jour et par agence ; elle ne peut plus être modifiée.</p>
+          <button
+            type="submit"
+            class="btn btn--primary"
+            [disabled]="saving() || counted() === null"
+          >
+            Clôturer la caisse
+          </button>
+          <p class="small muted">
+            Une seule clôture par jour et par agence ; elle ne peut plus être modifiée.
+          </p>
         </form>
       }
     </div>
@@ -120,7 +183,9 @@
             <thead>
               <tr>
                 <th scope="col">Journée</th>
-                @if (chooseAgency) { <th scope="col">Agence</th> }
+                @if (chooseAgency) {
+                  <th scope="col">Agence</th>
+                }
                 <th scope="col" class="text-right">Attendu</th>
                 <th scope="col" class="text-right">Compté</th>
                 <th scope="col" class="text-right">Écart</th>
@@ -131,17 +196,31 @@
               @for (h of history(); track h.id) {
                 <tr>
                   <td class="nowrap">{{ h.business_date | date: 'EEE d MMM y' }}</td>
-                  @if (chooseAgency) { <td>{{ h.agency_name }}</td> }
+                  @if (chooseAgency) {
+                    <td>{{ h.agency_name }}</td>
+                  }
                   <td class="text-right">{{ h.expected_cash | money }}</td>
                   <td class="text-right">{{ h.counted_cash | money }}</td>
-                  <td class="text-right strong" [class.neg]="h.difference < 0" [class.pos]="h.difference > 0" [attr.title]="h.note || null">
-                    {{ h.difference > 0 ? '+' : h.difference < 0 ? '−' : '' }}{{ (h.difference < 0 ? -h.difference : h.difference) | money }}
+                  <td
+                    class="text-right strong"
+                    [class.neg]="h.difference < 0"
+                    [class.pos]="h.difference > 0"
+                    [attr.title]="h.note || null"
+                  >
+                    {{ h.difference > 0 ? '+' : h.difference < 0 ? '−' : ''
+                    }}{{ (h.difference < 0 ? -h.difference : h.difference) | money }}
                   </td>
                   <td class="small">{{ h.closed_by }}</td>
                 </tr>
               }
             </tbody>
           </table>
+          <bv-load-more
+            [hasMore]="pager.hasMore()"
+            [loading]="pager.loadingMore()"
+            (more)="more()"
+            label="Clôtures plus anciennes"
+          />
         </div>
       } @else {
         <p class="muted small">Aucune clôture enregistrée.</p>

@@ -1,19 +1,49 @@
 <div class="spread bar">
   <div class="cluster" role="radiogroup" aria-label="Période">
-    <button type="button" class="btn btn--sm" role="radio" [attr.aria-checked]="upcoming()" [class.btn--primary]="upcoming()" (click)="setUpcoming(true)">À venir</button>
-    <button type="button" class="btn btn--sm" role="radio" [attr.aria-checked]="!upcoming()" [class.btn--primary]="!upcoming()" (click)="setUpcoming(false)">Tous</button>
+    <button
+      type="button"
+      class="btn btn--sm"
+      role="radio"
+      [attr.aria-checked]="upcoming()"
+      [class.btn--primary]="upcoming()"
+      (click)="setUpcoming(true)"
+    >
+      À venir
+    </button>
+    <button
+      type="button"
+      class="btn btn--sm"
+      role="radio"
+      [attr.aria-checked]="!upcoming()"
+      [class.btn--primary]="!upcoming()"
+      (click)="setUpcoming(false)"
+    >
+      Tous
+    </button>
   </div>
   @if (offline()) {
     <span class="badge badge--warning">Hors connexion : billets enregistrés sur cet appareil</span>
   }
 </div>
 
-<bv-state [loading]="loading()" [error]="error()" [empty]="tickets().length === 0" emptyIcon="ticket" emptyTitle="Aucun billet à afficher" emptyText="Vos billets apparaissent ici dès que votre paiement est confirmé." (retry)="load()">
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="tickets().length === 0"
+  emptyIcon="ticket"
+  emptyTitle="Aucun billet à afficher"
+  emptyText="Vos billets apparaissent ici dès que votre paiement est confirmé."
+  (retry)="load()"
+>
   <div class="grid grid-2">
     @for (t of tickets(); track t.id) {
       <article class="card ticket">
         @if (t.status === 'valid') {
-          <bv-qr-code [value]="t.qr_payload" [size]="160" [label]="'QR code du billet de ' + t.passenger_name" />
+          <bv-qr-code
+            [value]="t.qr_payload"
+            [size]="160"
+            [label]="'QR code du billet de ' + t.passenger_name"
+          />
         }
         <div class="stack-sm">
           <p class="strong">{{ t.route_name }}</p>
@@ -23,10 +53,18 @@
           <bv-status-badge [status]="t.status" domain="ticket" />
           <div class="cluster">
             <a class="btn btn--sm" [href]="'/v1/tickets/' + t.id + '/pdf' | apiUrl" download>PDF</a>
-            <a class="btn btn--sm btn--ghost" [routerLink]="['/compte/reservations', t.booking_id]">Réservation</a>
+            <a class="btn btn--sm btn--ghost" [routerLink]="['/compte/reservations', t.booking_id]"
+              >Réservation</a
+            >
           </div>
         </div>
       </article>
     }
   </div>
+  <bv-load-more
+    [hasMore]="pager.hasMore()"
+    [loading]="pager.loadingMore()"
+    (more)="more()"
+    label="Billets plus anciens"
+  />
 </bv-state>

@@ -341,6 +341,12 @@ export type { ChoosePayLater$Params as ChoosePayLater$Params } from './fn/reserv
 export { choosePayLater as choosePayLater } from './fn/reservations/choose-pay-later';
 export type { GetMyBookingPolicy$Params as GetMyBookingPolicy$Params } from './fn/reservations/get-my-booking-policy';
 export { getMyBookingPolicy as getMyBookingPolicy } from './fn/reservations/get-my-booking-policy';
+export type { GetMyBookingTrip$Params as GetMyBookingTrip$Params } from './fn/public-recherche-de-departs/get-my-booking-trip';
+export { getMyBookingTrip as getMyBookingTrip } from './fn/public-recherche-de-departs/get-my-booking-trip';
+export type { SearchDepartures$Params as SearchDepartures$Params } from './fn/public-recherche-de-departs/search-departures';
+export { searchDepartures as searchDepartures } from './fn/public-recherche-de-departs/search-departures';
+export type { GetPublicDeparture$Params as GetPublicDeparture$Params } from './fn/public-recherche-de-departs/get-public-departure';
+export { getPublicDeparture as getPublicDeparture } from './fn/public-recherche-de-departs/get-public-departure';
 export type { GetMe$Params as GetMe$Params } from './fn/mon-compte/get-me';
 export { getMe as getMe } from './fn/mon-compte/get-me';
 export type { UpdateMyProfile$Params as UpdateMyProfile$Params } from './fn/mon-compte/update-my-profile';
@@ -389,10 +395,6 @@ export type { ListCompanies$Params as ListCompanies$Params } from './fn/public-a
 export { listCompanies as listCompanies } from './fn/public-agences-et-villes/list-companies';
 export type { GetShowcase$Params as GetShowcase$Params } from './fn/public-agences-et-villes/get-showcase';
 export { getShowcase as getShowcase } from './fn/public-agences-et-villes/get-showcase';
-export type { SearchDepartures$Params as SearchDepartures$Params } from './fn/public-recherche-de-departs/search-departures';
-export { searchDepartures as searchDepartures } from './fn/public-recherche-de-departs/search-departures';
-export type { GetPublicDeparture$Params as GetPublicDeparture$Params } from './fn/public-recherche-de-departs/get-public-departure';
-export { getPublicDeparture as getPublicDeparture } from './fn/public-recherche-de-departs/get-public-departure';
 export type { ListMyTickets$Params as ListMyTickets$Params } from './fn/billets/list-my-tickets';
 export { listMyTickets as listMyTickets } from './fn/billets/list-my-tickets';
 export type { GetMyTicket$Params as GetMyTicket$Params } from './fn/billets/get-my-ticket';

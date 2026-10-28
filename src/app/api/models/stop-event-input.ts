@@ -16,6 +16,10 @@ export interface StopEventInput {
   latitude?: number;
   longitude?: number;
   mocked?: boolean;
+
+  /**
+   * Arrêt imprévu : précision ; départ : motif d'une attente plus longue que prévu
+   */
   note?: string;
   reason?: 'planned' | 'police' | 'breakdown' | 'puncture' | 'pause' | 'traffic' | 'other' | '';
 

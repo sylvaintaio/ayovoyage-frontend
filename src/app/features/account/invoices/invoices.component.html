@@ -8,4 +8,10 @@
   (retry)="load()"
 >
   <bv-invoice-list [invoices]="invoices()" />
+  <bv-load-more
+    [hasMore]="pager.hasMore()"
+    [loading]="pager.loadingMore()"
+    (more)="more()"
+    label="Factures plus anciennes"
+  />
 </bv-state>

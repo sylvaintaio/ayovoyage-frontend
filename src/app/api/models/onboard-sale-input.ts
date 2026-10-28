@@ -33,6 +33,11 @@ export interface OnboardSaleInput {
   passengers: Array<OnboardPassenger>;
 
   /**
+   * online : Mobile Money du voyageur (FedaPay), avec réseau ; le contrôleur lance ensuite le paiement
+   */
+  payment?: 'cash' | 'online';
+
+  /**
    * Heure réelle de la vente (plafonnée à l'heure du serveur)
    */
   sold_at: string;

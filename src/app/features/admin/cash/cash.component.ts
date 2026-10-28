@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { Api } from '../../../api/api';
@@ -11,12 +18,14 @@ import { apiErrorMessage } from '../../../core/http/api-error';
 import { ToastService } from '../../../core/notify/toast.service';
 import { localDate } from '../../../shared/dates';
 import { MoneyPipe, formatMoney } from '../../../shared/pipes/money.pipe';
+import { Pager } from '../../../shared/pager';
+import { LoadMoreComponent } from '../../../shared/ui/load-more/load-more.component';
 import { StateComponent } from '../../../shared/ui/state/state.component';
 
 /** Caisse de l'agence : espèces du jour, clôture avec comptage, historique. */
 @Component({
   selector: 'bv-cash',
-  imports: [StateComponent, FormsModule, DatePipe, MoneyPipe],
+  imports: [StateComponent, LoadMoreComponent, FormsModule, DatePipe, MoneyPipe],
   templateUrl: './cash.component.html',
   styleUrl: './cash.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +46,12 @@ export class CashComponent implements OnInit {
   protected readonly date = signal(localDate(0));
   protected readonly summary = signal<CashSummary | null>(null);
   protected readonly history = signal<CashClosure[]>([]);
+  protected readonly pager = new Pager(
+    this.history,
+    (page) =>
+      this.api.invoke(listCashClosures, { agency_id: this.agencyId() || undefined, ...page }),
+    30,
+  );
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
 
@@ -69,12 +84,11 @@ export class CashComponent implements OnInit {
     this.note.set('');
     const agency_id = this.agencyId() || undefined;
     try {
-      const [summary, history] = await Promise.all([
+      const [summary] = await Promise.all([
         this.api.invoke(getCashSummary, { agency_id, date: this.date() }),
-        this.api.invoke(listCashClosures, { agency_id, limit: 30 }),
+        this.pager.first(),
       ]);
       this.summary.set(summary);
-      this.history.set(history);
     } catch (err) {
       this.error.set(apiErrorMessage(err));
     } finally {
@@ -98,7 +112,9 @@ export class CashComponent implements OnInit {
       title: 'Clôturer la caisse ?',
       message:
         `Compté : ${formatMoney(counted)}. Attendu : ${formatMoney(s.expected_cash)}.` +
-        (diff === 0 ? ' Aucun écart.' : ` Écart : ${diff > 0 ? '+' : '−'}${formatMoney(Math.abs(diff))}.`) +
+        (diff === 0
+          ? ' Aucun écart.'
+          : ` Écart : ${diff > 0 ? '+' : '−'}${formatMoney(Math.abs(diff))}.`) +
         ' La clôture est définitive.',
       confirmLabel: 'Clôturer',
     });
@@ -108,7 +124,12 @@ export class CashComponent implements OnInit {
     this.saving.set(true);
     try {
       await this.api.invoke(closeCash, {
-        body: { agency_id: this.agencyId() || undefined, date: this.date(), counted_cash: counted, note: this.note().trim() || undefined },
+        body: {
+          agency_id: this.agencyId() || undefined,
+          date: this.date(),
+          counted_cash: counted,
+          note: this.note().trim() || undefined,
+        },
       });
       this.toast.success('Caisse clôturée.');
       await this.load();
@@ -121,5 +142,13 @@ export class CashComponent implements OnInit {
 
   protected agencyName(id: string): string {
     return this.agencies().find((a) => a.id === id)?.name ?? '';
+  }
+
+  protected async more(): Promise<void> {
+    try {
+      await this.pager.next();
+    } catch (err) {
+      this.toast.error(apiErrorMessage(err));
+    }
   }
 }

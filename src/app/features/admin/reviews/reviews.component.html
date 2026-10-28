@@ -2,8 +2,9 @@
   <h1>Avis des voyageurs</h1>
 </div>
 <p class="muted small">
-  Chaque voyageur embarqué reçoit une invitation environ 2 h après l'arrivée. Une note de 2 ou moins ouvre une réclamation.
-  Seuls les avis dont l'auteur a donné son accord peuvent être publiés ; le texte n'est jamais modifié.
+  Chaque voyageur embarqué reçoit une invitation environ 2 h après l'arrivée. Une note de 2 ou moins
+  ouvre une réclamation. Seuls les avis dont l'auteur a donné son accord peuvent être publiés ; le
+  texte n'est jamais modifié.
 </p>
 
 <bv-state [loading]="loading()" [error]="error()" (retry)="load()">
@@ -12,8 +13,13 @@
       <div class="kpis">
         <div class="card kpi">
           <span class="kpi__label">Note moyenne (30 jours)</span>
-          <strong class="kpi__value figures">{{ d.stats.total ? (d.stats.average | number: '1.1-1') + ' / 5' : '—' }}</strong>
-          <span class="kpi__sub">{{ d.stats.total }} avis · {{ d.stats.positive }} positifs · {{ d.stats.negative }} négatifs</span>
+          <strong class="kpi__value figures">{{
+            d.stats.total ? (d.stats.average | number: '1.1-1') + ' / 5' : '—'
+          }}</strong>
+          <span class="kpi__sub"
+            >{{ d.stats.total }} avis · {{ d.stats.positive }} positifs ·
+            {{ d.stats.negative }} négatifs</span
+          >
         </div>
         <div class="card kpi">
           <span class="kpi__label">À modérer</span>
@@ -23,18 +29,43 @@
         <div class="card kpi criteria">
           <span class="kpi__label">Par critère</span>
           <dl>
-            <dt>Ponctualité</dt><dd class="figures">{{ d.stats.punctuality ? (d.stats.punctuality | number: '1.1-1') : '—' }}</dd>
-            <dt>Confort</dt><dd class="figures">{{ d.stats.comfort ? (d.stats.comfort | number: '1.1-1') : '—' }}</dd>
-            <dt>Équipage</dt><dd class="figures">{{ d.stats.staff ? (d.stats.staff | number: '1.1-1') : '—' }}</dd>
-            <dt>Propreté</dt><dd class="figures">{{ d.stats.cleanliness ? (d.stats.cleanliness | number: '1.1-1') : '—' }}</dd>
+            <dt>Ponctualité</dt>
+            <dd class="figures">
+              {{ d.stats.punctuality ? (d.stats.punctuality | number: '1.1-1') : '—' }}
+            </dd>
+            <dt>Confort</dt>
+            <dd class="figures">
+              {{ d.stats.comfort ? (d.stats.comfort | number: '1.1-1') : '—' }}
+            </dd>
+            <dt>Équipage</dt>
+            <dd class="figures">{{ d.stats.staff ? (d.stats.staff | number: '1.1-1') : '—' }}</dd>
+            <dt>Propreté</dt>
+            <dd class="figures">
+              {{ d.stats.cleanliness ? (d.stats.cleanliness | number: '1.1-1') : '—' }}
+            </dd>
           </dl>
         </div>
       </div>
 
       <nav class="tabs" aria-label="Filtrer les avis">
-        <a href="" [class.active]="filter() === 'all'" (click)="$event.preventDefault(); setFilter('all')">Tous</a>
-        <a href="" [class.active]="filter() === 'pending'" (click)="$event.preventDefault(); setFilter('pending')">À modérer</a>
-        <a href="" [class.active]="filter() === 'negative'" (click)="$event.preventDefault(); setFilter('negative')">Négatifs</a>
+        <a
+          href=""
+          [class.active]="filter() === 'all'"
+          (click)="$event.preventDefault(); setFilter('all')"
+          >Tous</a
+        >
+        <a
+          href=""
+          [class.active]="filter() === 'pending'"
+          (click)="$event.preventDefault(); setFilter('pending')"
+          >À modérer</a
+        >
+        <a
+          href=""
+          [class.active]="filter() === 'negative'"
+          (click)="$event.preventDefault(); setFilter('negative')"
+          >Négatifs</a
+        >
       </nav>
 
       @if (d.reviews.length === 0) {
@@ -49,14 +80,23 @@
                   <span aria-hidden="true" [class.on]="s <= r.rating">★</span>
                 }
               </span>
-              <span class="badge"
+              <span
+                class="badge"
                 [class.badge--success]="r.status === 'published'"
-                [class.badge--warning]="r.status === 'pending'">
-                {{ r.status === 'published' ? 'Publié' : r.status === 'hidden' ? 'Masqué' : 'À modérer' }}
+                [class.badge--warning]="r.status === 'pending'"
+              >
+                {{
+                  r.status === 'published'
+                    ? 'Publié'
+                    : r.status === 'hidden'
+                      ? 'Masqué'
+                      : 'À modérer'
+                }}
               </span>
             </header>
             <p class="review__meta small muted">
-              {{ r.name }}, {{ r.city }} · {{ r.route_name }} du {{ r.departure_at | date: 'dd/MM/yyyy' }} ·
+              {{ r.name }}, {{ r.city }} · {{ r.route_name }} du
+              {{ r.departure_at | date: 'dd/MM/yyyy' }} ·
               <a [routerLink]="['/admin/reservations', r.booking_id]">{{ r.reference }}</a>
               · {{ r.created_at | date: 'dd/MM HH:mm' }}
             </p>
@@ -66,7 +106,13 @@
               <p class="muted small">Pas de commentaire.</p>
             }
             @if (r.incident_id) {
-              <p class="small">Réclamation <a [routerLink]="['/admin/reclamations', r.incident_id]">{{ r.incident_reference }}</a> ouverte automatiquement.</p>
+              <p class="small">
+                Réclamation
+                <a [routerLink]="['/admin/reclamations', r.incident_id]">{{
+                  r.incident_reference
+                }}</a>
+                ouverte automatiquement.
+              </p>
             }
             @if (!r.publish_consent) {
               <p class="small muted">Le voyageur n'a pas autorisé la publication.</p>
@@ -81,12 +127,29 @@
             @if (editing(); as e) {
               @if (e.id === r.id) {
                 <form class="stack-sm" (ngSubmit)="saveEdit(r)">
-                  <label [for]="'rv-edit-' + r.id" class="small strong">{{ e.mode === 'reply' ? 'Réponse publique' : 'Motif du masquage (interne)' }}</label>
-                  <textarea [id]="'rv-edit-' + r.id" name="text" class="textarea" rows="3" maxlength="1000"
-                    [ngModel]="e.text" (ngModelChange)="editing.set({ id: e.id, mode: e.mode, text: $event })"></textarea>
+                  <label [for]="'rv-edit-' + r.id" class="small strong">{{
+                    e.mode === 'reply' ? 'Réponse publique' : 'Motif du masquage (interne)'
+                  }}</label>
+                  <textarea
+                    [id]="'rv-edit-' + r.id"
+                    name="text"
+                    class="textarea"
+                    rows="3"
+                    maxlength="1000"
+                    [ngModel]="e.text"
+                    (ngModelChange)="editing.set({ id: e.id, mode: e.mode, text: $event })"
+                  ></textarea>
                   <div class="cluster">
-                    <button type="submit" class="btn btn--sm btn--primary" [disabled]="busy() === r.id || (e.mode === 'hide' && !e.text.trim())">Enregistrer</button>
-                    <button type="button" class="btn btn--sm" (click)="editing.set(null)">Annuler</button>
+                    <button
+                      type="submit"
+                      class="btn btn--sm btn--primary"
+                      [disabled]="busy() === r.id || (e.mode === 'hide' && !e.text.trim())"
+                    >
+                      Enregistrer
+                    </button>
+                    <button type="button" class="btn btn--sm" (click)="editing.set(null)">
+                      Annuler
+                    </button>
                   </div>
                 </form>
               }
@@ -94,17 +157,34 @@
             @if (editing()?.id !== r.id) {
               <div class="cluster actions">
                 @if (r.status !== 'published' && r.publish_consent) {
-                  <button type="button" class="btn btn--sm btn--primary" [disabled]="busy() === r.id" (click)="apply(r, 'published')">Publier</button>
+                  <button
+                    type="button"
+                    class="btn btn--sm btn--primary"
+                    [disabled]="busy() === r.id"
+                    (click)="apply(r, 'published')"
+                  >
+                    Publier
+                  </button>
                 }
                 @if (r.status !== 'hidden') {
-                  <button type="button" class="btn btn--sm" (click)="edit(r, 'hide')">Masquer</button>
+                  <button type="button" class="btn btn--sm" (click)="edit(r, 'hide')">
+                    Masquer
+                  </button>
                 }
-                <button type="button" class="btn btn--sm btn--ghost" (click)="edit(r, 'reply')">{{ r.reply ? 'Modifier la réponse' : 'Répondre' }}</button>
+                <button type="button" class="btn btn--sm btn--ghost" (click)="edit(r, 'reply')">
+                  {{ r.reply ? 'Modifier la réponse' : 'Répondre' }}
+                </button>
               </div>
             }
           </li>
         }
       </ul>
+      <bv-load-more
+        [hasMore]="hasMore()"
+        [loading]="loadingMore()"
+        (more)="more()"
+        label="Avis plus anciens"
+      />
     </div>
   }
 </bv-state>

@@ -225,6 +225,7 @@ export type { SyncOfflineScansRequest } from './models/sync-offline-scans-reques
 export type { Ticket } from './models/ticket';
 export type { TicketDetail } from './models/ticket-detail';
 export type { Tier } from './models/tier';
+export type { TripProgress } from './models/trip-progress';
 export type { UnassignParcelRequest } from './models/unassign-parcel-request';
 export type { UpcomingDeparture } from './models/upcoming-departure';
 export type { UpdateCompanySettingsRequest } from './models/update-company-settings-request';

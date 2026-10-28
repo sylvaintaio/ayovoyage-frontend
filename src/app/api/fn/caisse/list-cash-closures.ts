@@ -12,6 +12,11 @@ import { CashClosure } from '../../models/cash-closure';
 export interface ListCashClosures$Params {
   agency_id?: string;
   limit?: number;
+
+/**
+ * Décalage pour la pagination
+ */
+  offset?: number;
 }
 
 export function listCashClosures(http: HttpClient, rootUrl: string, params?: ListCashClosures$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<CashClosure>>> {
@@ -19,6 +24,7 @@ export function listCashClosures(http: HttpClient, rootUrl: string, params?: Lis
   if (params) {
     rb.query('agency_id', params.agency_id, {"explode":false});
     rb.query('limit', params.limit, {"explode":false});
+    rb.query('offset', params.offset, {"explode":false});
   }
 
   return http.request(

@@ -18,11 +18,20 @@
         <a class="card row" [routerLink]="['/compte/reclamations', i.id]">
           <div>
             <p class="strong">{{ categories[i.category] }} — {{ subjects[i.subject_type] }}</p>
-            <p class="small muted">{{ i.reference }} · {{ i.tracking_number || i.booking_reference }} · mis à jour le {{ i.updated_at | date: 'd MMM' }}</p>
+            <p class="small muted">
+              {{ i.reference }} · {{ i.tracking_number || i.booking_reference }} · mis à jour le
+              {{ i.updated_at | date: 'd MMM' }}
+            </p>
           </div>
           <bv-status-badge [status]="i.status" domain="incident" />
         </a>
       </li>
     }
   </ul>
+  <bv-load-more
+    [hasMore]="pager.hasMore()"
+    [loading]="pager.loadingMore()"
+    (more)="more()"
+    label="Réclamations plus anciennes"
+  />
 </bv-state>

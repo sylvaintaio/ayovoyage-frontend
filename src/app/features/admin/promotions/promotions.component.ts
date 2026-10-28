@@ -16,6 +16,8 @@ import { DialogService } from '../../../core/dialog/dialog.service';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { ToastService } from '../../../core/notify/toast.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { Pager } from '../../../shared/pager';
+import { LoadMoreComponent } from '../../../shared/ui/load-more/load-more.component';
 import { StateComponent } from '../../../shared/ui/state/state.component';
 import {
   PromoDialogComponent,
@@ -28,7 +30,7 @@ import { API_URL } from '../../../core/http/api-url';
 /** Promotions : codes promo (uniques ou en série) et tarifs « réservez tôt ». */
 @Component({
   selector: 'bv-promotions',
-  imports: [StateComponent, FormsModule, DatePipe, MoneyPipe],
+  imports: [StateComponent, LoadMoreComponent, FormsModule, DatePipe, MoneyPipe],
   templateUrl: './promotions.component.html',
   styleUrl: './promotions.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +45,9 @@ export class PromotionsComponent implements OnInit {
   protected readonly q = signal('');
   protected readonly codes = signal<PromoCode[]>([]);
   protected readonly rules = signal<PricingRule[]>([]);
+  protected readonly pager = new Pager(this.codes, (page) =>
+    this.api.invoke(listPromoCodes, { q: this.q().trim() || undefined, ...page }),
+  );
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly stats = signal<Record<string, PromoStats>>({});
@@ -67,11 +72,7 @@ export class PromotionsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const [codes, rules] = await Promise.all([
-        this.api.invoke(listPromoCodes, { q: this.q().trim() || undefined, limit: 100 }),
-        this.api.invoke(listPricingRules),
-      ]);
-      this.codes.set(codes);
+      const [, rules] = await Promise.all([this.pager.first(), this.api.invoke(listPricingRules)]);
       this.rules.set(rules);
     } catch (err) {
       this.error.set(apiErrorMessage(err));
@@ -133,5 +134,13 @@ export class PromotionsComponent implements OnInit {
 
   protected expired(p: PromoCode): boolean {
     return !!p.valid_to && new Date(p.valid_to).getTime() < Date.now();
+  }
+
+  protected async more(): Promise<void> {
+    try {
+      await this.pager.next();
+    } catch (err) {
+      this.toast.error(apiErrorMessage(err));
+    }
   }
 }
