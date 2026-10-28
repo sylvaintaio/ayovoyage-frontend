@@ -15,6 +15,11 @@ export interface UpdateDepartureRequest {
   base_price: number;
 
   /**
+   * Autre bus (panne, changement de véhicule) ; absent : inchangé
+   */
+  bus_id?: string;
+
+  /**
    * Absent : autres membres inchangés ; [] : aucun
    */
   crew?: Array<CrewMemberInput>;

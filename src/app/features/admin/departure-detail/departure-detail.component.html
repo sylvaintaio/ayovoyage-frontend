@@ -5,28 +5,61 @@
     <header class="head">
       <div>
         <h1>{{ d.route_name }}</h1>
-        <p class="muted cap">{{ d.departure_at | date: 'EEEE d MMMM yyyy, HH:mm' }} → {{ d.arrival_eta | date: 'HH:mm' }} · bus {{ d.plate_number }}</p>
+        <p class="muted cap">
+          {{ d.departure_at | date: 'EEEE d MMMM yyyy, HH:mm' }} →
+          {{ d.arrival_eta | date: 'HH:mm' }} · bus {{ d.plate_number }}
+        </p>
       </div>
       <bv-status-badge [status]="d.status" domain="departure" />
     </header>
 
     <div class="grid grid-4 kpis">
       <div class="card kpi">
-        <div class="kpi__label">Passagers</div><div class="kpi__value">{{ d.sold_seats }}</div>
-        <div class="small muted">Charge max. {{ d.peak_seats ?? d.sold_seats }} / {{ d.seat_count }} places</div>
+        <div class="kpi__label">Passagers</div>
+        <div class="kpi__value">{{ d.sold_seats }}</div>
+        <div class="small muted">
+          Charge max. {{ d.peak_seats ?? d.sold_seats }} / {{ d.seat_count }} places
+        </div>
       </div>
-      <div class="card kpi"><div class="kpi__label">Embarqués</div><div class="kpi__value">{{ d.boarded_seats }}</div></div>
-      <div class="card kpi"><div class="kpi__label">Tarif de base</div><div class="kpi__value">{{ d.base_price | money }}</div></div>
+      <div class="card kpi">
+        <div class="kpi__label">Embarqués</div>
+        <div class="kpi__value">{{ d.boarded_seats }}</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi__label">Tarif de base</div>
+        <div class="kpi__value">{{ d.base_price | money }}</div>
+      </div>
       <div class="card actions">
         @for (a of actions(); track a) {
-          <button type="button" class="btn btn--sm" [class.btn--danger]="a === 'cancelled'" [class.btn--primary]="a !== 'cancelled'"
-            [disabled]="busy()" (click)="changeStatus(a)">{{ actionLabels[a] }}</button>
+          <button
+            type="button"
+            class="btn btn--sm"
+            [class.btn--danger]="a === 'cancelled'"
+            [class.btn--primary]="a !== 'cancelled'"
+            [disabled]="busy()"
+            (click)="changeStatus(a)"
+          >
+            {{ actionLabels[a] }}
+          </button>
         }
         @if (isManager && (d.status === 'scheduled' || d.status === 'boarding')) {
           <button type="button" class="btn btn--sm" (click)="edit()">Modifier</button>
         }
+        @if (isManager && d.status === 'scheduled' && !d.schedule_id) {
+          <button type="button" class="btn btn--sm" (click)="repeat()">Rendre régulier</button>
+        }
       </div>
     </div>
+    @if (d.schedule_id) {
+      <p class="small muted regular">
+        Départ régulier, créé par un <a routerLink="/admin/horaires">horaire</a>.
+        @if (d.schedule_override) {
+          Modifié à la main : les changements de l'horaire ne le touchent plus.
+        } @else {
+          Pour sauter ce jour, annulez ce départ : il ne sera pas recréé.
+        }
+      </p>
+    }
     @if (d.notes) {
       <p class="alert">{{ d.notes }}</p>
     }
@@ -37,35 +70,69 @@
         @if (d.crew?.length) {
           <p class="small crew">
             @for (c of d.crew; track c.staff_id) {
-              <span>{{ crewRoles[c.role] }} : <strong>{{ c.full_name }}</strong></span>
+              <span
+                >{{ crewRoles[c.role] }} : <strong>{{ c.full_name }}</strong></span
+              >
             }
           </p>
         }
       </div>
       <ol class="timeline">
         @for (t of timeline(); track $index) {
-          <li class="timeline__item" [class.timeline__item--unplanned]="t.kind === 'unplanned'" [class.timeline__item--done]="t.arrivedAt">
+          <li
+            class="timeline__item"
+            [class.timeline__item--unplanned]="t.kind === 'unplanned'"
+            [class.timeline__item--done]="t.arrivedAt"
+          >
             <span class="timeline__dot" aria-hidden="true"></span>
             <div class="timeline__body">
               <div class="spread">
-                <span class="strong">{{ t.kind === 'unplanned' ? '⚠ Arrêt imprévu : ' + t.name : t.name }}</span>
+                <span class="strong">{{
+                  t.kind === 'unplanned' ? '⚠ Arrêt imprévu : ' + t.name : t.name
+                }}</span>
                 @if (t.delay !== undefined) {
-                  <span class="badge" [class.badge--success]="t.delay <= 5" [class.badge--warning]="t.delay > 5 && t.delay <= 30" [class.badge--danger]="t.delay > 30">
-                    {{ t.delay > 0 ? '+' + t.delay + ' min' : t.delay < 0 ? t.delay + ' min' : "à l'heure" }}
+                  <span
+                    class="badge"
+                    [class.badge--success]="t.delay <= 5"
+                    [class.badge--warning]="t.delay > 5 && t.delay <= 30"
+                    [class.badge--danger]="t.delay > 30"
+                  >
+                    {{
+                      t.delay > 0
+                        ? '+' + t.delay + ' min'
+                        : t.delay < 0
+                          ? t.delay + ' min'
+                          : "à l'heure"
+                    }}
                   </span>
                 }
               </div>
               <div class="small muted">
-                @if (t.scheduledAt) { Prévu {{ t.scheduledAt | date: 'HH:mm' }}@if (t.pauseMinutes) { · pause {{ t.pauseMinutes }} min } }
-                @if (t.arrivedAt) { · arrivé {{ t.arrivedAt | date: 'HH:mm' }} }
-                @if (t.departedAt) { · reparti {{ t.departedAt | date: 'HH:mm' }} }
-                @if (t.stayMinutes !== undefined) { · arrêt {{ t.stayMinutes }} min }
+                @if (t.scheduledAt) {
+                  Prévu {{ t.scheduledAt | date: 'HH:mm' }}
+                  @if (t.pauseMinutes) {
+                    · pause {{ t.pauseMinutes }} min
+                  }
+                }
+                @if (t.arrivedAt) {
+                  · arrivé {{ t.arrivedAt | date: 'HH:mm' }}
+                }
+                @if (t.departedAt) {
+                  · reparti {{ t.departedAt | date: 'HH:mm' }}
+                }
+                @if (t.stayMinutes !== undefined) {
+                  · arrêt {{ t.stayMinutes }} min
+                }
               </div>
-              @if (t.note) { <div class="small">« {{ t.note }} »</div> }
+              @if (t.note) {
+                <div class="small">« {{ t.note }} »</div>
+              }
               @if (t.position) {
                 <div class="small muted">
                   Position {{ t.position }}
-                  @if (t.mocked) { <span class="badge badge--danger">position simulée</span> }
+                  @if (t.mocked) {
+                    <span class="badge badge--danger">position simulée</span>
+                  }
                 </div>
               }
             </div>
@@ -81,25 +148,42 @@
       <section class="card" aria-labelledby="t-plan">
         <h2 id="t-plan" class="card__title">Plan du bus</h2>
         <p class="muted small">Touchez un siège pour voir le passager ou le bloquer.</p>
-        <bv-seat-map [seatMap]="data.seat_map" [categories]="data.categories" mode="staff" (seatClick)="seat.set($event)" />
+        <bv-seat-map
+          [seatMap]="data.seat_map"
+          [categories]="data.categories"
+          mode="staff"
+          (seatClick)="seat.set($event)"
+        />
       </section>
 
       <aside class="stack">
         @if (seat(); as s) {
           <section class="card stack-sm" aria-live="polite">
             <h2 class="card__title">Siège {{ s.seat_label }}</h2>
-            <p class="small">{{ s.price | money }} · état : <strong>{{ s.state }}</strong></p>
+            <p class="small">
+              {{ s.price | money }} · état : <strong>{{ s.state }}</strong>
+            </p>
             @if (s.passenger_name) {
-              <p>Passager : <strong>{{ s.passenger_name }}</strong></p>
+              <p>
+                Passager : <strong>{{ s.passenger_name }}</strong>
+              </p>
               @if (s.booking_id) {
-                <a class="btn btn--sm" [routerLink]="['/admin/reservations', s.booking_id]">Voir la réservation</a>
+                <a class="btn btn--sm" [routerLink]="['/admin/reservations', s.booking_id]"
+                  >Voir la réservation</a
+                >
               }
             }
             @if (isManager && (s.state === 'available' || s.state === 'blocked')) {
               @if (s.state === 'available') {
                 <div class="field">
                   <label for="dd-reason">Motif du blocage</label>
-                  <input id="dd-reason" class="input" [ngModel]="blockReason()" (ngModelChange)="blockReason.set($event)" placeholder="Réservé au personnel, siège abîmé…" />
+                  <input
+                    id="dd-reason"
+                    class="input"
+                    [ngModel]="blockReason()"
+                    (ngModelChange)="blockReason.set($event)"
+                    placeholder="Réservé au personnel, siège abîmé…"
+                  />
                 </div>
               }
               <button type="button" class="btn btn--sm" [disabled]="busy()" (click)="toggleBlock()">
@@ -112,13 +196,29 @@
         @if (manifest(); as m) {
           <section class="card" aria-labelledby="t-manifest">
             <h2 id="t-manifest" class="card__title">Manifeste</h2>
-            <p class="small">{{ m.boarded }} embarqué(s) · {{ m.missing }} absent(s) sur {{ m.expected }}</p>
+            <p class="small">
+              {{ m.boarded }} embarqué(s) · {{ m.missing }} absent(s) sur {{ m.expected }}
+            </p>
             <ul class="list-plain manifest">
               @for (p of m.passengers; track p.ticket_id) {
-                <li [class.done]="p.ticket_status === 'used'" [class.off]="p.ticket_status === 'cancelled'">
+                <li
+                  [class.done]="p.ticket_status === 'used'"
+                  [class.off]="p.ticket_status === 'cancelled'"
+                >
                   <span class="seat-label">{{ p.seat_label }}</span>
-                  <span>{{ p.passenger_name }}@if (trip(p.boarding_seq, p.alighting_seq); as tr) { <span class="small muted"> · {{ tr }}</span> }</span>
-                  <span class="small muted">{{ p.ticket_status === 'used' ? 'à bord ' + (p.boarded_at | date: 'HH:mm') : p.ticket_status === 'cancelled' ? 'annulé' : 'attendu' }}</span>
+                  <span
+                    >{{ p.passenger_name }}
+                    @if (trip(p.boarding_seq, p.alighting_seq); as tr) {
+                      <span class="small muted"> · {{ tr }}</span>
+                    }
+                  </span>
+                  <span class="small muted">{{
+                    p.ticket_status === 'used'
+                      ? 'à bord ' + (p.boarded_at | date: 'HH:mm')
+                      : p.ticket_status === 'cancelled'
+                        ? 'annulé'
+                        : 'attendu'
+                  }}</span>
                 </li>
               } @empty {
                 <li class="muted small">Aucun passager.</li>
@@ -126,8 +226,15 @@
             </ul>
           </section>
         }
-        <bv-departure-cargo [departureId]="data.departure.id" [departureStatus]="data.departure.status" />
-        <bv-departure-onboard [departureId]="data.departure.id" [departureStatus]="data.departure.status" [stops]="data.departure.stops ?? []" />
+        <bv-departure-cargo
+          [departureId]="data.departure.id"
+          [departureStatus]="data.departure.status"
+        />
+        <bv-departure-onboard
+          [departureId]="data.departure.id"
+          [departureStatus]="data.departure.status"
+          [stops]="data.departure.stops ?? []"
+        />
       </aside>
     </div>
   }

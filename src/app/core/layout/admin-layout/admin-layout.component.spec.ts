@@ -13,7 +13,14 @@ describe('AdminLayoutComponent', () => {
     }).compileComponents();
     TestBed.inject(AuthStore).me.set({
       type: 'staff',
-      staff: { id: '1', company_id: 'c', email: 'c@x', full_name: 'Caissier', phone: '', role: 'cashier' },
+      staff: {
+        id: '1',
+        company_id: 'c',
+        email: 'c@x',
+        full_name: 'Caissier',
+        phone: '',
+        role: 'cashier',
+      },
     });
     const fixture = TestBed.createComponent(AdminLayoutComponent);
     await fixture.whenStable();

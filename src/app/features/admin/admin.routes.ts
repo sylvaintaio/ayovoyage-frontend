@@ -38,6 +38,13 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./departures/departures.component').then((m) => m.DeparturesComponent),
   },
   {
+    path: 'horaires',
+    title: 'Horaires réguliers',
+    canActivate: [staffGuard],
+    data: { roles: ['company_admin', 'agency_manager'] },
+    loadComponent: () => import('./schedules/schedules.component').then((m) => m.SchedulesComponent),
+  },
+  {
     path: 'departs/:id',
     title: 'Départ',
     loadComponent: () => import('./departure-detail/departure-detail.component').then((m) => m.DepartureDetailComponent),

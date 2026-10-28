@@ -1,0 +1,107 @@
+<a routerLink="/admin/departs" class="small">← Départs</a>
+<div class="spread head">
+  <h1>Horaires réguliers</h1>
+  <button type="button" class="btn btn--primary" (click)="create()">+ Nouvel horaire</button>
+</div>
+<p class="muted intro">
+  Un horaire crée tout seul ses départs, 60 jours à l'avance, au fil des jours. Pour sauter un jour
+  (jour férié, car en révision), annulez ce départ dans la liste des départs : il ne sera pas
+  recréé. Un départ déjà réservé ou modifié à la main n'est jamais changé par l'horaire.
+</p>
+
+<bv-state
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="schedules().length === 0"
+  emptyIcon="clock"
+  emptyTitle="Aucun horaire régulier"
+  emptyText="Créez un horaire (ex. tous les jours à 07:00) : les départs se créeront ensuite tout seuls."
+  (retry)="load()"
+>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Heure</th>
+          <th scope="col">Ligne</th>
+          <th scope="col">Jours</th>
+          <th scope="col">Bus</th>
+          <th scope="col">Prochain départ</th>
+          <th scope="col">État</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of schedules(); track s.id) {
+          <tr [class.off]="!s.active">
+            <td class="strong nowrap time">{{ s.time }}</td>
+            <td>
+              {{ s.route_name }}
+              @if (s.base_price) {
+                <br /><span class="muted small">{{ s.base_price | money }}</span>
+              }
+            </td>
+            <td>
+              {{ days(s.weekdays) }}
+              @if (s.ends_on) {
+                <br /><span class="muted small">jusqu'au {{ s.ends_on | date: 'd MMM y' }}</span>
+              }
+            </td>
+            <td class="nowrap">{{ s.plate_number }}</td>
+            <td>
+              @if (s.next_departure_at) {
+                <span class="nowrap">{{
+                  s.next_departure_at | date: 'EEE d MMM, HH:mm' : '+0100'
+                }}</span>
+                <br /><span class="muted small">{{ s.upcoming_count }} à venir</span>
+              } @else {
+                <span class="muted">—</span>
+              }
+              @if (s.issues.length) {
+                <details class="issues">
+                  <summary>
+                    {{ s.issues.length }} date{{ s.issues.length > 1 ? 's' : '' }} non créée{{
+                      s.issues.length > 1 ? 's' : ''
+                    }}
+                  </summary>
+                  <ul class="small">
+                    @for (i of s.issues; track i.date) {
+                      <li>{{ i.date | date: 'EEE d MMM' }} — {{ i.reason }}</li>
+                    }
+                  </ul>
+                </details>
+              }
+            </td>
+            <td>{{ s.active ? 'Actif' : 'Suspendu' }}</td>
+            <td class="text-right nowrap">
+              <button
+                type="button"
+                class="btn btn--sm"
+                [disabled]="busy() === s.id"
+                (click)="edit(s)"
+              >
+                Modifier
+              </button>
+              <button
+                type="button"
+                class="btn btn--sm btn--ghost"
+                [disabled]="busy() === s.id"
+                (click)="setActive(s, !s.active)"
+              >
+                {{ s.active ? 'Suspendre' : 'Reprendre' }}
+              </button>
+              <button
+                type="button"
+                class="btn btn--sm btn--ghost"
+                [disabled]="busy() === s.id"
+                (click)="remove(s)"
+              >
+                Supprimer
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</bv-state>

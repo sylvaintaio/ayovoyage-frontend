@@ -175,7 +175,9 @@
   color: var(--bv-ink);
   font: inherit;
   font-size: var(--bv-text-md); // 16 px : évite le zoom automatique sur iPhone
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &::placeholder {
     color: var(--bv-ink-soft);
@@ -239,7 +241,9 @@
   border: 1px solid var(--bv-line-strong);
   border-radius: var(--bv-radius);
   background: var(--bv-surface);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &:focus-within {
     @include focus-ring;
@@ -290,6 +294,9 @@
 
 // ================================================================ Tableaux
 .table-wrap {
+  // Positionné : les textes masqués (.sr-only, en position absolue) restent dans le cadre qui défile,
+  // sans élargir la page sur mobile.
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--bv-line);
   border-radius: var(--bv-radius-lg);

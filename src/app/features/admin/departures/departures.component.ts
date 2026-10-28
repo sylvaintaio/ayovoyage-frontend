@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
@@ -14,7 +21,10 @@ import { localDate } from '../../../shared/dates';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { StateComponent } from '../../../shared/ui/state/state.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
-import { DepartureFormComponent, DepartureFormResult } from '../departure-form/departure-form.component';
+import {
+  DepartureFormComponent,
+  DepartureFormResult,
+} from '../departure-form/departure-form.component';
 
 type Status = 'scheduled' | 'boarding' | 'departed' | 'arrived' | 'cancelled' | '';
 type Period = 'today' | 'tomorrow' | 'week' | 'day';
@@ -34,7 +44,12 @@ export function beninDay(iso: string): string {
 /** Départs regroupés par jour, avec « Aujourd'hui » et « Demain » en clair. */
 export function groupByDay(list: AdminDeparture[], today: string): DepartureDay[] {
   const tomorrow = localDate(1, new Date(Date.parse(today + 'T12:00:00+01:00')));
-  const fmt = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Porto-Novo' });
+  const fmt = new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'Africa/Porto-Novo',
+  });
   const days = new Map<string, AdminDeparture[]>();
   for (const d of [...list].sort((a, b) => a.departure_at.localeCompare(b.departure_at))) {
     const key = beninDay(d.departure_at);
@@ -42,7 +57,12 @@ export function groupByDay(list: AdminDeparture[], today: string): DepartureDay[
   }
   return [...days].map(([date, departures]) => {
     const long = fmt.format(new Date(date + 'T12:00:00+01:00'));
-    const label = date === today ? `Aujourd'hui · ${long}` : date === tomorrow ? `Demain · ${long}` : long[0].toUpperCase() + long.slice(1);
+    const label =
+      date === today
+        ? `Aujourd'hui · ${long}`
+        : date === tomorrow
+          ? `Demain · ${long}`
+          : long[0].toUpperCase() + long.slice(1);
     return { date, label, departures };
   });
 }
@@ -94,7 +114,10 @@ export class DeparturesComponent implements OnInit {
   /** Jour précédent / suivant (vue « un jour »). */
   protected shift(days: number): void {
     const next = localDate(days, new Date(Date.parse(this.day() + 'T12:00:00+01:00')));
-    this.setPeriod(next === this.today ? 'today' : next === localDate(1) ? 'tomorrow' : 'day', next);
+    this.setPeriod(
+      next === this.today ? 'today' : next === localDate(1) ? 'tomorrow' : 'day',
+      next,
+    );
   }
 
   protected resetFilters(): void {
@@ -105,7 +128,10 @@ export class DeparturesComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     if (this.canPlan) {
-      this.api.invoke(listRoutes).then((r) => this.routes.set(r), () => undefined);
+      this.api.invoke(listRoutes).then(
+        (r) => this.routes.set(r),
+        () => undefined,
+      );
     }
     await this.load();
   }
@@ -117,7 +143,10 @@ export class DeparturesComponent implements OnInit {
       this.departures.set(
         await this.api.invoke(listDepartures, {
           from: this.day(),
-          to: this.period() === 'week' ? localDate(6, new Date(Date.parse(this.day() + 'T12:00:00+01:00'))) : this.day(),
+          to:
+            this.period() === 'week'
+              ? localDate(6, new Date(Date.parse(this.day() + 'T12:00:00+01:00')))
+              : this.day(),
           route_id: this.routeId() || undefined,
           status: this.status() || undefined,
         }),
@@ -131,8 +160,10 @@ export class DeparturesComponent implements OnInit {
 
   protected async create(): Promise<void> {
     const created = await this.dialog.open<DepartureFormResult>(DepartureFormComponent, null);
-    if (created && 'recurring' in created) {
-      this.toast.success(`${created.recurring} départ(s) programmé(s).`);
+    if (created && 'schedule' in created) {
+      this.toast.success(
+        `Horaire créé : ${created.schedule.created} départ(s) programmé(s), la suite se crée toute seule.`,
+      );
       await this.load();
     } else if (created) {
       await this.router.navigate(['/admin/departs', created.id]);

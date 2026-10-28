@@ -27,6 +27,16 @@ export interface AdminDeparture {
   plate_number: string;
   route_id: string;
   route_name: string;
+
+  /**
+   * Départ créé par un horaire permanent
+   */
+  schedule_id?: string;
+
+  /**
+   * Départ d'un horaire modifié à la main (l'horaire ne le change plus)
+   */
+  schedule_override?: boolean;
   seat_count: number;
   sold_seats: number;
   status: 'scheduled' | 'boarding' | 'departed' | 'arrived' | 'cancelled';

@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
@@ -30,21 +37,70 @@ const NAV: NavGroup[] = [
   {
     title: 'Exploitation',
     items: [
-      { label: 'Tableau de bord', link: '/admin', exact: true, roles: ['company_admin', 'agency_manager', 'finance'] },
-      { label: 'Vente au guichet', link: '/admin/guichet', roles: ['company_admin', 'agency_manager', 'cashier'] },
-      { label: 'À encaisser', link: '/admin/encaisser', roles: ['company_admin', 'agency_manager', 'cashier'] },
-      { label: 'Caisse', link: '/admin/caisse', roles: ['company_admin', 'agency_manager', 'cashier', 'finance'] },
+      {
+        label: 'Tableau de bord',
+        link: '/admin',
+        exact: true,
+        roles: ['company_admin', 'agency_manager', 'finance'],
+      },
+      {
+        label: 'Vente au guichet',
+        link: '/admin/guichet',
+        roles: ['company_admin', 'agency_manager', 'cashier'],
+      },
+      {
+        label: 'À encaisser',
+        link: '/admin/encaisser',
+        roles: ['company_admin', 'agency_manager', 'cashier'],
+      },
+      {
+        label: 'Caisse',
+        link: '/admin/caisse',
+        roles: ['company_admin', 'agency_manager', 'cashier', 'finance'],
+      },
       { label: 'Départs', link: '/admin/departs' },
-      { label: 'Réservations', link: '/admin/reservations', roles: ['company_admin', 'agency_manager', 'cashier', 'finance'] },
-      { label: 'Remboursements', link: '/admin/remboursements', roles: ['company_admin', 'agency_manager', 'finance'] },
-      { label: 'Factures', link: '/admin/factures', roles: ['company_admin', 'agency_manager', 'finance'] },
+      {
+        label: 'Horaires réguliers',
+        link: '/admin/horaires',
+        roles: ['company_admin', 'agency_manager'],
+      },
+      {
+        label: 'Réservations',
+        link: '/admin/reservations',
+        roles: ['company_admin', 'agency_manager', 'cashier', 'finance'],
+      },
+      {
+        label: 'Remboursements',
+        link: '/admin/remboursements',
+        roles: ['company_admin', 'agency_manager', 'finance'],
+      },
+      {
+        label: 'Factures',
+        link: '/admin/factures',
+        roles: ['company_admin', 'agency_manager', 'finance'],
+      },
     ],
   },
   {
     title: 'Colis et bagages',
     items: [
-      { label: 'Colis', link: '/admin/colis', roles: ['company_admin', 'agency_manager', 'cashier', 'parcel_agent', 'boarding_agent', 'driver'] },
-      { label: 'Réclamations', link: '/admin/reclamations', roles: ['company_admin', 'agency_manager', 'cashier', 'parcel_agent'] },
+      {
+        label: 'Colis',
+        link: '/admin/colis',
+        roles: [
+          'company_admin',
+          'agency_manager',
+          'cashier',
+          'parcel_agent',
+          'boarding_agent',
+          'driver',
+        ],
+      },
+      {
+        label: 'Réclamations',
+        link: '/admin/reclamations',
+        roles: ['company_admin', 'agency_manager', 'cashier', 'parcel_agent'],
+      },
     ],
   },
   {
@@ -62,7 +118,11 @@ const NAV: NavGroup[] = [
     title: 'Clients',
     items: [
       { label: 'Fidélité', link: '/admin/fidelite', roles: ['company_admin', 'finance'] },
-      { label: 'Promotions', link: '/admin/promotions', roles: ['company_admin', 'agency_manager', 'finance'] },
+      {
+        label: 'Promotions',
+        link: '/admin/promotions',
+        roles: ['company_admin', 'agency_manager', 'finance'],
+      },
       { label: 'Avis', link: '/admin/avis', roles: ['company_admin', 'agency_manager'] },
     ],
   },
@@ -106,9 +166,10 @@ export class AdminLayoutComponent implements OnInit {
   });
 
   protected readonly nav = computed(() =>
-    NAV.map((g) => ({ ...g, items: g.items.filter((i) => !i.roles || this.auth.hasRole(...i.roles)) })).filter(
-      (g) => g.items.length > 0,
-    ),
+    NAV.map((g) => ({
+      ...g,
+      items: g.items.filter((i) => !i.roles || this.auth.hasRole(...i.roles)),
+    })).filter((g) => g.items.length > 0),
   );
   protected readonly roleLabel = computed(() => {
     const r = this.auth.role();

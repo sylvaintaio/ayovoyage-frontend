@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -23,7 +31,10 @@ import { DepartureCargoComponent } from '../departure-cargo/departure-cargo.comp
 import { DepartureOnboardComponent } from '../departure-onboard/departure-onboard.component';
 import { StateComponent } from '../../../shared/ui/state/state.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
-import { DepartureFormComponent } from '../departure-form/departure-form.component';
+import {
+  DepartureFormComponent,
+  DepartureFormResult,
+} from '../departure-form/departure-form.component';
 
 type Target = 'boarding' | 'departed' | 'arrived' | 'cancelled';
 
@@ -60,7 +71,8 @@ export interface TimelineItem {
   mocked?: boolean;
 }
 
-const minutes = (a: string, b: string) => Math.round((new Date(a).getTime() - new Date(b).getTime()) / 60000);
+const minutes = (a: string, b: string) =>
+  Math.round((new Date(a).getTime() - new Date(b).getTime()) / 60000);
 
 /** Frise du voyage : arrêts prévus et imprévus dans l'ordre réel, avec retards et durées. */
 export function buildTimeline(d: AdminDeparture): TimelineItem[] {
@@ -69,24 +81,40 @@ export function buildTimeline(d: AdminDeparture): TimelineItem[] {
   for (const s of d.stops ?? []) {
     const v = visits.find((x) => x.seq === s.seq);
     const item: TimelineItem & { key: number } = {
-      kind: 'planned', name: s.stop_name, scheduledAt: s.scheduled_at, pauseMinutes: s.pause_minutes,
+      kind: 'planned',
+      name: s.stop_name,
+      scheduledAt: s.scheduled_at,
+      pauseMinutes: s.pause_minutes,
       key: new Date(v?.arrived_at ?? s.scheduled_at).getTime(),
     };
     if (v) {
       item.arrivedAt = v.arrived_at;
       item.departedAt = v.departed_at;
-      item.delay = minutes(s.seq === 0 && v.departed_at ? v.departed_at : v.arrived_at, s.scheduled_at);
+      item.delay = minutes(
+        s.seq === 0 && v.departed_at ? v.departed_at : v.arrived_at,
+        s.scheduled_at,
+      );
       item.stayMinutes = v.departed_at ? minutes(v.departed_at, v.arrived_at) : undefined;
       item.mocked = v.mocked;
-      if (v.latitude != null && v.longitude != null) item.position = `${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}`;
+      if (v.latitude != null && v.longitude != null)
+        item.position = `${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}`;
     }
     items.push(item);
   }
   for (const v of visits.filter((x) => x.seq == null)) {
     items.push({
-      kind: 'unplanned', name: REASONS[v.reason] ?? v.reason, reason: v.reason, note: v.note, arrivedAt: v.arrived_at,
-      departedAt: v.departed_at, stayMinutes: v.departed_at ? minutes(v.departed_at, v.arrived_at) : undefined, mocked: v.mocked,
-      position: v.latitude != null && v.longitude != null ? `${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}` : undefined,
+      kind: 'unplanned',
+      name: REASONS[v.reason] ?? v.reason,
+      reason: v.reason,
+      note: v.note,
+      arrivedAt: v.arrived_at,
+      departedAt: v.departed_at,
+      stayMinutes: v.departed_at ? minutes(v.departed_at, v.arrived_at) : undefined,
+      mocked: v.mocked,
+      position:
+        v.latitude != null && v.longitude != null
+          ? `${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}`
+          : undefined,
       key: new Date(v.arrived_at).getTime(),
     });
   }
@@ -109,8 +137,17 @@ const ACTION_LABELS: Record<Target, string> = {
 /** Exploitation d'un départ : plan nominatif, sièges bloqués, statut, manifeste. */
 @Component({
   selector: 'bv-departure-detail',
-  imports: [StateComponent, StatusBadgeComponent, SeatMapComponent, DepartureCargoComponent,
-    DepartureOnboardComponent, FormsModule, RouterLink, DatePipe, MoneyPipe],
+  imports: [
+    StateComponent,
+    StatusBadgeComponent,
+    SeatMapComponent,
+    DepartureCargoComponent,
+    DepartureOnboardComponent,
+    FormsModule,
+    RouterLink,
+    DatePipe,
+    MoneyPipe,
+  ],
   templateUrl: './departure-detail.component.html',
   styleUrl: './departure-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -132,7 +169,12 @@ export class DepartureDetailComponent {
   protected readonly busy = signal(false);
 
   protected readonly isManager = this.auth.hasRole('company_admin', 'agency_manager');
-  protected readonly isField = this.auth.hasRole('company_admin', 'agency_manager', 'boarding_agent', 'driver');
+  protected readonly isField = this.auth.hasRole(
+    'company_admin',
+    'agency_manager',
+    'boarding_agent',
+    'driver',
+  );
   protected readonly actionLabels = ACTION_LABELS;
 
   protected readonly timeline = computed(() => {
@@ -147,7 +189,11 @@ export class DepartureDetailComponent {
     return stops.length > 2 ? `${name(boarding)} → ${name(alighting)}` : '';
   }
 
-  protected readonly crewRoles: Record<string, string> = { controller: 'Contrôleur', driver: 'Chauffeur', assistant: 'Aide' };
+  protected readonly crewRoles: Record<string, string> = {
+    controller: 'Contrôleur',
+    driver: 'Chauffeur',
+    assistant: 'Aide',
+  };
 
   protected readonly actions = computed(() => {
     const status = this.data()?.departure.status ?? '';
@@ -195,10 +241,15 @@ export class DepartureDetailComponent {
       if (this.isManager) {
         const res = await this.api.invoke(changeDepartureStatus, { id: d.id, body: { status } });
         if (res.bookings_cancelled) {
-          this.toast.info(`${res.bookings_cancelled} réservation(s) annulée(s), remboursements créés.`);
+          this.toast.info(
+            `${res.bookings_cancelled} réservation(s) annulée(s), remboursements créés.`,
+          );
         }
       } else {
-        await this.api.invoke(agentChangeDepartureStatus, { id: d.id, body: { status: status as 'boarding' | 'departed' | 'arrived' } });
+        await this.api.invoke(agentChangeDepartureStatus, {
+          id: d.id,
+          body: { status: status as 'boarding' | 'departed' | 'arrived' },
+        });
       }
       this.toast.success('Statut mis à jour.');
       await this.load(d.id);
@@ -217,6 +268,23 @@ export class DepartureDetailComponent {
     }
   }
 
+  /** Rendre ce départ régulier : même ligne, bus, heure et équipage, les jours choisis. */
+  protected async repeat(): Promise<void> {
+    const d = this.data()?.departure;
+    if (!d) {
+      return;
+    }
+    const result = await this.dialog.open<DepartureFormResult>(DepartureFormComponent, {
+      repeat: d,
+    });
+    if (result && 'schedule' in result) {
+      this.toast.success(
+        `Départ régulier : ${result.schedule.created} autre(s) départ(s) programmé(s), la suite se crée toute seule.`,
+      );
+      await this.load(d.id);
+    }
+  }
+
   protected async toggleBlock(): Promise<void> {
     const s = this.seat();
     const d = this.data()?.departure;
@@ -228,7 +296,10 @@ export class DepartureDetailComponent {
       if (s.state === 'blocked') {
         await this.api.invoke(unblockDepartureSeat, { id: d.id, seat_id: s.id });
       } else {
-        await this.api.invoke(blockDepartureSeat, { id: d.id, body: { seat_id: s.id, reason: this.blockReason() } });
+        await this.api.invoke(blockDepartureSeat, {
+          id: d.id,
+          body: { seat_id: s.id, reason: this.blockReason() },
+        });
       }
       this.seat.set(null);
       this.blockReason.set('');

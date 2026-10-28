@@ -135,6 +135,14 @@ export type { GetCashSummary$Params as GetCashSummary$Params } from './fn/caisse
 export { getCashSummary as getCashSummary } from './fn/caisse/get-cash-summary';
 export type { GetDashboard$Params as GetDashboard$Params } from './fn/admin-tableau-de-bord/get-dashboard';
 export { getDashboard as getDashboard } from './fn/admin-tableau-de-bord/get-dashboard';
+export type { ListDepartureSchedules$Params as ListDepartureSchedules$Params } from './fn/horaires/list-departure-schedules';
+export { listDepartureSchedules as listDepartureSchedules } from './fn/horaires/list-departure-schedules';
+export type { CreateDepartureSchedule$Params as CreateDepartureSchedule$Params } from './fn/horaires/create-departure-schedule';
+export { createDepartureSchedule as createDepartureSchedule } from './fn/horaires/create-departure-schedule';
+export type { UpdateDepartureSchedule$Params as UpdateDepartureSchedule$Params } from './fn/horaires/update-departure-schedule';
+export { updateDepartureSchedule as updateDepartureSchedule } from './fn/horaires/update-departure-schedule';
+export type { DeleteDepartureSchedule$Params as DeleteDepartureSchedule$Params } from './fn/horaires/delete-departure-schedule';
+export { deleteDepartureSchedule as deleteDepartureSchedule } from './fn/horaires/delete-departure-schedule';
 export type { ListDepartures$Params as ListDepartures$Params } from './fn/admin-departs/list-departures';
 export { listDepartures as listDepartures } from './fn/admin-departs/list-departures';
 export type { CreateDeparture$Params as CreateDeparture$Params } from './fn/admin-departs/create-departure';
