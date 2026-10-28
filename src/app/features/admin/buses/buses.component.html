@@ -1,27 +1,53 @@
 <div class="spread head">
   <h1>Bus</h1>
-  <button type="button" class="btn btn--primary" (click)="edit('new')" [disabled]="layouts().length === 0">Ajouter un bus</button>
+  <button
+    type="button"
+    class="btn btn--primary"
+    (click)="edit('new')"
+    [disabled]="layouts().length === 0"
+  >
+    Ajouter un bus
+  </button>
 </div>
 @if (!loading() && layouts().length === 0) {
   <p class="alert alert--info">Créez d'abord un <a routerLink="/admin/plans">plan de sièges</a>.</p>
 }
 
-<div class="layout">
-  <bv-state [loading]="loading()" [error]="error()" [empty]="buses().length === 0" emptyText="Aucun bus." (retry)="load()">
+<div class="layout" [class.layout--side]="!!editing()">
+  <bv-state
+    [loading]="loading()"
+    [error]="error()"
+    [empty]="buses().length === 0"
+    emptyText="Aucun bus."
+    (retry)="load()"
+  >
     <div class="table-wrap">
       <table class="table">
         <thead>
-          <tr><th scope="col">Immatriculation</th><th scope="col">Modèle</th><th scope="col">Plan</th><th scope="col">Équipements</th><th scope="col">Statut</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+          <tr>
+            <th scope="col">Immatriculation</th>
+            <th scope="col">Modèle</th>
+            <th scope="col">Plan</th>
+            <th scope="col">Équipements</th>
+            <th scope="col">Statut</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
         </thead>
         <tbody>
           @for (b of buses(); track b.id) {
             <tr>
-              <td class="strong nowrap">{{ b.plate_number }}<br /><span class="muted small">{{ b.internal_code }}</span></td>
+              <td class="strong nowrap">
+                {{ b.plate_number }}<br /><span class="muted small">{{ b.internal_code }}</span>
+              </td>
               <td>{{ b.model }}</td>
-              <td>{{ b.layout_name }} <span class="muted small">({{ b.seat_count }})</span></td>
+              <td>
+                {{ b.layout_name }} <span class="muted small">({{ b.seat_count }})</span>
+              </td>
               <td class="small">{{ b.amenities.join(', ') }}</td>
               <td><bv-status-badge [status]="b.status" domain="bus" /></td>
-              <td class="text-right"><button type="button" class="btn btn--sm" (click)="edit(b)">Modifier</button></td>
+              <td class="text-right">
+                <button type="button" class="btn btn--sm" (click)="edit(b)">Modifier</button>
+              </td>
             </tr>
           }
         </tbody>
@@ -31,22 +57,40 @@
 
   @if (editing(); as current) {
     <form class="card stack-sm" [formGroup]="form" (ngSubmit)="save()" aria-labelledby="t-bus">
-      <h2 id="t-bus" class="card__title">{{ current === 'new' ? 'Nouveau bus' : 'Modifier le bus' }}</h2>
+      <h2 id="t-bus" class="card__title">
+        {{ current === 'new' ? 'Nouveau bus' : 'Modifier le bus' }}
+      </h2>
       <div class="grid grid-2">
-        <div class="field"><label for="bs-plate">Immatriculation</label><input id="bs-plate" class="input" formControlName="plate_number" /></div>
-        <div class="field"><label for="bs-code">Code interne</label><input id="bs-code" class="input" formControlName="internal_code" /></div>
+        <div class="field">
+          <label for="bs-plate">Immatriculation</label
+          ><input id="bs-plate" class="input" formControlName="plate_number" />
+        </div>
+        <div class="field">
+          <label for="bs-code">Code interne</label
+          ><input id="bs-code" class="input" formControlName="internal_code" />
+        </div>
       </div>
-      <div class="field"><label for="bs-model">Modèle</label><input id="bs-model" class="input" formControlName="model" /></div>
+      <div class="field">
+        <label for="bs-model">Modèle</label
+        ><input id="bs-model" class="input" formControlName="model" />
+      </div>
       <div class="field">
         <label for="bs-layout">Plan de sièges</label>
         <select id="bs-layout" class="select" formControlName="layout_id">
           <option value="" disabled>Choisir</option>
-          @for (l of layouts(); track l.id) { <option [value]="l.id">{{ l.name }} ({{ l.seat_count }} places)</option> }
+          @for (l of layouts(); track l.id) {
+            <option [value]="l.id">{{ l.name }} ({{ l.seat_count }} places)</option>
+          }
         </select>
       </div>
       <div class="field">
         <label for="bs-am">Équipements</label>
-        <input id="bs-am" class="input" formControlName="amenities" placeholder="climatisation, wifi, usb" />
+        <input
+          id="bs-am"
+          class="input"
+          formControlName="amenities"
+          placeholder="climatisation, wifi, usb"
+        />
         <span class="field__hint">Séparés par des virgules. Affichés aux voyageurs.</span>
       </div>
       <div class="grid grid-2">
@@ -62,11 +106,16 @@
           <label for="bs-home">Agence de rattachement</label>
           <select id="bs-home" class="select" formControlName="home_agency_id">
             <option value="">—</option>
-            @for (a of agencies(); track a.id) { <option [value]="a.id">{{ a.name }}</option> }
+            @for (a of agencies(); track a.id) {
+              <option [value]="a.id">{{ a.name }}</option>
+            }
           </select>
         </div>
       </div>
-      <div class="field"><label for="bs-notes">Notes (contrôles, documents…)</label><textarea id="bs-notes" class="textarea" formControlName="notes"></textarea></div>
+      <div class="field">
+        <label for="bs-notes">Notes (contrôles, documents…)</label
+        ><textarea id="bs-notes" class="textarea" formControlName="notes"></textarea>
+      </div>
       <div class="form-actions">
         <button type="button" class="btn" (click)="editing.set(null)">Annuler</button>
         <button type="submit" class="btn btn--primary" [disabled]="saving()">Enregistrer</button>

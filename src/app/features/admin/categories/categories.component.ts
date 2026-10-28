@@ -69,7 +69,13 @@ export class CategoriesComponent implements OnInit {
       return;
     }
     const v = this.form.getRawValue();
-    const body = { ...v, perks: v.perks.split('\n').map((p) => p.trim()).filter(Boolean) };
+    const body = {
+      ...v,
+      perks: v.perks
+        .split('\n')
+        .map((p) => p.trim())
+        .filter(Boolean),
+    };
     const current = this.editing();
     this.saving.set(true);
     try {

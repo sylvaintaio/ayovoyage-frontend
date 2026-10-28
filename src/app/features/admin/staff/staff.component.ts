@@ -3,7 +3,14 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Api } from '../../../api/api';
-import { createStaff, listAgencies, listStaff, resetStaffMfa, resetStaffPassword, updateStaff } from '../../../api/functions';
+import {
+  createStaff,
+  listAgencies,
+  listStaff,
+  resetStaffMfa,
+  resetStaffPassword,
+  updateStaff,
+} from '../../../api/functions';
 import { Agency, Staff } from '../../../api/models';
 import { AuthStore, ROLE_LABELS, StaffRole } from '../../../core/auth/auth.store';
 import { apiErrorMessage } from '../../../core/http/api-error';
@@ -53,7 +60,10 @@ export class StaffComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const [staff, agencies] = await Promise.all([this.api.invoke(listStaff), this.api.invoke(listAgencies)]);
+      const [staff, agencies] = await Promise.all([
+        this.api.invoke(listStaff),
+        this.api.invoke(listAgencies),
+      ]);
       this.staff.set(staff);
       this.agencies.set(agencies);
     } catch (err) {
@@ -74,7 +84,12 @@ export class StaffComponent implements OnInit {
       this.form.controls.email.enable();
       this.form.controls.password.setValidators([Validators.required, Validators.minLength(12)]);
     } else {
-      this.form.reset({ ...s, role: s.role as StaffRole, agency_id: s.agency_id ?? '', password: '' });
+      this.form.reset({
+        ...s,
+        role: s.role as StaffRole,
+        agency_id: s.agency_id ?? '',
+        password: '',
+      });
       this.form.controls.email.disable();
       this.form.controls.password.setValidators([Validators.minLength(12)]);
     }
@@ -88,15 +103,28 @@ export class StaffComponent implements OnInit {
     }
     const v = this.form.getRawValue();
     const current = this.editing();
-    const common = { full_name: v.full_name, phone: v.phone, role: v.role, agency_id: v.agency_id || undefined };
+    const common = {
+      full_name: v.full_name,
+      phone: v.phone,
+      role: v.role,
+      agency_id: v.agency_id || undefined,
+    };
     this.saving.set(true);
     try {
       if (current === 'new') {
-        await this.api.invoke(createStaff, { body: { ...common, email: v.email, password: v.password } });
+        await this.api.invoke(createStaff, {
+          body: { ...common, email: v.email, password: v.password },
+        });
       } else if (current) {
-        await this.api.invoke(updateStaff, { id: current.id, body: { ...common, is_active: v.is_active } });
+        await this.api.invoke(updateStaff, {
+          id: current.id,
+          body: { ...common, is_active: v.is_active },
+        });
         if (v.password) {
-          await this.api.invoke(resetStaffPassword, { id: current.id, body: { password: v.password } });
+          await this.api.invoke(resetStaffPassword, {
+            id: current.id,
+            body: { password: v.password },
+          });
         }
       }
       this.toast.success('Compte enregistré.');

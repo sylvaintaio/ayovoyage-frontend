@@ -1,17 +1,33 @@
 <div class="spread head">
   <div>
     <h1>Points d'arrêt</h1>
-    <p class="muted">Agences (montée et descente) et lieux en bord de route où les voyageurs descendent.</p>
+    <p class="muted">
+      Agences (montée et descente) et lieux en bord de route où les voyageurs descendent.
+    </p>
   </div>
-  <button type="button" class="btn btn--primary" (click)="edit('new')">Nouveau point d'arrêt</button>
+  <button type="button" class="btn btn--primary" (click)="edit('new')">
+    Nouveau point d'arrêt
+  </button>
 </div>
 
-<div class="layout">
-  <bv-state [loading]="loading()" [error]="error()" [empty]="points().length === 0" emptyText="Aucun point d'arrêt." (retry)="load()">
+<div class="layout" [class.layout--side]="!!editing()">
+  <bv-state
+    [loading]="loading()"
+    [error]="error()"
+    [empty]="points().length === 0"
+    emptyText="Aucun point d'arrêt."
+    (retry)="load()"
+  >
     <div class="field search">
       <label for="sp-q" class="sr-only">Rechercher</label>
-      <input id="sp-q" class="input" type="search" placeholder="Rechercher un point d'arrêt ou une ville"
-        [value]="query()" (input)="query.set($any($event.target).value)" />
+      <input
+        id="sp-q"
+        class="input"
+        type="search"
+        placeholder="Rechercher un point d'arrêt ou une ville"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)"
+      />
     </div>
     @for (g of byCity(); track g.city) {
       <section class="city" [attr.aria-label]="g.city">
@@ -21,10 +37,18 @@
             <li class="item" [class.item--off]="!p.is_active">
               <div>
                 <span class="strong">{{ p.name }}</span>
-                @if (p.agency_id) { <span class="badge badge--info">Agence</span> }
-                @if (!p.is_active) { <span class="badge">Inactif</span> }
-                @if (p.address) { <div class="muted small">{{ p.address }}</div> }
-                <div class="muted small">{{ p.in_use ? 'Utilisé par au moins une ligne' : 'Sur aucune ligne' }}</div>
+                @if (p.agency_id) {
+                  <span class="badge badge--info">Agence</span>
+                }
+                @if (!p.is_active) {
+                  <span class="badge">Inactif</span>
+                }
+                @if (p.address) {
+                  <div class="muted small">{{ p.address }}</div>
+                }
+                <div class="muted small">
+                  {{ p.in_use ? 'Utilisé par au moins une ligne' : 'Sur aucune ligne' }}
+                </div>
               </div>
               <button type="button" class="btn btn--sm" (click)="edit(p)">Modifier</button>
             </li>
@@ -38,32 +62,75 @@
 
   @if (editing(); as current) {
     <form class="card stack-sm" [formGroup]="form" (ngSubmit)="save()" aria-labelledby="t-sp">
-      <h2 id="t-sp" class="card__title">{{ current === 'new' ? "Nouveau point d'arrêt" : "Modifier le point d'arrêt" }}</h2>
+      <h2 id="t-sp" class="card__title">
+        {{ current === 'new' ? "Nouveau point d'arrêt" : "Modifier le point d'arrêt" }}
+      </h2>
       @if (current !== 'new' && current.agency_id) {
-        <p class="alert alert--info small">Point d'arrêt de l'agence {{ current.agency_name }} : les voyageurs peuvent y monter.</p>
+        <p class="alert alert--info small">
+          Point d'arrêt de l'agence {{ current.agency_name }} : les voyageurs peuvent y monter.
+        </p>
       }
       <div class="field">
         <label for="sp-city">Ville</label>
         <select id="sp-city" class="select" formControlName="city_id">
           <option value="" disabled>Choisir</option>
-          @for (c of cities(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+          @for (c of cities(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
         </select>
-        @if (current !== 'new') { <span class="field__hint">La ville ne change pas : des billets peuvent y faire référence.</span> }
+        @if (current !== 'new') {
+          <span class="field__hint"
+            >La ville ne change pas : des billets peuvent y faire référence.</span
+          >
+        }
       </div>
       <div class="field">
         <label for="sp-name">Nom</label>
-        <input id="sp-name" class="input" formControlName="name" placeholder="Carrefour Dassa, Gare routière…" />
+        <input
+          id="sp-name"
+          class="input"
+          formControlName="name"
+          placeholder="Carrefour Dassa, Gare routière…"
+        />
       </div>
       <div class="field">
         <label for="sp-addr">Repère ou adresse</label>
-        <input id="sp-addr" class="input" formControlName="address" placeholder="Devant la station, à l'entrée nord…" />
+        <input
+          id="sp-addr"
+          class="input"
+          formControlName="address"
+          placeholder="Devant la station, à l'entrée nord…"
+        />
       </div>
       <div class="grid grid-2">
-        <div class="field"><label for="sp-lat">Latitude</label><input id="sp-lat" class="input" type="number" step="0.000001" formControlName="latitude" /></div>
-        <div class="field"><label for="sp-lng">Longitude</label><input id="sp-lng" class="input" type="number" step="0.000001" formControlName="longitude" /></div>
+        <div class="field">
+          <label for="sp-lat">Latitude</label
+          ><input
+            id="sp-lat"
+            class="input"
+            type="number"
+            step="0.000001"
+            formControlName="latitude"
+          />
+        </div>
+        <div class="field">
+          <label for="sp-lng">Longitude</label
+          ><input
+            id="sp-lng"
+            class="input"
+            type="number"
+            step="0.000001"
+            formControlName="longitude"
+          />
+        </div>
       </div>
-      <span class="field__hint">Facultatif : sert au suivi du car et à repérer les arrêts non déclarés.</span>
-      <label class="checkbox"><input type="checkbox" formControlName="is_active" /> Actif (proposé pour les nouvelles lignes)</label>
+      <span class="field__hint"
+        >Facultatif : sert au suivi du car et à repérer les arrêts non déclarés.</span
+      >
+      <label class="checkbox"
+        ><input type="checkbox" formControlName="is_active" /> Actif (proposé pour les nouvelles
+        lignes)</label
+      >
       <div class="form-actions">
         <button type="button" class="btn" (click)="editing.set(null)">Annuler</button>
         <button type="submit" class="btn btn--primary" [disabled]="saving()">Enregistrer</button>

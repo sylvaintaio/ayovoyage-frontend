@@ -16,8 +16,25 @@ describe('StopPointsComponent', () => {
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
     http.expectOne('/api/v1/admin/stop-points').flush([
-      { id: '1', city_id: 'c1', city_name: 'Dassa-Zoumè', name: 'Carrefour Dassa', address: '', is_active: true, in_use: true },
-      { id: '2', city_id: 'c2', city_name: 'Bohicon', name: 'Bohicon — Gare routière', agency_id: 'a', address: '', is_active: true, in_use: true },
+      {
+        id: '1',
+        city_id: 'c1',
+        city_name: 'Dassa-Zoumè',
+        name: 'Carrefour Dassa',
+        address: '',
+        is_active: true,
+        in_use: true,
+      },
+      {
+        id: '2',
+        city_id: 'c2',
+        city_name: 'Bohicon',
+        name: 'Bohicon — Gare routière',
+        agency_id: 'a',
+        address: '',
+        is_active: true,
+        in_use: true,
+      },
     ]);
     http.expectOne('/api/v1/public/cities').flush([]);
     await settle(fixture);

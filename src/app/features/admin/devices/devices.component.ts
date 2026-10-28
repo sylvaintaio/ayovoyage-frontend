@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Api } from '../../../api/api';
@@ -30,7 +37,11 @@ export class DevicesComponent implements OnInit {
   protected readonly created = signal<Device | null>(null);
 
   protected readonly fieldStaff = computed(() =>
-    this.staff().filter((s) => s.is_active && ['boarding_agent', 'driver', 'agency_manager', 'parcel_agent'].includes(s.role)),
+    this.staff().filter(
+      (s) =>
+        s.is_active &&
+        ['boarding_agent', 'driver', 'agency_manager', 'parcel_agent'].includes(s.role),
+    ),
   );
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
@@ -47,7 +58,10 @@ export class DevicesComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const [devices, staff] = await Promise.all([this.api.invoke(listDevices), this.api.invoke(listStaff)]);
+      const [devices, staff] = await Promise.all([
+        this.api.invoke(listDevices),
+        this.api.invoke(listStaff),
+      ]);
       this.devices.set(devices);
       this.staff.set(staff);
     } catch (err) {

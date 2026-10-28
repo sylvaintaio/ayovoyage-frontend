@@ -5,21 +5,39 @@
   }
 </div>
 
-<div class="layout">
-  <bv-state [loading]="loading()" [error]="error()" [empty]="staff().length === 0" emptyText="Aucun compte." (retry)="load()">
+<div class="layout" [class.layout--side]="!!editing()">
+  <bv-state
+    [loading]="loading()"
+    [error]="error()"
+    [empty]="staff().length === 0"
+    emptyText="Aucun compte."
+    (retry)="load()"
+  >
     <div class="table-wrap">
       <table class="table">
         <thead>
-          <tr><th scope="col">Nom</th><th scope="col">Rôle</th><th scope="col">Agence</th><th scope="col">Dernière connexion</th><th scope="col">Double authentification</th><th scope="col">Statut</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+          <tr>
+            <th scope="col">Nom</th>
+            <th scope="col">Rôle</th>
+            <th scope="col" class="extra">Agence</th>
+            <th scope="col" class="extra">Dernière connexion</th>
+            <th scope="col" class="extra">Double authentification</th>
+            <th scope="col">Statut</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
         </thead>
         <tbody>
           @for (s of staff(); track s.id) {
-            <tr>
-              <td class="strong">{{ s.full_name }}<br /><span class="muted small">{{ s.email }}</span></td>
+            <tr [class.current]="editing() === s">
+              <td class="strong">
+                {{ s.full_name }}<br /><span class="muted small">{{ s.email }}</span>
+              </td>
               <td>{{ roleLabels[s.role] ?? s.role }}</td>
-              <td>{{ agencyName(s.agency_id) }}</td>
-              <td class="nowrap small">{{ s.last_login_at ? (s.last_login_at | date) : 'Jamais' }}</td>
-              <td>
+              <td class="extra">{{ agencyName(s.agency_id) }}</td>
+              <td class="nowrap small extra">
+                {{ s.last_login_at ? (s.last_login_at | date) : 'Jamais' }}
+              </td>
+              <td class="extra">
                 @if (!s.mfa_required) {
                   <span class="muted small">Terminal Agent</span>
                 } @else if (s.mfa_enabled) {
@@ -32,7 +50,9 @@
                 @if (s.locked_until) {
                   <span class="badge badge--warning">Verrouillé</span>
                 } @else {
-                  <span class="badge" [class.badge--success]="s.is_active">{{ s.is_active ? 'Actif' : 'Désactivé' }}</span>
+                  <span class="badge" [class.badge--success]="s.is_active">{{
+                    s.is_active ? 'Actif' : 'Désactivé'
+                  }}</span>
                 }
               </td>
               <td class="text-right">
@@ -40,7 +60,9 @@
                   <div class="row-actions">
                     <button type="button" class="btn btn--sm" (click)="edit(s)">Modifier</button>
                     @if (s.mfa_enabled && s.id !== auth.me()?.staff?.id) {
-                      <button type="button" class="btn btn--sm btn--ghost" (click)="resetMfa(s)">Réinitialiser la 2FA</button>
+                      <button type="button" class="btn btn--sm btn--ghost" (click)="resetMfa(s)">
+                        Réinitialiser la 2FA
+                      </button>
                     }
                   </div>
                 }
@@ -54,32 +76,61 @@
 
   @if (editing(); as current) {
     <form class="card stack-sm" [formGroup]="form" (ngSubmit)="save()" aria-labelledby="t-staff">
-      <h2 id="t-staff" class="card__title">{{ current === 'new' ? 'Nouveau compte' : 'Modifier le compte' }}</h2>
-      <div class="field"><label for="st-name">Nom complet</label><input id="st-name" class="input" formControlName="full_name" /></div>
-      <div class="field"><label for="st-email">E-mail (identifiant)</label><input id="st-email" class="input" type="email" formControlName="email" /></div>
-      <div class="field"><label for="st-phone">Téléphone</label><input id="st-phone" class="input" type="tel" formControlName="phone" /></div>
+      <h2 id="t-staff" class="card__title">
+        {{ current === 'new' ? 'Nouveau compte' : 'Modifier le compte' }}
+      </h2>
+      <div class="field">
+        <label for="st-name">Nom complet</label
+        ><input id="st-name" class="input" formControlName="full_name" />
+      </div>
+      <div class="field">
+        <label for="st-email">E-mail (identifiant)</label
+        ><input id="st-email" class="input" type="email" formControlName="email" />
+      </div>
+      <div class="field">
+        <label for="st-phone">Téléphone</label
+        ><input id="st-phone" class="input" type="tel" formControlName="phone" />
+      </div>
       <div class="field">
         <label for="st-role">Rôle</label>
         <select id="st-role" class="select" formControlName="role">
-          @for (r of roles; track r[0]) { <option [value]="r[0]">{{ r[1] }}</option> }
+          @for (r of roles; track r[0]) {
+            <option [value]="r[0]">{{ r[1] }}</option>
+          }
         </select>
       </div>
       <div class="field">
         <label for="st-agency">Agence</label>
         <select id="st-agency" class="select" formControlName="agency_id">
           <option value="">Aucune (siège)</option>
-          @for (a of agencies(); track a.id) { <option [value]="a.id">{{ a.name }}</option> }
+          @for (a of agencies(); track a.id) {
+            <option [value]="a.id">{{ a.name }}</option>
+          }
         </select>
-        <span class="field__hint">Obligatoire pour un chef d'agence, un caissier ou un agent colis.</span>
+        <span class="field__hint"
+          >Obligatoire pour un chef d'agence, un caissier ou un agent colis.</span
+        >
       </div>
       <div class="field">
-        <label for="st-pw">{{ current === 'new' ? 'Mot de passe initial' : 'Nouveau mot de passe (facultatif)' }}</label>
-        <input id="st-pw" class="input" type="password" autocomplete="new-password" formControlName="password" />
+        <label for="st-pw">{{
+          current === 'new' ? 'Mot de passe initial' : 'Nouveau mot de passe (facultatif)'
+        }}</label>
+        <input
+          id="st-pw"
+          class="input"
+          type="password"
+          autocomplete="new-password"
+          formControlName="password"
+        />
         <span class="field__hint">12 caractères minimum. À transmettre de façon sûre.</span>
       </div>
       @if (current !== 'new') {
-        <label class="checkbox"><input type="checkbox" formControlName="is_active" /> Compte actif</label>
-        <p class="field__hint">Désactiver ou changer le rôle déconnecte immédiatement la personne.</p>
+        <label class="checkbox"
+          ><input type="checkbox" formControlName="is_active" /> Compte actif</label
+        >
+        <p class="field__hint">
+          Désactiver ou changer le rôle déconnecte immédiatement la personne.
+        </p>
       }
       <div class="form-actions">
         <button type="button" class="btn" (click)="editing.set(null)">Annuler</button>

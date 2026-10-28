@@ -1,13 +1,30 @@
 <div class="layout">
-  <bv-state [loading]="loading()" [error]="error()" [empty]="passengers().length === 0" emptyIcon="users" emptyTitle="Aucun proche enregistré" emptyText="Ajoutez les personnes avec qui vous voyagez pour réserver plus vite." (retry)="load()">
+  <bv-state
+    [loading]="loading()"
+    [error]="error()"
+    [empty]="passengers().length === 0"
+    emptyIcon="users"
+    emptyTitle="Aucun proche enregistré"
+    emptyText="Ajoutez les personnes avec qui vous voyagez pour réserver plus vite."
+    (retry)="load()"
+  >
     <ul class="list-plain stack-sm">
       @for (p of passengers(); track p.id) {
         <li class="card row">
           <div>
             <p class="strong">{{ p.full_name }}</p>
-            <p class="small muted">{{ p.relationship || 'Proche' }}{{ p.phone ? ' · ' + p.phone : '' }}</p>
+            <p class="small muted">
+              {{ p.relationship || 'Proche' }}{{ p.phone ? ' · ' + p.phone : '' }}
+            </p>
           </div>
-          <button type="button" class="btn btn--sm btn--ghost" (click)="remove(p)" [attr.aria-label]="'Supprimer ' + p.full_name">Supprimer</button>
+          <button
+            type="button"
+            class="btn btn--sm btn--ghost"
+            (click)="remove(p)"
+            [attr.aria-label]="'Supprimer ' + p.full_name"
+          >
+            Supprimer
+          </button>
         </li>
       }
     </ul>
@@ -25,7 +42,12 @@
     </div>
     <div class="field">
       <label for="pa-rel">Lien (facultatif)</label>
-      <input id="pa-rel" class="input" placeholder="Enfant, conjoint, parent…" formControlName="relationship" />
+      <input
+        id="pa-rel"
+        class="input"
+        placeholder="Enfant, conjoint, parent…"
+        formControlName="relationship"
+      />
     </div>
     <button type="submit" class="btn btn--primary" [disabled]="saving()">Ajouter</button>
   </form>

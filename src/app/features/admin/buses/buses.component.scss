@@ -12,6 +12,14 @@
   display: grid;
   gap: var(--bv-space-4);
 
+  // Les colonnes ne débordent pas de l'écran (un tableau large défile dans son cadre).
+  > * {
+    min-width: 0;
+  }
+}
+
+// Formulaire ouvert : il prend place à droite ; fermé, la liste occupe toute la largeur.
+.layout--side {
   @include from($bp-lg) {
     grid-template-columns: minmax(0, 1fr) 360px;
     align-items: start;

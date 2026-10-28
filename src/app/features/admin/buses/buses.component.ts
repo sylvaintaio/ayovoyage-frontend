@@ -3,7 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { Api } from '../../../api/api';
-import { createBus, listAgencies, listBuses, listSeatLayouts, updateBus } from '../../../api/functions';
+import {
+  createBus,
+  listAgencies,
+  listBuses,
+  listSeatLayouts,
+  updateBus,
+} from '../../../api/functions';
 import { Agency, Bus, SeatLayout } from '../../../api/models';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { ToastService } from '../../../core/notify/toast.service';
@@ -71,7 +77,12 @@ export class BusesComponent implements OnInit {
     this.form.reset(
       b === 'new'
         ? {}
-        : { ...b, amenities: b.amenities.join(', '), home_agency_id: b.home_agency_id ?? '', status: b.status as BusStatus },
+        : {
+            ...b,
+            amenities: b.amenities.join(', '),
+            home_agency_id: b.home_agency_id ?? '',
+            status: b.status as BusStatus,
+          },
     );
   }
 
@@ -83,7 +94,10 @@ export class BusesComponent implements OnInit {
     const v = this.form.getRawValue();
     const body = {
       ...v,
-      amenities: v.amenities.split(',').map((a) => a.trim()).filter(Boolean),
+      amenities: v.amenities
+        .split(',')
+        .map((a) => a.trim())
+        .filter(Boolean),
       home_agency_id: v.home_agency_id || undefined,
     };
     const current = this.editing();

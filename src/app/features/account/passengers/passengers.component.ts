@@ -57,7 +57,9 @@ export class PassengersComponent implements OnInit {
     this.saving.set(true);
     try {
       const p = await this.api.invoke(createMyPassenger, { body: this.form.getRawValue() });
-      this.passengers.update((list) => [...list, p].sort((a, b) => a.full_name.localeCompare(b.full_name)));
+      this.passengers.update((list) =>
+        [...list, p].sort((a, b) => a.full_name.localeCompare(b.full_name)),
+      );
       this.form.reset();
       this.toast.success(`${p.full_name} ajouté(e).`);
     } catch (err) {
@@ -68,7 +70,14 @@ export class PassengersComponent implements OnInit {
   }
 
   protected async remove(p: Passenger): Promise<void> {
-    if (!(await this.dialog.confirm({ title: 'Supprimer ce proche ?', message: p.full_name, confirmLabel: 'Supprimer', danger: true }))) {
+    if (
+      !(await this.dialog.confirm({
+        title: 'Supprimer ce proche ?',
+        message: p.full_name,
+        confirmLabel: 'Supprimer',
+        danger: true,
+      }))
+    ) {
       return;
     }
     try {

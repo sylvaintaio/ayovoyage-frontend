@@ -11,7 +11,12 @@ describe('BusesComponent', () => {
   it('invite à créer un plan de sièges avant le premier bus', async () => {
     await TestBed.configureTestingModule({
       imports: [BusesComponent],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), provideApiConfiguration('/api')],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideApiConfiguration('/api'),
+      ],
     }).compileComponents();
     const fixture = TestBed.createComponent(BusesComponent);
     fixture.detectChanges();
@@ -21,6 +26,8 @@ describe('BusesComponent', () => {
     http.expectOne('/api/v1/admin/agencies').flush([]);
     await settle(fixture);
     expect(fixture.nativeElement.textContent).toContain('plan de sièges');
-    expect((fixture.nativeElement.querySelector('.head button') as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (fixture.nativeElement.querySelector('.head button') as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 });

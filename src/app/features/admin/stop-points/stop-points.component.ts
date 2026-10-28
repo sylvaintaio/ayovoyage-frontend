@@ -1,8 +1,20 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Api } from '../../../api/api';
-import { createStopPoint, listCities, listStopPoints, updateStopPoint } from '../../../api/functions';
+import {
+  createStopPoint,
+  listCities,
+  listStopPoints,
+  updateStopPoint,
+} from '../../../api/functions';
 import { City, StopPoint } from '../../../api/models';
 import { apiErrorMessage } from '../../../core/http/api-error';
 import { ToastService } from '../../../core/notify/toast.service';
@@ -61,7 +73,10 @@ export class StopPointsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const [points, cities] = await Promise.all([this.api.invoke(listStopPoints), this.api.invoke(listCities)]);
+      const [points, cities] = await Promise.all([
+        this.api.invoke(listStopPoints),
+        this.api.invoke(listCities),
+      ]);
       this.points.set(points);
       this.cities.set(cities);
     } catch (err) {

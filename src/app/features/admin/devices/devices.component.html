@@ -1,22 +1,55 @@
 <h1>Terminaux des agents</h1>
-<p class="muted small">Chaque téléphone de l'application Agent est enregistré ici. Son identifiant est saisi une fois dans l'application.</p>
+<p class="muted small">
+  Chaque téléphone de l'application Agent est enregistré ici. Son identifiant est saisi une fois
+  dans l'application.
+</p>
 
 <div class="layout">
-  <bv-state [loading]="loading()" [error]="error()" [empty]="devices().length === 0" emptyText="Aucun terminal enregistré." (retry)="load()">
+  <bv-state
+    [loading]="loading()"
+    [error]="error()"
+    [empty]="devices().length === 0"
+    emptyText="Aucun terminal enregistré."
+    (retry)="load()"
+  >
     <div class="table-wrap">
       <table class="table">
         <thead>
-          <tr><th scope="col">Terminal</th><th scope="col">Agent</th><th scope="col">Dernière activité</th><th scope="col">Statut</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+          <tr>
+            <th scope="col">Terminal</th>
+            <th scope="col">Agent</th>
+            <th scope="col">Dernière activité</th>
+            <th scope="col">Statut</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
         </thead>
         <tbody>
           @for (d of devices(); track d.id) {
             <tr>
-              <td class="strong">{{ d.name }}<br /><code class="small muted">{{ d.id }}</code></td>
+              <td class="strong">
+                {{ d.name }}<br /><code class="small muted">{{ d.id }}</code>
+              </td>
               <td>{{ staffName(d.staff_id) }}</td>
-              <td class="nowrap small">{{ d.last_seen_at ? (d.last_seen_at | date) : 'Jamais' }}</td>
-              <td><span class="badge" [class.badge--success]="d.is_active" [class.badge--danger]="!d.is_active">{{ d.is_active ? 'Actif' : 'Désactivé' }}</span></td>
+              <td class="nowrap small">
+                {{ d.last_seen_at ? (d.last_seen_at | date) : 'Jamais' }}
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge--success]="d.is_active"
+                  [class.badge--danger]="!d.is_active"
+                  >{{ d.is_active ? 'Actif' : 'Désactivé' }}</span
+                >
+              </td>
               <td class="text-right">
-                <button type="button" class="btn btn--sm" [class.btn--danger]="d.is_active" (click)="toggle(d)">{{ d.is_active ? 'Désactiver' : 'Réactiver' }}</button>
+                <button
+                  type="button"
+                  class="btn btn--sm"
+                  [class.btn--danger]="d.is_active"
+                  (click)="toggle(d)"
+                >
+                  {{ d.is_active ? 'Désactiver' : 'Réactiver' }}
+                </button>
               </td>
             </tr>
           }
@@ -37,10 +70,20 @@
       <label for="dv-staff">Agent</label>
       <select id="dv-staff" class="select" formControlName="staff_id">
         <option value="" disabled>Choisir</option>
-        @for (s of fieldStaff(); track s.id) { <option [value]="s.id">{{ s.full_name }}</option> }
+        @for (s of fieldStaff(); track s.id) {
+          <option [value]="s.id">{{ s.full_name }}</option>
+        }
       </select>
     </div>
-    <div class="field"><label for="dv-name">Nom du terminal</label><input id="dv-name" class="input" formControlName="name" placeholder="Samsung A15 — Jonquet" /></div>
+    <div class="field">
+      <label for="dv-name">Nom du terminal</label
+      ><input
+        id="dv-name"
+        class="input"
+        formControlName="name"
+        placeholder="Samsung A15 — Jonquet"
+      />
+    </div>
     <div class="field">
       <label for="dv-platform">Système</label>
       <select id="dv-platform" class="select" formControlName="platform">
@@ -48,6 +91,8 @@
         <option value="ios">iOS</option>
       </select>
     </div>
-    <div class="form-actions"><button type="submit" class="btn btn--primary">Enregistrer</button></div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">Enregistrer</button>
+    </div>
   </form>
 </div>

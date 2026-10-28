@@ -14,14 +14,33 @@ describe('StaffComponent', () => {
       providers: [provideHttpClient(), provideHttpClientTesting(), provideApiConfiguration('/api')],
     }).compileComponents();
     TestBed.inject(AuthStore).me.set({
-      type: 'staff', staff: { id: 's', company_id: 'c', email: '', full_name: 'Admin', phone: '', role: 'company_admin' },
+      type: 'staff',
+      staff: {
+        id: 's',
+        company_id: 'c',
+        email: '',
+        full_name: 'Admin',
+        phone: '',
+        role: 'company_admin',
+      },
     });
     const fixture = TestBed.createComponent(StaffComponent);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('/api/v1/admin/staff').flush([
-      { id: 'u1', email: 'c@x', full_name: 'Caissier', phone: '', role: 'cashier', is_active: true, created_at: '', locked_until: '2026-10-08T10:00:00Z' },
-    ]);
+    http
+      .expectOne('/api/v1/admin/staff')
+      .flush([
+        {
+          id: 'u1',
+          email: 'c@x',
+          full_name: 'Caissier',
+          phone: '',
+          role: 'cashier',
+          is_active: true,
+          created_at: '',
+          locked_until: '2026-10-08T10:00:00Z',
+        },
+      ]);
     http.expectOne('/api/v1/admin/agencies').flush([]);
     await settle(fixture);
     const text: string = fixture.nativeElement.textContent;

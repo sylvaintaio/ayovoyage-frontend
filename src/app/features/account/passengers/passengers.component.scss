@@ -4,6 +4,11 @@
   display: grid;
   gap: var(--bv-space-4);
 
+  // Les colonnes ne débordent pas de l'écran (un tableau large défile dans son cadre).
+  > * {
+    min-width: 0;
+  }
+
   @include from($bp-md) {
     grid-template-columns: minmax(0, 1fr) 340px;
     align-items: start;
